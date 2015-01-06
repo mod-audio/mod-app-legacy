@@ -1,6 +1,6 @@
 [Project]
 Manager=KDevGenericManager
-Name=mod-client
+Name=mod-app
 
 [Filters]
 Excludes=*/.*,*/*~,*/*.pyc,*/ui_*.py,*/__pycache__/

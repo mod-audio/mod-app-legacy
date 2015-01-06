@@ -1,0 +1,10 @@
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>16x16/application-exit.png</file>
+        <file>16x16/configure.png</file>
+        <file>16x16/document-new.png</file>
+        <file>16x16/document-open.png</file>
+        <file>16x16/document-save.png</file>
+        <file>16x16/document-save-as.png</file>
+    </qresource>
+</RCC>

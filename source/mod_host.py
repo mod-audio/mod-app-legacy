@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # MOD-App
-# Copyright (C) 2014 Filipe Coelho <falktx@falktx.com>
+# Copyright (C) 2014-2015 Filipe Coelho <falktx@falktx.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -17,26 +17,14 @@
 # For a full copy of the GNU General Public License see the LICENSE file.
 
 # ------------------------------------------------------------------------------------------------------------
-# Mod-App Configuration
+# Imports (Custom)
 
-config = {
-    # Address used for the webserver
-    "addr": "http://127.0.0.1:7988",
-    # Port used for the webserver
-    "port": "7988",
-    # MOD-App version
-    "version": "0.0.0",
-    # Use Qt5 (otherwise use Qt4)
-    "qt5": False
-}
+from mod_settings import *
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
 
-import os
-import sys
-
-if config["qt5"]:
+if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QByteArray, QDir, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
     from PyQt5.QtGui import QImage
     from PyQt5.QtWidgets import QAction, QApplication, QDialog, QDialogButtonBox, QFileDialog, QFontMetrics, QMainWindow, QMessageBox
@@ -50,134 +38,14 @@ else:
     from PyQt4.uic import loadUi
 
 # ------------------------------------------------------------------------------------------------------------
-# Import Signal
+# Imports (UI)
 
-from signal import signal, SIGINT, SIGTERM
-
-try:
-    from signal import SIGUSR1
-    haveSIGUSR1 = True
-except:
-    haveSIGUSR1 = False
+from ui_mod_app import Ui_MainWindow
 
 # ------------------------------------------------------------------------------------------------------------
-# Set up environment for the webserver
+# Import (WebServer)
 
-ROOT     = "/usr/share"
-DATA_DIR = os.path.expanduser("~/.local/share/mod-data/")
-
-os.environ['MOD_DEV_HOST'] = "0"
-os.environ['MOD_DEV_HMI']  = "1"
-os.environ['MOD_DESKTOP']  = "1"
-os.environ['MOD_LOG']      = "0"
-
-os.environ['MOD_DATA_DIR']           = DATA_DIR
-os.environ['MOD_HTML_DIR']           = os.path.join(ROOT, "mod-ui", "html")
-os.environ['MOD_PLUGIN_LIBRARY_DIR'] = os.path.join(DATA_DIR, 'lib')
-
-os.environ['MOD_PHANTOM_BINARY']        = "/usr/bin/phantomjs"
-os.environ['MOD_SCREENSHOT_JS']         = os.path.join(ROOT, "mod-ui", "screenshot.js")
-os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
-
-# ------------------------------------------------------------------------------------------------------------
-# Check for python3
-
-isPython3 = bool(sys.version_info >= (3,0,0))
-
-# ------------------------------------------------------------------------------------------------------------
-# Set CWD
-
-CWD = sys.path[0]
-
-if not CWD:
-    CWD = os.path.dirname(sys.argv[0])
-
-# make it work with cxfreeze
-if os.path.isfile(CWD):
-    CWD = os.path.dirname(CWD)
-
-# ------------------------------------------------------------------------------------------------------------
-# Import webserver
-
-from mod import rebuild_database, webserver
-
-#from mod.session import SESSION as session
-
-# ------------------------------------------------------------------------------------------------------------
-# Manual scanning
-
-if len(sys.argv) == 2 and sys.argv[1] == "--scan-lv2":
-        print("Scanning and indexing your LV2 plugins...")
-        rebuild_database(True)
-        print("done")
-        sys.exit(0)
-
-# ------------------------------------------------------------------------------------------------------------
-# Global gui object
-
-global gui
-gui = None
-
-# ------------------------------------------------------------------------------------------------------------
-# Set Platform
-
-if sys.platform == "darwin":
-    LINUX   = False
-    MACOS   = True
-    WINDOWS = False
-elif "linux" in sys.platform:
-    LINUX   = True
-    MACOS   = False
-    WINDOWS = False
-elif sys.platform in ("win32", "win64", "cygwin"):
-    LINUX   = False
-    MACOS   = False
-    WINDOWS = True
-else:
-    LINUX   = False
-    MACOS   = False
-    WINDOWS = False
-
-# ------------------------------------------------------------------------------------------------------------
-# Settings keys
-
-# Main
-MOD_KEY_MAIN_PROJECT_FOLDER   = "Main/ProjectFolder"   # str
-MOD_KEY_MAIN_REFRESH_INTERVAL = "Main/RefreshInterval" # int
-
-# ------------------------------------------------------------------------------------------------------------
-# Settings defaults
-
-# Main
-MOD_DEFAULT_MAIN_PROJECT_FOLDER   = QDir.toNativeSeparators(QDir.homePath())
-MOD_DEFAULT_MAIN_REFRESH_INTERVAL = 30
-
-# ------------------------------------------------------------------------------------------------------------
-# Signal handler
-
-def signalHandler(sig, frame):
-    global gui
-    if gui is None:
-        return
-
-    if sig in (SIGINT, SIGTERM):
-        gui.SIGTERM.emit()
-    elif haveSIGUSR1 and sig == SIGUSR1:
-        gui.SIGUSR1.emit()
-
-def setUpSignals():
-    signal(SIGINT,  signalHandler)
-    signal(SIGTERM, signalHandler)
-
-    if not haveSIGUSR1:
-        return
-
-    signal(SIGUSR1, signalHandler)
-
-# ------------------------------------------------------------------------------------------------------------
-
-def dummyCallback(a):
-    pass
+from mod import webserver
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -200,70 +68,6 @@ class WebServerThread(QThread):
         return self.wait(5000)
 
 # ------------------------------------------------------------------------------------------------------------
-# Settings Dialog
-
-class SettingsWindow(QDialog):
-    # Tab indexes
-    TAB_INDEX_MAIN   = 0
-    TAB_INDEX_CANVAS = 1
-
-    # --------------------------------------------------------------------------------------------------------
-
-    def __init__(self, parent):
-        QDialog.__init__(self, parent)
-
-        # ----------------------------------------------------------------------------------------------------
-        # Internal stuff
-
-        # ----------------------------------------------------------------------------------------------------
-        # Set up GUI
-
-        self.ui = loadUi(os.path.join(CWD, "mod-settings.ui"), self)
-
-        self.ui.lw_page.setFixedWidth(48 + 6 + 6 + QFontMetrics(self.ui.lw_page.font()).width("88888888"))
-
-        # ----------------------------------------------------------------------------------------------------
-        # Load Settings
-
-        self.loadSettings()
-
-        # ----------------------------------------------------------------------------------------------------
-        # Set-up connections
-
-        self.accepted.connect(self.slot_saveSettings)
-        self.ui.buttonBox.button(QDialogButtonBox.Reset).clicked.connect(self.slot_resetSettings)
-
-        # ----------------------------------------------------------------------------------------------------
-        # Post-connect setup
-
-        self.ui.lw_page.setCurrentCell(0, 0)
-
-    # --------------------------------------------------------------------------------------------------------
-
-    def loadSettings(self):
-        settings = QSettings()
-        # TODO
-
-    # --------------------------------------------------------------------------------------------------------
-
-    @pyqtSlot()
-    def slot_saveSettings(self):
-        settings = QSettings()
-        # TODO
-
-    # --------------------------------------------------------------------------------------------------------
-
-    @pyqtSlot()
-    def slot_resetSettings(self):
-        pass # TODO
-
-    # --------------------------------------------------------------------------------------------------------
-
-    def done(self, r):
-        QDialog.done(self, r)
-        self.close()
-
-# ------------------------------------------------------------------------------------------------------------
 # Host Window
 
 class HostWindow(QMainWindow):
@@ -275,10 +79,8 @@ class HostWindow(QMainWindow):
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
-
-        # set global gui instance to this
-        global gui
-        gui = self
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
 
         # ----------------------------------------------------------------------------------------------------
         # Internal stuff
@@ -298,11 +100,6 @@ class HostWindow(QMainWindow):
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI
-
-        #self.ui = modappui.Ui_MainWindow()
-        #self.ui.setupUi(self)
-
-        self.ui = loadUi(os.path.join(CWD, "mod-app.ui"), self)
 
         self.ui.webview = QWebView(self.ui.stackedwidget)
         self.ui.swp_webview.layout().addWidget(self.ui.webview)
@@ -405,7 +202,7 @@ class HostWindow(QMainWindow):
         fileFilter = self.tr("MOD Project File (*.modp)")
         filename   = QFileDialog.getOpenFileName(self, self.tr("Open MOD Project File"), self.fSavedSettings[MOD_KEY_MAIN_PROJECT_FOLDER], filter=fileFilter)
 
-        if config["qt5"]:
+        if config_UseQt5:
             filename = filename[0]
         if not filename:
             return
@@ -433,16 +230,16 @@ class HostWindow(QMainWindow):
         if self.fProjectFilename and not saveAs:
             return self.saveProjectNow()
 
-        fileFilter = self.tr("MOD Project File (*.modp)")
+        fileFilter = self.tr("MOD Project File (*.mod-app)")
         filename   = QFileDialog.getSaveFileName(self, self.tr("Save MOD Project File"), self.fSavedSettings[MOD_KEY_MAIN_PROJECT_FOLDER], filter=fileFilter)
 
-        if config["qt5"]:
+        if config_UseQt5:
             filename = filename[0]
         if not filename:
             return
 
-        if not filename.lower().endswith(".modp"):
-            filename += ".modp"
+        if not filename.lower().endswith(".mod-app"):
+            filename += ".mod-app"
 
         if self.fProjectFilename != filename:
             self.fProjectFilename = filename
@@ -602,7 +399,7 @@ class HostWindow(QMainWindow):
     def loadSettings(self, firstTime):
         settings = QSettings()
 
-        if firstTime and isPython3: # FIXME
+        if firstTime:
             self.restoreGeometry(settings.value("Geometry", ""))
 
         self.fSavedSettings = {
@@ -646,56 +443,5 @@ class HostWindow(QMainWindow):
             pass
 
         QMainWindow.timerEvent(self, event)
-
-# ------------------------------------------------------------------------------------------------------------
-# Main
-
-if __name__ == '__main__':
-    # --------------------------------------------------------------------------------------------------------
-    # App initialization
-
-    app = QApplication(sys.argv)
-    app.setApplicationName("MOD-App")
-    app.setApplicationVersion(config["version"])
-    app.setOrganizationName("MOD")
-    #app.setWindowIcon(QIcon(":/scalable/carla.svg"))
-
-    if MACOS:
-        app.setAttribute(Qt.AA_DontShowIconsInMenus)
-
-    # --------------------------------------------------------------------------------------------------------
-    # Set-up custom signal handling
-
-    setUpSignals()
-
-    # --------------------------------------------------------------------------------------------------------
-    # Create GUI
-
-    gui = HostWindow()
-
-    # TESTING
-    test = SettingsWindow(gui)
-    test.show()
-
-    # --------------------------------------------------------------------------------------------------------
-    # Load project file if set
-
-    args = app.arguments()
-
-    if len(args) > 1:
-        arg = args[-1]
-
-        if os.path.exists(arg):
-            gui.loadProjectLater(arg)
-
-    # --------------------------------------------------------------------------------------------------------
-    # Show GUI
-
-    gui.show()
-
-    # --------------------------------------------------------------------------------------------------------
-    # App-Loop
-
-    sys.exit(app.exec_())
 
 # ------------------------------------------------------------------------------------------------------------

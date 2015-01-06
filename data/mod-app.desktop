@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=MOD-App
+GenericName=MOD Desktop Application
+Comment=Desktop application for the MOD host and UI server
+Exec=mod-app %u
+Icon=audio-x-wav
+Terminal=false
+Type=Application
+Categories=AudioVideo;AudioEditing;Qt;
+MimeType=application/x-mod-app-project;
+Version=1.0

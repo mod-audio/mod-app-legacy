@@ -158,6 +158,9 @@ class HostWindow(QMainWindow):
         self.ui.act_file_save.triggered.connect(self.slot_fileSave)
         self.ui.act_file_save_as.triggered.connect(self.slot_fileSaveAs)
 
+        self.ui.act_host_start.triggered.connect(self.slot_hostStart)
+        self.ui.act_host_stop.triggered.connect(self.slot_hostStop)
+
         self.ui.act_settings_configure.triggered.connect(self.slot_configure)
 
         self.ui.act_help_about.triggered.connect(self.slot_about)
@@ -173,6 +176,11 @@ class HostWindow(QMainWindow):
 
     # --------------------------------------------------------------------------------------------------------
     # Setup
+
+    def stopWebServer(self):
+        if self.fWebServerThread.isRunning() and not self.fWebServerThread.stopWait():
+            qWarning("WebServer Thread failed top stop cleanly, forcing terminate")
+            self.fWebServerThread.terminate()
 
     def setProperWindowTitle(self):
         title = "MOD Application"
@@ -303,6 +311,9 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_hostStart(self):
+        if self.fHostProccess.state() == QProcess.Running:
+            return
+
         # start mod-host asynchronously
         # qt will signal either "error" or "started" depending on the process state
         self.fHostProccess.error.connect(self.slot_hostStartError)
@@ -317,6 +328,10 @@ class HostWindow(QMainWindow):
         self.fHostProccess.started.disconnect(self.slot_hostStartSuccess)
         self.fHostProccess.finished.disconnect(self.slot_hostFinished)
 
+        # stop webserver
+        self.stopWebServer()
+
+        # set error to print and display to user
         if error == QProcess.FailedToStart:
             errorStr = self.tr("Process failed to start.")
         elif error == QProcess.Crashed:
@@ -331,10 +346,12 @@ class HostWindow(QMainWindow):
         errorStr = self.tr("Could not start host backend.\n") + errorStr
         qWarning(errorStr)
 
+        # don't show error if this is the first time starting the host
         if self.fFirstHostInit:
             self.fFirstHostInit = False
             return
 
+        # show the error message
         QMessageBox.critical(self, self.tr("Error"), errorStr)
 
     @pyqtSlot()
@@ -372,9 +389,7 @@ class HostWindow(QMainWindow):
         self.ui.webview.setHtml("<html><body bgcolor='green'></body></html>")
 
         # stop webserver
-        if self.fWebServerThread.isRunning() and not self.fWebServerThread.stopWait():
-            qWarning("WebServer Thread failed top stop cleanly, forcing terminate")
-            self.fWebServerThread.terminate()
+        self.stopWebServer()
 
         # stop mod-host
         if self.fHostProccess.state() == QProcess.Running:

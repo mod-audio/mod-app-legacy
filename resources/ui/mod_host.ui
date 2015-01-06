@@ -184,7 +184,17 @@
     <addaction name="act_help_project"/>
     <addaction name="act_help_website"/>
    </widget>
+   <widget class="QMenu" name="menu_Host">
+    <property name="title">
+     <string>&amp;Host</string>
+    </property>
+    <addaction name="act_host_start"/>
+    <addaction name="act_host_stop"/>
+    <addaction name="separator"/>
+    <addaction name="act_host_configure"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menu_Host"/>
    <addaction name="menu_Settings"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -246,6 +256,21 @@
   <action name="act_help_website">
    <property name="text">
     <string>MOD Website</string>
+   </property>
+  </action>
+  <action name="act_host_start">
+   <property name="text">
+    <string>Start</string>
+   </property>
+  </action>
+  <action name="act_host_stop">
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="act_host_configure">
+   <property name="text">
+    <string>Configure</string>
    </property>
   </action>
  </widget>

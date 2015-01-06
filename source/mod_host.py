@@ -68,6 +68,15 @@ class WebServerThread(QThread):
         return self.wait(5000)
 
 # ------------------------------------------------------------------------------------------------------------
+# About Window - TODO
+
+class AboutWindow(QDialog):
+    def __init__(self, parent):
+        QDialog.__init__(self, parent)
+        #self.ui = ui_mod_about.Ui_AboutWindow()
+        #self.ui.setupUi(self)
+
+# ------------------------------------------------------------------------------------------------------------
 # Host Window
 
 class HostWindow(QMainWindow):
@@ -125,9 +134,8 @@ class HostWindow(QMainWindow):
 
         if MACOS:
             self.ui.act_file_quit.setMenuRole(QAction.QuitRole)
-            #self.ui.act_settings_configure.setMenuRole(QAction.PreferencesRole)
-            #self.ui.act_help_about.setMenuRole(QAction.AboutRole)
-            #self.ui.act_help_about_qt.setMenuRole(QAction.AboutQtRole)
+            self.ui.act_settings_configure.setMenuRole(QAction.PreferencesRole)
+            self.ui.act_help_about.setMenuRole(QAction.AboutRole)
             #self.ui.menu_Settings.setTitle("Panels")
             #self.ui.menu_Help.hide()
 
@@ -149,6 +157,12 @@ class HostWindow(QMainWindow):
         self.ui.act_file_open.triggered.connect(self.slot_fileOpen)
         self.ui.act_file_save.triggered.connect(self.slot_fileSave)
         self.ui.act_file_save_as.triggered.connect(self.slot_fileSaveAs)
+
+        self.ui.act_settings_configure.triggered.connect(self.slot_configure)
+
+        self.ui.act_help_about.triggered.connect(self.slot_about)
+        self.ui.act_help_project.triggered.connect(self.slot_showProject)
+        self.ui.act_help_website.triggered.connect(self.slot_showWebsite)
 
         # ----------------------------------------------------------------------------------------------------
         # Final setup
@@ -255,6 +269,34 @@ class HostWindow(QMainWindow):
     @pyqtSlot()
     def slot_loadProjectNow(self):
         self.loadProjectNow()
+
+    # --------------------------------------------------------------------------------------------------------
+    # Settings (menu actions)
+
+    @pyqtSlot()
+    def slot_configure(self):
+        dialog = SettingsWindow(self)
+        if not dialog.exec_():
+            return
+
+        self.loadSettings(False)
+
+    # --------------------------------------------------------------------------------------------------------
+    # About (menu actions)
+
+    @pyqtSlot()
+    def slot_about(self):
+        AboutWindow(self).exec_()
+
+    @pyqtSlot()
+    def slot_showProject(self):
+        # TODO
+        pass
+
+    @pyqtSlot()
+    def slot_showWebsite(self):
+        # TODO
+        pass
 
     # --------------------------------------------------------------------------------------------------------
     # Host (menu actions)

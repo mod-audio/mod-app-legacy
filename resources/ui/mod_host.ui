@@ -155,7 +155,7 @@
      <x>0</x>
      <y>0</y>
      <width>658</width>
-     <height>19</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -169,7 +169,24 @@
     <addaction name="separator"/>
     <addaction name="act_file_quit"/>
    </widget>
+   <widget class="QMenu" name="menu_Settings">
+    <property name="title">
+     <string>&amp;Settings</string>
+    </property>
+    <addaction name="act_settings_configure"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="act_help_about"/>
+    <addaction name="separator"/>
+    <addaction name="act_help_project"/>
+    <addaction name="act_help_website"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menu_Settings"/>
+   <addaction name="menu_Help"/>
   </widget>
   <action name="act_file_new">
    <property name="text">
@@ -209,6 +226,26 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="act_settings_configure">
+   <property name="text">
+    <string>&amp;Configure MOD-App</string>
+   </property>
+  </action>
+  <action name="act_help_about">
+   <property name="text">
+    <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="act_help_project">
+   <property name="text">
+    <string>MOD-App Project page</string>
+   </property>
+  </action>
+  <action name="act_help_website">
+   <property name="text">
+    <string>MOD Website</string>
    </property>
   </action>
  </widget>

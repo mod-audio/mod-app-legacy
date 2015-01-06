@@ -265,7 +265,7 @@ class HostWindow(QMainWindow):
         self.fHostProccess.error.connect(self.slot_hostStartError)
         self.fHostProccess.started.connect(self.slot_hostStartSuccess)
         self.fHostProccess.finished.connect(self.slot_hostFinished)
-        self.fHostProccess.start("mod-host", ["-v"])
+        self.fHostProccess.start("mod-host", ["--nofork"])
 
     @pyqtSlot(QProcess.ProcessError)
     def slot_hostStartError(self, error):

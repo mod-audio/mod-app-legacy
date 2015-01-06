@@ -102,6 +102,7 @@ class HostWindow(QMainWindow):
         # Set up GUI
 
         self.ui.webview = QWebView(self.ui.stackedwidget)
+        self.ui.webview.setMinimumWidth(980)
         self.ui.swp_webview.layout().addWidget(self.ui.webview)
 
         self.ui.label_progress.hide()

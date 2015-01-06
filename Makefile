@@ -78,7 +78,7 @@ bin/resources/%.py: source/%.py
 # UI code
 
 UIs = \
-	source/ui_mod_app.py \
+	source/ui_mod_host.py \
 	source/ui_mod_settings.py
 
 UI: $(UIs)

@@ -34,7 +34,7 @@ else:
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
 
-from ui_mod_settings import Ui_CarlaSettingsW
+from ui_mod_settings import Ui_SettingsWindow
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys
@@ -62,7 +62,7 @@ class SettingsWindow(QDialog):
 
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
-        self.ui = Ui_CarlaSettingsW()
+        self.ui = Ui_SettingsWindow()
         self.ui.setupUi(self)
 
         # ----------------------------------------------------------------------------------------------------

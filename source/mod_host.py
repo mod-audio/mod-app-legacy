@@ -40,7 +40,7 @@ else:
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
 
-from ui_mod_app import Ui_MainWindow
+from ui_mod_host import Ui_HostWindow
 
 # ------------------------------------------------------------------------------------------------------------
 # Import (WebServer)
@@ -79,7 +79,7 @@ class HostWindow(QMainWindow):
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
-        self.ui = Ui_MainWindow()
+        self.ui = Ui_HostWindow()
         self.ui.setupUi(self)
 
         # ----------------------------------------------------------------------------------------------------

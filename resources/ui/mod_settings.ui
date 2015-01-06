@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CarlaSettingsW</class>
- <widget class="QDialog" name="CarlaSettingsW">
+ <class>SettingsWindow</class>
+ <widget class="QDialog" name="SettingsWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -507,13 +507,13 @@
   <include location="../resources.qrc"/>
   <include location="../resources.qrc"/>
   <include location="../resources.qrc"/>
-  <include location="../../../Carla-stable/resources/resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>CarlaSettingsW</receiver>
+   <receiver>SettingsWindow</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -529,7 +529,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>CarlaSettingsW</receiver>
+   <receiver>SettingsWindow</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

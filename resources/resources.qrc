@@ -6,5 +6,7 @@
         <file>16x16/document-open.png</file>
         <file>16x16/document-save.png</file>
         <file>16x16/document-save-as.png</file>
+
+        <file>48x48/folder.png</file>
     </qresource>
 </RCC>

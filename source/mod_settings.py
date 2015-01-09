@@ -71,7 +71,7 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI
 
-        self.ui.lw_page.setFixedWidth(48 + 6 + 6 + QFontMetrics(self.ui.lw_page.font()).width("88888888"))
+        self.ui.lw_page.setFixedWidth(48 + 6 + 6 + QFontMetrics(self.ui.lw_page.font()).width("888888888888"))
 
         # ----------------------------------------------------------------------------------------------------
         # Load Settings

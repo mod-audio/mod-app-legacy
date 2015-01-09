@@ -94,6 +94,10 @@
         <property name="textAlignment">
          <set>AlignLeft|AlignVCenter</set>
         </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/48x48/folder.png</normaloff>:/48x48/folder.png</iconset>
+        </property>
         <property name="flags">
          <set>ItemIsSelectable|ItemIsEnabled</set>
         </property>
@@ -107,6 +111,10 @@
           <weight>75</weight>
           <bold>true</bold>
          </font>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/48x48/folder.png</normaloff>:/48x48/folder.png</iconset>
         </property>
         <property name="flags">
          <set>ItemIsSelectable|ItemIsEnabled</set>
@@ -158,7 +166,7 @@
               <string notr="true"/>
              </property>
              <property name="pixmap">
-              <pixmap>:/48x48/carla.png</pixmap>
+              <pixmap resource="../resources.qrc">:/48x48/folder.png</pixmap>
              </property>
              <property name="alignment">
               <set>Qt::AlignHCenter|Qt::AlignTop</set>
@@ -299,7 +307,7 @@
               <string notr="true"/>
              </property>
              <property name="pixmap">
-              <pixmap>:/48x48/canvas.png</pixmap>
+              <pixmap resource="../resources.qrc">:/48x48/folder.png</pixmap>
              </property>
              <property name="alignment">
               <set>Qt::AlignHCenter|Qt::AlignTop</set>

@@ -25,15 +25,15 @@ from mod_settings import *
 # Imports (Global)
 
 if config_UseQt5:
-    from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QByteArray, QDir, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
-    from PyQt5.QtGui import QImage
-    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QDialogButtonBox, QFileDialog, QFontMetrics, QMainWindow, QMessageBox
+    from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
+    from PyQt5.QtGui import QDesktopServices
+    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QDialogButtonBox, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
     from PyQt5.QtWebKitWidgets import QWebView
     from PyQt5.uic import loadUi
 else:
-    from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QByteArray, QDir, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
-    from PyQt4.QtGui import QImage
-    from PyQt4.QtGui import QAction, QApplication, QDialog, QDialogButtonBox, QFileDialog, QFontMetrics, QMainWindow, QMessageBox
+    from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
+    from PyQt4.QtGui import QDesktopServices
+    from PyQt4.QtGui import QAction, QApplication, QDialog, QDialogButtonBox, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
     from PyQt4.QtWebKit import QWebView
     from PyQt4.uic import loadUi
 
@@ -46,11 +46,17 @@ from ui_mod_host import Ui_HostWindow
 # Import (WebServer)
 
 from mod import webserver
+from mod.bank import list_banks
+from mod.session import SESSION
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
 
 class WebServerThread(QThread):
+    # signals
+    running = pyqtSignal()
+
+    # globals
     prepareWasCalled = False
 
     def __init__(self, parent=None):
@@ -61,6 +67,7 @@ class WebServerThread(QThread):
             self.prepareWasCalled = True
             webserver.prepare()
 
+        self.running.emit()
         webserver.start()
 
     def stopWait(self):
@@ -94,10 +101,9 @@ class HostWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Internal stuff
 
-        self.fExportImage     = QImage()
-        self.fFirstHostInit   = True
-        self.fIdleTimerId     = 0
-        self.fProjectFilename = ""
+        self.fFirstHostInit = True
+        self.fIdleTimerId   = 0
+        self.fCurrentPedalboard = ""
 
         # to be filled with key-value pairs of current settings
         self.fSavedSettings = {}
@@ -106,6 +112,8 @@ class HostWindow(QMainWindow):
         self.fHostProccess.setProcessChannelMode(QProcess.ForwardedChannels)
 
         self.fWebServerThread = WebServerThread(self)
+
+        #self.refreshBanks()
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI
@@ -118,10 +126,10 @@ class HostWindow(QMainWindow):
         self.ui.stackedwidget.setCurrentIndex(0)
 
         # TODO - file open/save operations
-        self.ui.act_file_new.setEnabled(False)
-        self.ui.act_file_open.setEnabled(False)
-        self.ui.act_file_save.setEnabled(False)
-        self.ui.act_file_save_as.setEnabled(False)
+        #self.ui.act_file_new.setEnabled(False)
+        #self.ui.act_file_open.setEnabled(False)
+        #self.ui.act_file_save.setEnabled(False)
+        #self.ui.act_file_save_as.setEnabled(False)
 
         # TESTING
         # webview will be blue until host and webserver are running
@@ -150,7 +158,7 @@ class HostWindow(QMainWindow):
         self.SIGUSR1.connect(self.slot_handleSIGUSR1)
         self.SIGTERM.connect(self.slot_handleSIGTERM)
 
-        self.fWebServerThread.started.connect(self.slot_webServerStarted)
+        self.fWebServerThread.running.connect(self.slot_webServerRunning)
         self.fWebServerThread.finished.connect(self.slot_webServerFinished)
 
         self.ui.act_file_new.triggered.connect(self.slot_fileNew)
@@ -160,6 +168,7 @@ class HostWindow(QMainWindow):
 
         self.ui.act_host_start.triggered.connect(self.slot_hostStart)
         self.ui.act_host_stop.triggered.connect(self.slot_hostStop)
+        self.ui.act_host_reset.triggered.connect(self.slot_hostReset)
 
         self.ui.act_settings_configure.triggered.connect(self.slot_configure)
 
@@ -177,6 +186,10 @@ class HostWindow(QMainWindow):
     # --------------------------------------------------------------------------------------------------------
     # Setup
 
+    def refreshBanks(self):
+        self.fBanks = list_banks()
+        print(self.fBanks)
+
     def stopWebServer(self):
         if self.fWebServerThread.isRunning() and not self.fWebServerThread.stopWait():
             qWarning("WebServer Thread failed top stop cleanly, forcing terminate")
@@ -185,8 +198,8 @@ class HostWindow(QMainWindow):
     def setProperWindowTitle(self):
         title = "MOD Application"
 
-        if self.fProjectFilename:
-            title += " - %s" % os.path.basename(self.fProjectFilename)
+        if self.fCurrentPedalboard:
+            title += " - %s" % self.fCurrentPedalboard
 
         self.setWindowTitle(title)
 
@@ -194,34 +207,53 @@ class HostWindow(QMainWindow):
     # Files
 
     def loadProjectNow(self):
-        if not self.fProjectFilename:
+        if not self.fCurrentPedalboard:
             return qCritical("ERROR: loading project without filename set")
 
         # TODO
 
     def loadProjectLater(self, filename):
-        self.fProjectFilename = QFileInfo(filename).absoluteFilePath()
-        self.setProperWindowTitle()
-        QTimer.singleShot(0, self.slot_loadProjectNow)
+        print("TODO")
+        return
+
+        #self.fProjectFilename = QFileInfo(filename).absoluteFilePath()
+        #self.setProperWindowTitle()
+        #QTimer.singleShot(0, self.slot_loadProjectNow)
 
     def saveProjectNow(self):
-        if not self.fProjectFilename:
+        if not self.fCurrentPedalboard:
             return qCritical("ERROR: saving project without filename set")
 
-        # TODO
+        SESSION.save_pedalboard(self.fCurrentPedalboard, False)
+
+    def dummyCallback(self, a=None, b=None, c=None):
+        pass
 
     # --------------------------------------------------------------------------------------------------------
     # Files (menu actions)
 
     @pyqtSlot()
     def slot_fileNew(self):
-        # TODO - clear all
+        SESSION.reset(self.dummyCallback)
+        #SESSION._pedalboard.clear()
 
-        self.fProjectFilename = ""
+        self.fCurrentPedalboard = ""
         self.setProperWindowTitle()
+
+        # FIXME
+        self.ui.webview.reload()
 
     @pyqtSlot()
     def slot_fileOpen(self):
+        #banks = list_banks()
+
+        #print(banks)
+        #print(SESSION._pedalboards)
+        #print(get_last_bank_and_pedalboard())
+
+        QMessageBox.information(self, self.tr("information"), "TODO")
+        return
+
         fileFilter = self.tr("MOD Project File (*.modp)")
         filename   = QFileDialog.getOpenFileName(self, self.tr("Open MOD Project File"), self.fSavedSettings[MOD_KEY_MAIN_PROJECT_FOLDER], filter=fileFilter)
 
@@ -239,33 +271,38 @@ class HostWindow(QMainWindow):
 
         if newFile:
             # TODO - clear all
-            self.fProjectFilename = filename
+            #self.fProjectFilename = filename
             self.setProperWindowTitle()
             self.loadProjectNow()
         else:
-            filenameOld = self.fProjectFilename
-            self.fProjectFilename = filename
+            #filenameOld = self.fProjectFilename
+            #self.fProjectFilename = filename
             self.loadProjectNow()
-            self.fProjectFilename = filenameOld
+            #self.fProjectFilename = filenameOld
 
     @pyqtSlot()
     def slot_fileSave(self, saveAs=False):
-        if self.fProjectFilename and not saveAs:
+        if self.fCurrentPedalboard and not saveAs:
             return self.saveProjectNow()
 
-        fileFilter = self.tr("MOD Project File (*.mod-app)")
-        filename   = QFileDialog.getSaveFileName(self, self.tr("Save MOD Project File"), self.fSavedSettings[MOD_KEY_MAIN_PROJECT_FOLDER], filter=fileFilter)
+        name, ok = QInputDialog.getText(self, self.tr("Pedalboard name"), self.tr("Pedalboard name"),
+                                        QLineEdit.Normal, self.fCurrentPedalboard if saveAs else "")
 
-        if config_UseQt5:
-            filename = filename[0]
-        if not filename:
-            return
+        print(name, ok)
 
-        if not filename.lower().endswith(".mod-app"):
-            filename += ".mod-app"
+        #fileFilter = self.tr("MOD Project File (*.mod-app)")
+        #filename   = QFileDialog.getSaveFileName(self, self.tr("Save MOD Project File"), self.fSavedSettings[MOD_KEY_MAIN_PROJECT_FOLDER], filter=fileFilter)
 
-        if self.fProjectFilename != filename:
-            self.fProjectFilename = filename
+        #if config_UseQt5:
+            #filename = filename[0]
+        #if not filename:
+            #return
+
+        #if not filename.lower().endswith(".mod-app"):
+            #filename += ".mod-app"
+
+        if self.fCurrentPedalboard != name:
+            self.fCurrentPedalboard = name
             self.setProperWindowTitle()
 
         self.saveProjectNow()
@@ -298,13 +335,11 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_showProject(self):
-        # TODO
-        pass
+        QDesktopServices.openUrl(QUrl("https://github.com/portalmod/mod-app"))
 
     @pyqtSlot()
     def slot_showWebsite(self):
-        # TODO
-        pass
+        QDesktopServices.openUrl(QUrl("http://portalmod.com/"))
 
     # --------------------------------------------------------------------------------------------------------
     # Host (menu actions)
@@ -361,6 +396,10 @@ class HostWindow(QMainWindow):
         self.fFirstHostInit = False
         self.fWebServerThread.start()
 
+    @pyqtSlot(int, QProcess.ExitStatus)
+    def slot_hostFinished(self, exitCode, exitStatus):
+        print("host finished")
+
     @pyqtSlot()
     def slot_hostStop(self, forced = False):
         # we're done with mod-host, disconnect to ignore possible errors when closing
@@ -394,15 +433,19 @@ class HostWindow(QMainWindow):
             self.fHostProccess.terminate()
             self.fHostProccess.waitForFinished()
 
-    @pyqtSlot(int, QProcess.ExitStatus)
-    def slot_hostFinished(self, exitCode, exitStatus):
-        print("host finished")
+    @pyqtSlot()
+    def slot_hostReset(self):
+        SESSION.reset(self.result_hostReset)
+        self.ui.webview.reload()
+
+    def result_hostReset(self, resp):
+        pass
 
     # --------------------------------------------------------------------------------------------------------
     # Web Server
 
     @pyqtSlot()
-    def slot_webServerStarted(self):
+    def slot_webServerRunning(self):
         # load webserver page in our webview
         self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
         self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)

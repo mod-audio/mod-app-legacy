@@ -110,7 +110,7 @@ class HostWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI
 
-        self.ui.webview = QWebView(self.ui.stackedwidget)
+        self.ui.webview = QWebView(self.ui.swp_webview)
         self.ui.webview.setMinimumWidth(980)
         self.ui.swp_webview.layout().addWidget(self.ui.webview)
 
@@ -323,6 +323,7 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot(QProcess.ProcessError)
     def slot_hostStartError(self, error):
+        print("host start error")
         # we're not interested on any more errors
         self.fHostProccess.error.disconnect(self.slot_hostStartError)
         self.fHostProccess.started.disconnect(self.slot_hostStartSuccess)
@@ -356,12 +357,9 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_hostStartSuccess(self):
+        print("host start success")
         self.fFirstHostInit = False
-
         self.fWebServerThread.start()
-        #self.fWebServerThread.wait()
-
-        print("success")
 
     @pyqtSlot()
     def slot_hostStop(self, forced = False):
@@ -398,7 +396,7 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot(int, QProcess.ExitStatus)
     def slot_hostFinished(self, exitCode, exitStatus):
-        print("process finished")
+        print("host finished")
 
     # --------------------------------------------------------------------------------------------------------
     # Web Server
@@ -440,10 +438,14 @@ class HostWindow(QMainWindow):
         self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
 
         if ok:
+            self.ui.label_progress.setText("")
             self.ui.label_progress.hide()
             self.ui.stackedwidget.setCurrentIndex(1)
         else:
             self.ui.label_progress.setText(self.tr("Loading backend... failed!"))
+            self.ui.label_progress.show()
+            self.ui.stackedwidget.setCurrentIndex(0)
+
         print("load finished")
 
     # --------------------------------------------------------------------------------------------------------

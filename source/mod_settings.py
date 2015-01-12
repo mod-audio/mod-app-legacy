@@ -26,10 +26,10 @@ from mod_common import *
 
 if config_UseQt5:
     from PyQt5.QtCore import pyqtSlot, QDir, QSettings
-    from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QFontMetrics
+    from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QFontMetrics
 else:
     from PyQt4.QtCore import pyqtSlot, QDir, QSettings
-    from PyQt4.QtGui import QDialog, QDialogButtonBox, QFontMetrics
+    from PyQt4.QtGui import QDialog, QDialogButtonBox, QFileDialog, QFontMetrics
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
@@ -55,8 +55,8 @@ MOD_DEFAULT_MAIN_REFRESH_INTERVAL = 30
 
 class SettingsWindow(QDialog):
     # Tab indexes
-    TAB_INDEX_MAIN   = 0
-    TAB_INDEX_CANVAS = 1
+    TAB_INDEX_MAIN    = 0
+    TAB_INDEX_WEBVIEW = 1
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -64,9 +64,6 @@ class SettingsWindow(QDialog):
         QDialog.__init__(self, parent)
         self.ui = Ui_SettingsWindow()
         self.ui.setupUi(self)
-
-        # ----------------------------------------------------------------------------------------------------
-        # Internal stuff
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI
@@ -84,6 +81,8 @@ class SettingsWindow(QDialog):
         self.accepted.connect(self.slot_saveSettings)
         self.ui.buttonBox.button(QDialogButtonBox.Reset).clicked.connect(self.slot_resetSettings)
 
+        self.ui.b_main_proj_folder_open.clicked.connect(self.slot_getAndSetProjectPath)
+
         # ----------------------------------------------------------------------------------------------------
         # Post-connect setup
 
@@ -93,6 +92,16 @@ class SettingsWindow(QDialog):
 
     def loadSettings(self):
         settings = QSettings()
+
+        # ----------------------------------------------------------------------------------------------------
+        # Main
+
+        self.ui.le_main_proj_folder.setText(settings.value(MOD_KEY_MAIN_PROJECT_FOLDER, MOD_DEFAULT_MAIN_PROJECT_FOLDER, type=str))
+        self.ui.sb_main_refresh_interval.setValue(settings.value(MOD_KEY_MAIN_REFRESH_INTERVAL, MOD_DEFAULT_MAIN_REFRESH_INTERVAL, type=int))
+
+        # ----------------------------------------------------------------------------------------------------
+        # WebView
+
         # TODO
 
     # --------------------------------------------------------------------------------------------------------
@@ -100,13 +109,42 @@ class SettingsWindow(QDialog):
     @pyqtSlot()
     def slot_saveSettings(self):
         settings = QSettings()
+
+        # ----------------------------------------------------------------------------------------------------
+        # Main
+
+        settings.setValue(MOD_KEY_MAIN_PROJECT_FOLDER,   self.ui.le_main_proj_folder.text())
+        settings.setValue(MOD_KEY_MAIN_REFRESH_INTERVAL, self.ui.sb_main_refresh_interval.value())
+
+        # ----------------------------------------------------------------------------------------------------
+        # WebView
+
         # TODO
 
     # --------------------------------------------------------------------------------------------------------
 
     @pyqtSlot()
     def slot_resetSettings(self):
-        pass # TODO
+        # ----------------------------------------------------------------------------------------------------
+        # Main
+
+        if self.ui.lw_page.currentRow() == self.TAB_INDEX_MAIN:
+            self.ui.le_main_proj_folder.setText(MOD_DEFAULT_MAIN_PROJECT_FOLDER)
+            self.ui.sb_main_refresh_interval.setValue(MOD_DEFAULT_MAIN_REFRESH_INTERVAL)
+
+        # ----------------------------------------------------------------------------------------------------
+        # WebView
+
+        elif self.ui.lw_page.currentRow() == self.TAB_INDEX_WEBVIEW:
+            pass # TODO
+
+    # --------------------------------------------------------------------------------------------------------
+
+    @pyqtSlot()
+    def slot_getAndSetProjectPath(self):
+        newPath = QFileDialog.getExistingDirectory(self, self.tr("Set Default Project Path"), self.ui.le_main_proj_folder.text(), QFileDialog.ShowDirsOnly)
+        if newPath:
+            self.ui.le_main_proj_folder.setText(newPath)
 
     # --------------------------------------------------------------------------------------------------------
 

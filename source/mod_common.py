@@ -49,6 +49,13 @@ if os.path.isfile(CWD):
     CWD = os.path.dirname(CWD)
 
 # ------------------------------------------------------------------------------------------------------------
+# Use custom modules if available
+
+if os.path.exists(os.path.join(CWD, "modules", "mod-ui")):
+    print("NOTE: Using custom mod-ui module")
+    sys.path = [os.path.join(CWD, "modules", "mod-ui")] + sys.path
+
+# ------------------------------------------------------------------------------------------------------------
 # Set Platform
 
 if sys.platform == "darwin":

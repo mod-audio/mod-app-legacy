@@ -4,3 +4,6 @@
 source/mod_config.py
 source/resources_rc.py
 source/ui_*.py
+
+source/modules/mod-common/
+source/modules/mod-ui/

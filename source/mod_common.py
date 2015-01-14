@@ -54,6 +54,9 @@ if os.path.isfile(CWD):
 if os.path.exists(os.path.join(CWD, "modules", "mod-ui")):
     print("NOTE: Using custom mod-ui module")
     sys.path = [os.path.join(CWD, "modules", "mod-ui")] + sys.path
+    usingCustomModules = True
+else:
+    usingCustomModules = False
 
 # ------------------------------------------------------------------------------------------------------------
 # Set Platform
@@ -78,7 +81,11 @@ else:
 # ------------------------------------------------------------------------------------------------------------
 # Set up environment for the webserver
 
-ROOT     = "/usr/share"
+if usingCustomModules:
+    ROOT = os.path.join(CWD, "modules")
+else:
+    ROOT = "/usr/share"
+
 DATA_DIR = os.path.expanduser("~/.local/share/mod-data/")
 
 os.environ['MOD_DEV_HOST'] = "0"

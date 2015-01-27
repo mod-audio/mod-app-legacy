@@ -163,11 +163,12 @@ class HostWindow(QMainWindow):
 
         self.ui.act_host_start.triggered.connect(self.slot_hostStart)
         self.ui.act_host_stop.triggered.connect(self.slot_hostStop)
-        self.ui.act_host_reset.triggered.connect(self.slot_hostReset)
+        self.ui.act_host_restart.triggered.connect(self.slot_hostRestart)
 
         self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
         self.ui.act_pedalboard_save.triggered.connect(self.slot_pedalboardSave)
         self.ui.act_pedalboard_save_as.triggered.connect(self.slot_pedalboardSaveAs)
+        self.ui.act_pedalboard_share.triggered.connect(self.slot_pedalboardShare)
 
         self.ui.act_settings_configure.triggered.connect(self.slot_configure)
 
@@ -233,6 +234,8 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_fileNew(self):
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
         SESSION.reset(self.dummyCallback)
         #SESSION._pedalboard.clear()
 
@@ -244,14 +247,13 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_fileOpen(self):
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
         #banks = list_banks()
 
         #print(banks)
         #print(SESSION._pedalboards)
         #print(get_last_bank_and_pedalboard())
-
-        QMessageBox.information(self, self.tr("information"), "TODO")
-        return
 
         fileFilter = self.tr("MOD Project File (*.modp)")
         filename   = QFileDialog.getOpenFileName(self, self.tr("Open MOD Project File"), self.fSavedSettings[MOD_KEY_MAIN_PROJECT_FOLDER], filter=fileFilter)
@@ -281,6 +283,8 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_fileSave(self, saveAs=False):
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
         if self.fCurrentPedalboard and not saveAs:
             return self.saveProjectNow()
 
@@ -308,10 +312,14 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_fileSaveAs(self):
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
         self.slot_fileSave(True)
 
     @pyqtSlot()
     def slot_loadProjectNow(self):
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
         self.loadProjectNow()
 
     # --------------------------------------------------------------------------------------------------------
@@ -334,6 +342,14 @@ class HostWindow(QMainWindow):
         if self.fWebFrame is None:
             return
         self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(true)")
+
+    @pyqtSlot()
+    def slot_pedalboardShare(self):
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
+        if self.fWebFrame is None:
+            return
+        self.fWebFrame.evaluateJavaScript("")
 
     # --------------------------------------------------------------------------------------------------------
     # Settings (menu actions)
@@ -456,12 +472,10 @@ class HostWindow(QMainWindow):
             self.fHostProccess.waitForFinished()
 
     @pyqtSlot()
-    def slot_hostReset(self):
-        SESSION.reset(self.result_hostReset)
-        self.ui.webview.reload()
-
-    def result_hostReset(self, resp):
-        pass
+    def slot_hostRestart(self):
+        self.ui.stackedwidget.setCurrentIndex(0)
+        self.slot_hostStop(True)
+        self.slot_hostStart()
 
     # --------------------------------------------------------------------------------------------------------
     # Web Server
@@ -503,18 +517,31 @@ class HostWindow(QMainWindow):
         self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
 
         if ok:
-            self.ui.label_progress.setText("")
-            self.ui.label_progress.hide()
-            self.ui.stackedwidget.setCurrentIndex(1)
+            # for js evaulation
             self.fWebFrame = self.ui.webview.page().currentFrame()
-            self.slot_pedalboardNew()
+
+            # don't show webpage just yet, we need to customize it a bit first
+            self.fWebFrame.evaluateJavaScript("desktop.prepareForApp()")
+
+            # ok, show it asap
+            QTimer.singleShot(0, self.slot_webviewPostFinished)
+
         else:
+            # stop js evaulation
+            self.fWebFrame = None
+
+            # hide webpage
             self.ui.label_progress.setText(self.tr("Loading backend... failed!"))
             self.ui.label_progress.show()
             self.ui.stackedwidget.setCurrentIndex(0)
-            self.fWebFrame = None
 
         print("load finished")
+
+    @pyqtSlot(bool)
+    def slot_webviewPostFinished(self):
+        self.ui.label_progress.setText("")
+        self.ui.label_progress.hide()
+        self.ui.stackedwidget.setCurrentIndex(1)
 
     # --------------------------------------------------------------------------------------------------------
     # Settings

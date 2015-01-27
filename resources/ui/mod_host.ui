@@ -193,8 +193,17 @@
     <addaction name="separator"/>
     <addaction name="act_host_reset"/>
    </widget>
+   <widget class="QMenu" name="menu_Pedalboard">
+    <property name="title">
+     <string>&amp;Pedalboard</string>
+    </property>
+    <addaction name="act_pedalboard_new"/>
+    <addaction name="act_pedalboard_save"/>
+    <addaction name="act_pedalboard_save_as"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Host"/>
+   <addaction name="menu_Pedalboard"/>
    <addaction name="menu_Settings"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -271,6 +280,21 @@
   <action name="act_host_reset">
    <property name="text">
     <string>Reset</string>
+   </property>
+  </action>
+  <action name="act_pedalboard_new">
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+  </action>
+  <action name="act_pedalboard_save">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="act_pedalboard_save_as">
+   <property name="text">
+    <string>Save &amp;as...</string>
    </property>
   </action>
  </widget>

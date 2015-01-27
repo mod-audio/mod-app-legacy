@@ -40,8 +40,9 @@ from ui_mod_settings import Ui_SettingsWindow
 # Settings keys
 
 # Main
-MOD_KEY_MAIN_PROJECT_FOLDER   = "Main/ProjectFolder"   # str
-MOD_KEY_MAIN_REFRESH_INTERVAL = "Main/RefreshInterval" # int
+MOD_KEY_MAIN_PROJECT_FOLDER      = "Main/ProjectFolder"      # str
+MOD_KEY_MAIN_REFRESH_INTERVAL    = "Main/RefreshInterval"    # int
+MOD_KEY_WEBVIEW_DEVELOPER_EXTRAS = "WebView/DeveloperExtras" # bool
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings defaults
@@ -49,6 +50,9 @@ MOD_KEY_MAIN_REFRESH_INTERVAL = "Main/RefreshInterval" # int
 # Main
 MOD_DEFAULT_MAIN_PROJECT_FOLDER   = QDir.toNativeSeparators(QDir.homePath())
 MOD_DEFAULT_MAIN_REFRESH_INTERVAL = 30
+
+# WebView
+MOD_DEFAULT_WEBVIEW_DEVELOPER_EXTRAS = True
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings Dialog

@@ -27,14 +27,14 @@ from mod_settings import *
 if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices
-    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QDialogButtonBox, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-    from PyQt5.QtWebKitWidgets import QWebView
+    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
+    from PyQt5.QtWebKitWidgets import QWebView, QWebSettings
     from PyQt5.uic import loadUi
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices
-    from PyQt4.QtGui import QAction, QApplication, QDialog, QDialogButtonBox, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-    from PyQt4.QtWebKit import QWebView
+    from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
+    from PyQt4.QtWebKit import QWebView, QWebSettings
     from PyQt4.uic import loadUi
 
 # ------------------------------------------------------------------------------------------------------------
@@ -101,9 +101,10 @@ class HostWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Internal stuff
 
-        self.fFirstHostInit = True
-        self.fIdleTimerId   = 0
         self.fCurrentPedalboard = ""
+        self.fFirstHostInit     = True
+        self.fIdleTimerId       = 0
+        self.fWebFrame          = None
 
         # to be filled with key-value pairs of current settings
         self.fSavedSettings = {}
@@ -124,12 +125,6 @@ class HostWindow(QMainWindow):
 
         self.ui.label_progress.hide()
         self.ui.stackedwidget.setCurrentIndex(0)
-
-        # TODO - file open/save operations
-        #self.ui.act_file_new.setEnabled(False)
-        #self.ui.act_file_open.setEnabled(False)
-        #self.ui.act_file_save.setEnabled(False)
-        #self.ui.act_file_save_as.setEnabled(False)
 
         # TESTING
         # webview will be blue until host and webserver are running
@@ -169,6 +164,10 @@ class HostWindow(QMainWindow):
         self.ui.act_host_start.triggered.connect(self.slot_hostStart)
         self.ui.act_host_stop.triggered.connect(self.slot_hostStop)
         self.ui.act_host_reset.triggered.connect(self.slot_hostReset)
+
+        self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
+        self.ui.act_pedalboard_save.triggered.connect(self.slot_pedalboardSave)
+        self.ui.act_pedalboard_save_as.triggered.connect(self.slot_pedalboardSaveAs)
 
         self.ui.act_settings_configure.triggered.connect(self.slot_configure)
 
@@ -316,6 +315,27 @@ class HostWindow(QMainWindow):
         self.loadProjectNow()
 
     # --------------------------------------------------------------------------------------------------------
+    # Pedalboard (menu actions)
+
+    @pyqtSlot()
+    def slot_pedalboardNew(self):
+        if self.fWebFrame is None:
+            return
+        self.fWebFrame.evaluateJavaScript("desktop.reset()")
+
+    @pyqtSlot()
+    def slot_pedalboardSave(self):
+        if self.fWebFrame is None:
+            return
+        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(false)")
+
+    @pyqtSlot()
+    def slot_pedalboardSaveAs(self):
+        if self.fWebFrame is None:
+            return
+        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(true)")
+
+    # --------------------------------------------------------------------------------------------------------
     # Settings (menu actions)
 
     @pyqtSlot()
@@ -410,6 +430,8 @@ class HostWindow(QMainWindow):
         except:
             pass
 
+        self.fWebFrame = None
+
         #if self.fPluginCount > 0:
             #if not forced:
                 #ask = QMessageBox.question(self, self.tr("Warning"), self.tr("There are still some plugins loaded, you need to remove them to stop the engine.\n"
@@ -484,10 +506,13 @@ class HostWindow(QMainWindow):
             self.ui.label_progress.setText("")
             self.ui.label_progress.hide()
             self.ui.stackedwidget.setCurrentIndex(1)
+            self.fWebFrame = self.ui.webview.page().currentFrame()
+            self.slot_pedalboardNew()
         else:
             self.ui.label_progress.setText(self.tr("Loading backend... failed!"))
             self.ui.label_progress.show()
             self.ui.stackedwidget.setCurrentIndex(0)
+            self.fWebFrame = None
 
         print("load finished")
 
@@ -500,15 +525,19 @@ class HostWindow(QMainWindow):
         settings.setValue("Geometry", self.saveGeometry())
 
     def loadSettings(self, firstTime):
-        settings = QSettings()
+        qsettings   = QSettings()
+        websettings = self.ui.webview.settings()
 
         if firstTime:
-            self.restoreGeometry(settings.value("Geometry", ""))
+            self.restoreGeometry(qsettings.value("Geometry", ""))
 
         self.fSavedSettings = {
-            MOD_KEY_MAIN_PROJECT_FOLDER:   settings.value(MOD_KEY_MAIN_PROJECT_FOLDER,   MOD_DEFAULT_MAIN_PROJECT_FOLDER,   type=str),
-            MOD_KEY_MAIN_REFRESH_INTERVAL: settings.value(MOD_KEY_MAIN_REFRESH_INTERVAL, MOD_DEFAULT_MAIN_REFRESH_INTERVAL, type=int)
+            MOD_KEY_MAIN_PROJECT_FOLDER:      qsettings.value(MOD_KEY_MAIN_PROJECT_FOLDER,      MOD_DEFAULT_MAIN_PROJECT_FOLDER,      type=str),
+            MOD_KEY_MAIN_REFRESH_INTERVAL:    qsettings.value(MOD_KEY_MAIN_REFRESH_INTERVAL,    MOD_DEFAULT_MAIN_REFRESH_INTERVAL,    type=int),
+            MOD_KEY_WEBVIEW_DEVELOPER_EXTRAS: qsettings.value(MOD_KEY_WEBVIEW_DEVELOPER_EXTRAS, MOD_DEFAULT_WEBVIEW_DEVELOPER_EXTRAS, type=bool)
         }
+
+        websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_DEVELOPER_EXTRAS])
 
         if self.fIdleTimerId != 0:
             self.killTimer(self.fIdleTimerId)

@@ -114,8 +114,6 @@ class HostWindow(QMainWindow):
 
         self.fWebServerThread = WebServerThread(self)
 
-        #self.refreshBanks()
-
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI
 
@@ -185,10 +183,6 @@ class HostWindow(QMainWindow):
 
     # --------------------------------------------------------------------------------------------------------
     # Setup
-
-    def refreshBanks(self):
-        self.fBanks = list_banks()
-        print(self.fBanks)
 
     def stopWebServer(self):
         if self.fWebServerThread.isRunning() and not self.fWebServerThread.stopWait():

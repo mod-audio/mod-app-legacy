@@ -210,6 +210,10 @@
    <addaction name="menu_Help"/>
   </widget>
   <action name="act_file_new">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/document-new.png</normaloff>:/16x16/document-new.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;New</string>
    </property>
@@ -218,6 +222,10 @@
    </property>
   </action>
   <action name="act_file_open">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/document-open.png</normaloff>:/16x16/document-open.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
    </property>
@@ -226,6 +234,10 @@
    </property>
   </action>
   <action name="act_file_save">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/document-save.png</normaloff>:/16x16/document-save.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -234,6 +246,10 @@
    </property>
   </action>
   <action name="act_file_save_as">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/document-save-as.png</normaloff>:/16x16/document-save-as.png</iconset>
+   </property>
    <property name="text">
     <string>Save &amp;as...</string>
    </property>
@@ -242,6 +258,10 @@
    </property>
   </action>
   <action name="act_file_quit">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/application-exit.png</normaloff>:/16x16/application-exit.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Quit</string>
    </property>
@@ -250,6 +270,10 @@
    </property>
   </action>
   <action name="act_settings_configure">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/configure.png</normaloff>:/16x16/configure.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Configure MOD-App</string>
    </property>
@@ -270,11 +294,19 @@
    </property>
   </action>
   <action name="act_host_start">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/media-playback-start.png</normaloff>:/16x16/media-playback-start.png</iconset>
+   </property>
    <property name="text">
     <string>Start</string>
    </property>
   </action>
   <action name="act_host_stop">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/media-playback-stop.png</normaloff>:/16x16/media-playback-stop.png</iconset>
+   </property>
    <property name="text">
     <string>Stop</string>
    </property>
@@ -285,16 +317,28 @@
    </property>
   </action>
   <action name="act_pedalboard_new">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/document-new.png</normaloff>:/16x16/document-new.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;New</string>
    </property>
   </action>
   <action name="act_pedalboard_save">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/document-save.png</normaloff>:/16x16/document-save.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
   </action>
   <action name="act_pedalboard_save_as">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/document-save-as.png</normaloff>:/16x16/document-save-as.png</iconset>
+   </property>
    <property name="text">
     <string>Save &amp;as...</string>
    </property>
@@ -305,7 +349,9 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>act_file_quit</sender>

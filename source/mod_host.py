@@ -45,6 +45,9 @@ from ui_mod_host import Ui_HostWindow
 # ------------------------------------------------------------------------------------------------------------
 # Import (WebServer)
 
+# need to set initial settings before import MOD stuff
+setInitialSettings()
+
 from mod import webserver
 from mod.bank import list_banks
 from mod.session import SESSION
@@ -384,7 +387,10 @@ class HostWindow(QMainWindow):
         self.fHostProccess.error.connect(self.slot_hostStartError)
         self.fHostProccess.started.connect(self.slot_hostStartSuccess)
         self.fHostProccess.finished.connect(self.slot_hostFinished)
-        self.fHostProccess.start("mod-host", ["--nofork"])
+
+        hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
+        hostArgs = "--verbose" if self.fSavedSettings[MOD_KEY_HOST_VERBOSE] else "--nofork"
+        self.fHostProccess.start(hostPath, [hostArgs])
 
     @pyqtSlot(QProcess.ProcessError)
     def slot_hostStartError(self, error):
@@ -553,12 +559,20 @@ class HostWindow(QMainWindow):
             self.restoreGeometry(qsettings.value("Geometry", ""))
 
         self.fSavedSettings = {
+            # Main
             MOD_KEY_MAIN_PROJECT_FOLDER:      qsettings.value(MOD_KEY_MAIN_PROJECT_FOLDER,      MOD_DEFAULT_MAIN_PROJECT_FOLDER,      type=str),
             MOD_KEY_MAIN_REFRESH_INTERVAL:    qsettings.value(MOD_KEY_MAIN_REFRESH_INTERVAL,    MOD_DEFAULT_MAIN_REFRESH_INTERVAL,    type=int),
-            MOD_KEY_WEBVIEW_DEVELOPER_EXTRAS: qsettings.value(MOD_KEY_WEBVIEW_DEVELOPER_EXTRAS, MOD_DEFAULT_WEBVIEW_DEVELOPER_EXTRAS, type=bool)
+            # Host
+            MOD_KEY_HOST_JACK_BUFSIZE_CHANGE: qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool),
+            MOD_KEY_HOST_JACK_BUFSIZE_VALUE:  qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE,  MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE,  type=int),
+            MOD_KEY_HOST_VERBOSE:             qsettings.value(MOD_KEY_HOST_VERBOSE,             MOD_DEFAULT_HOST_VERBOSE,             type=bool),
+            MOD_KEY_HOST_PATH:                qsettings.value(MOD_KEY_HOST_PATH,                MOD_DEFAULT_HOST_PATH,                type=str),
+            # WebView
+            MOD_KEY_WEBVIEW_INSPECTOR:        qsettings.value(MOD_KEY_WEBVIEW_INSPECTOR,        MOD_DEFAULT_WEBVIEW_INSPECTOR,        type=bool),
+            MOD_KEY_WEBVIEW_VERBOSE:          qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
         }
 
-        websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_DEVELOPER_EXTRAS])
+        websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR])
 
         if self.fIdleTimerId != 0:
             self.killTimer(self.fIdleTimerId)

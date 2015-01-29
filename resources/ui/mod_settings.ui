@@ -101,7 +101,7 @@
         </property>
         <property name="icon">
          <iconset resource="../resources.qrc">
-          <normaloff>:/48x48/folder.png</normaloff>:/48x48/folder.png</iconset>
+          <normaloff>:/48x48/jack.png</normaloff>:/48x48/jack.png</iconset>
         </property>
         <property name="flags">
          <set>ItemIsSelectable|ItemIsEnabled</set>
@@ -119,7 +119,7 @@
         </property>
         <property name="icon">
          <iconset resource="../resources.qrc">
-          <normaloff>:/48x48/jack.png</normaloff>:/48x48/jack.png</iconset>
+          <normaloff>:/48x48/mod.png</normaloff>:/48x48/mod.png</iconset>
         </property>
         <property name="flags">
          <set>ItemIsSelectable|ItemIsEnabled</set>
@@ -137,7 +137,7 @@
         </property>
         <property name="icon">
          <iconset resource="../resources.qrc">
-          <normaloff>:/48x48/folder.png</normaloff>:/48x48/folder.png</iconset>
+          <normaloff>:/48x48/internet.png</normaloff>:/48x48/internet.png</iconset>
         </property>
         <property name="flags">
          <set>ItemIsSelectable|ItemIsEnabled</set>
@@ -189,7 +189,7 @@
               <string notr="true"/>
              </property>
              <property name="pixmap">
-              <pixmap resource="../resources.qrc">:/48x48/folder.png</pixmap>
+              <pixmap resource="../resources.qrc">:/48x48/jack.png</pixmap>
              </property>
              <property name="alignment">
               <set>Qt::AlignHCenter|Qt::AlignTop</set>
@@ -217,7 +217,7 @@
                <widget class="QLineEdit" name="le_main_proj_folder"/>
               </item>
               <item>
-               <widget class="QToolButton" name="b_main_proj_folder_open">
+               <widget class="QToolButton" name="tb_main_proj_folder_open">
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -330,7 +330,7 @@
               <string notr="true"/>
              </property>
              <property name="pixmap">
-              <pixmap resource="../resources.qrc">:/48x48/jack.png</pixmap>
+              <pixmap resource="../resources.qrc">:/48x48/mod.png</pixmap>
              </property>
              <property name="alignment">
               <set>Qt::AlignHCenter|Qt::AlignTop</set>
@@ -338,36 +338,6 @@
             </widget>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="groupBox">
-           <property name="title">
-            <string>Host</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_6">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_4">
-              <item>
-               <widget class="QLabel" name="label_host_path">
-                <property name="text">
-                 <string>Path to mod-host:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="le_host_path"/>
-              </item>
-              <item>
-               <widget class="QToolButton" name="tb_host_path">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
          </item>
          <item>
           <widget class="QGroupBox" name="group_host_jack">
@@ -393,6 +363,9 @@
             </item>
             <item row="1" column="1" colspan="2">
              <widget class="QLabel" name="label_host_jack_bufsize_value">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>New buffer size:</string>
               </property>
@@ -402,7 +375,10 @@
              </widget>
             </item>
             <item row="1" column="3">
-             <widget class="QComboBox" name="cb_host_jack_bufsize_change">
+             <widget class="QComboBox" name="cb_host_jack_bufsize_value">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="editable">
                <bool>true</bool>
               </property>
@@ -477,9 +453,9 @@
              </spacer>
             </item>
             <item row="0" column="0" colspan="5">
-             <widget class="QCheckBox" name="cb_host_jack_bufsize_value">
+             <widget class="QCheckBox" name="cb_host_jack_bufsize_change">
               <property name="text">
-               <string>Change JACK buffer-size when started</string>
+               <string>Change JACK buffer-size when starting MOD-App</string>
               </property>
              </widget>
             </item>
@@ -498,6 +474,27 @@
                <string>Enable verbose mode</string>
               </property>
              </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QLabel" name="label_host_path">
+                <property name="text">
+                 <string>Path to mod-host:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="le_host_path"/>
+              </item>
+              <item>
+               <widget class="QToolButton" name="tb_host_path">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -553,7 +550,7 @@
               <string notr="true"/>
              </property>
              <property name="pixmap">
-              <pixmap resource="../resources.qrc">:/48x48/folder.png</pixmap>
+              <pixmap resource="../resources.qrc">:/48x48/internet.png</pixmap>
              </property>
              <property name="alignment">
               <set>Qt::AlignHCenter|Qt::AlignTop</set>
@@ -569,16 +566,16 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
             <item>
-             <widget class="QCheckBox" name="cb_canvas_hide_groups">
+             <widget class="QCheckBox" name="cb_webview_inspector">
               <property name="text">
                <string>Enable inspector</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox">
+             <widget class="QCheckBox" name="cb_webview_verbose">
               <property name="text">
-               <string>Enable verbose mode</string>
+               <string>Enable verbose mode (needs restart)</string>
               </property>
              </widget>
             </item>
@@ -670,6 +667,38 @@
     <hint type="destinationlabel">
      <x>170</x>
      <y>27</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_host_jack_bufsize_change</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cb_host_jack_bufsize_value</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>321</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>120</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_host_jack_bufsize_change</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_host_jack_bufsize_value</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>321</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>283</x>
+     <y>120</y>
     </hint>
    </hints>
   </connection>

@@ -10,6 +10,8 @@
         <file>16x16/media-playback-stop.png</file>
 
         <file>48x48/folder.png</file>
+        <file>48x48/internet.png</file>
         <file>48x48/jack.png</file>
+        <file>48x48/mod.png</file>
     </qresource>
 </RCC>

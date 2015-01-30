@@ -29,13 +29,11 @@ if config_UseQt5:
     from PyQt5.QtGui import QDesktopServices
     from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
     from PyQt5.QtWebKitWidgets import QWebView, QWebSettings
-    from PyQt5.uic import loadUi
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices
     from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
     from PyQt4.QtWebKit import QWebView, QWebSettings
-    from PyQt4.uic import loadUi
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)

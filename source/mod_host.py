@@ -43,12 +43,14 @@ from ui_mod_host import Ui_HostWindow
 # ------------------------------------------------------------------------------------------------------------
 # Import (WebServer)
 
-# need to set initial settings before import MOD stuff
+# need to set initial settings before importing MOD stuff
 setInitialSettings()
 
 from mod import webserver
-from mod.bank import list_banks
-from mod.session import SESSION
+
+# prevent buffer size changes
+from mod import jack
+jack.DEV_HOST = 0
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -74,15 +76,6 @@ class WebServerThread(QThread):
     def stopWait(self):
         webserver.stop()
         return self.wait(5000)
-
-# ------------------------------------------------------------------------------------------------------------
-# About Window - TODO
-
-class AboutWindow(QDialog):
-    def __init__(self, parent):
-        QDialog.__init__(self, parent)
-        #self.ui = ui_mod_about.Ui_AboutWindow()
-        #self.ui.setupUi(self)
 
 # ------------------------------------------------------------------------------------------------------------
 # Host Window
@@ -219,8 +212,6 @@ class HostWindow(QMainWindow):
         if not self.fCurrentPedalboard:
             return qCritical("ERROR: saving project without filename set")
 
-        SESSION.save_pedalboard(self.fCurrentPedalboard, False)
-
     def dummyCallback(self, a=None, b=None, c=None):
         pass
 
@@ -231,24 +222,9 @@ class HostWindow(QMainWindow):
     def slot_fileNew(self):
         return QMessageBox.information(self, self.tr("information"), "TODO")
 
-        SESSION.reset(self.dummyCallback)
-        #SESSION._pedalboard.clear()
-
-        self.fCurrentPedalboard = ""
-        self.setProperWindowTitle()
-
-        # FIXME
-        self.ui.webview.reload()
-
     @pyqtSlot()
     def slot_fileOpen(self):
         return QMessageBox.information(self, self.tr("information"), "TODO")
-
-        #banks = list_banks()
-
-        #print(banks)
-        #print(SESSION._pedalboards)
-        #print(get_last_bank_and_pedalboard())
 
         fileFilter = self.tr("MOD Project File (*.modp)")
         filename   = QFileDialog.getOpenFileName(self, self.tr("Open MOD Project File"), self.fSavedSettings[MOD_KEY_MAIN_PROJECT_FOLDER], filter=fileFilter)
@@ -362,7 +338,11 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_about(self):
-        AboutWindow(self).exec_()
+        QMessageBox.about(self, self.tr("About"), self.tr("""
+            <b>MOD Desktop Application</b><br/><br/>
+            Some text will be here.<br/>
+            And some more will be here too, and here and here.
+        """))
 
     @pyqtSlot()
     def slot_showProject(self):
@@ -518,10 +498,12 @@ class HostWindow(QMainWindow):
             # for js evaulation
             self.fWebFrame = self.ui.webview.page().currentFrame()
 
-            # don't show webpage just yet, we need to customize it a bit first
-            self.fWebFrame.evaluateJavaScript("desktop.prepareForApp()")
+            # show webpage
+            self.ui.label_progress.setText("")
+            self.ui.label_progress.hide()
+            self.ui.stackedwidget.setCurrentIndex(1)
 
-            # ok, show it asap
+            # postpone app stuff
             QTimer.singleShot(0, self.slot_webviewPostFinished)
 
         else:
@@ -537,9 +519,7 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot(bool)
     def slot_webviewPostFinished(self):
-        self.ui.label_progress.setText("")
-        self.ui.label_progress.hide()
-        self.ui.stackedwidget.setCurrentIndex(1)
+        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp()")
 
     # --------------------------------------------------------------------------------------------------------
     # Settings

@@ -103,7 +103,7 @@ install:
 	install -d $(DESTDIR)$(PREFIX)/share/pixmaps/
 
 	# Install desktop file and pixmap
-	install -m 644 data/*.desktop          $(DESTDIR)$(PREFIX)/share/applications/
+	install -m 755 data/*.desktop          $(DESTDIR)$(PREFIX)/share/applications/
 	install -m 644 resources/48x48/mod.png $(DESTDIR)$(PREFIX)/share/pixmaps/mod-app.png
 
 	# Install mime package

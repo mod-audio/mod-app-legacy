@@ -100,17 +100,19 @@ install:
 	install -d $(DESTDIR)$(PREFIX)/share/applications/
 	install -d $(DESTDIR)$(PREFIX)/share/mime/packages/
 	install -d $(DESTDIR)$(PREFIX)/share/mod-app/
+	install -d $(DESTDIR)$(PREFIX)/share/pixmaps/
+
+	# Install desktop file and pixmap
+	install -m 644 data/*.desktop          $(DESTDIR)$(PREFIX)/share/applications/
+	install -m 644 resources/48x48/mod.png $(DESTDIR)$(PREFIX)/share/pixmaps/mod-app.png
+
+	# Install mime package
+	install -m 644 data/mod-app.xml $(DESTDIR)$(PREFIX)/share/mime/packages/
 
 	# Install script files
 	install -m 755 \
 		data/mod-app \
 		$(DESTDIR)$(PREFIX)/bin/
-
-	# Install desktop files
-	install -m 644 data/*.desktop $(DESTDIR)$(PREFIX)/share/applications/
-
-	# Install mime package
-	install -m 644 data/mod-app.xml $(DESTDIR)$(PREFIX)/share/mime/packages/
 
 	# Install python code
 	install -m 644 \
@@ -119,8 +121,7 @@ install:
 		$(DESTDIR)$(PREFIX)/share/mod-app/
 
 	# Adjust PREFIX value in script files
-	sed -i "s?X-PREFIX-X?$(PREFIX)?" \
-		$(DESTDIR)$(PREFIX)/bin/mod-app
+	sed -i "s?X-PREFIX-X?$(PREFIX)?" $(DESTDIR)$(PREFIX)/bin/mod-app
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
@@ -128,6 +129,7 @@ uninstall:
 	rm -f  $(DESTDIR)$(PREFIX)/bin/mod-app
 	rm -f  $(DESTDIR)$(PREFIX)/share/applications/mod-app.desktop
 	rm -f  $(DESTDIR)$(PREFIX)/share/mime/packages/mod-app.xml
+	rm -f  $(DESTDIR)$(PREFIX)/share/pixmaps/mod-app.png
 	rm -rf $(DESTDIR)$(PREFIX)/share/mod-app/
 
 # ----------------------------------------------------------------------------------------------------------------------------

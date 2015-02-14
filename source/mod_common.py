@@ -147,6 +147,8 @@ MOD_DEFAULT_WEBVIEW_VERBOSE          = False
 # Set initial settings
 
 def setInitialSettings():
+    from mod import jack
+
     settings = QSettings("MOD", "MOD-App")
 
     changeBufSize  = settings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool)
@@ -155,6 +157,8 @@ def setInitialSettings():
 
     os.environ['MOD_DEFAULT_JACK_BUFSIZE'] = str(wantedBufSize) if changeBufSize  else "0"
     os.environ['MOD_LOG']                  = "1"                if webviewVerbose else "0"
+
+    jack.DEV_HOST = 0 if wantedBufSize else 1
 
     # cleanup
     del settings, changeBufSize, wantedBufSize, webviewVerbose

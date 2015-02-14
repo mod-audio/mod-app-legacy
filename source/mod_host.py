@@ -46,11 +46,8 @@ from ui_mod_host import Ui_HostWindow
 # need to set initial settings before importing MOD stuff
 setInitialSettings()
 
-from mod import webserver
-
-# prevent buffer size changes
-from mod import jack
-jack.DEV_HOST = 0
+from mod import jack, webserver
+jack.DEV_HOST = 1
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -549,6 +546,8 @@ class HostWindow(QMainWindow):
             MOD_KEY_WEBVIEW_INSPECTOR:        qsettings.value(MOD_KEY_WEBVIEW_INSPECTOR,        MOD_DEFAULT_WEBVIEW_INSPECTOR,        type=bool),
             MOD_KEY_WEBVIEW_VERBOSE:          qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
         }
+
+        jack.DEV_HOST = 0 if self.fSavedSettings[MOD_KEY_HOST_JACK_BUFSIZE_CHANGE] else 1
 
         websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR])
 

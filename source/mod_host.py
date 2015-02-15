@@ -47,7 +47,6 @@ from ui_mod_host import Ui_HostWindow
 setInitialSettings()
 
 from mod import jack, webserver
-jack.DEV_HOST = 1
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread

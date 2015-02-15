@@ -91,17 +91,27 @@ class HostWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Internal stuff
 
-        self.fCurrentPedalboard = ""
-        self.fFirstHostInit     = True
-        self.fIdleTimerId       = 0
-        self.fWebFrame          = None
+        # Current project filename (used via 'File' menu actions)
+        self.fProjectFilename = ""
+
+        # first attempt of auto-start engine doesn't show an error
+        self.fFirstEngineInit = True
+
+        # Qt idle timer
+        self.fIdleTimerId = 0
+
+        # Qt web frame, used for evaulating javascript
+        self.fWebFrame = None
 
         # to be filled with key-value pairs of current settings
         self.fSavedSettings = {}
 
-        self.fHostProccess = QProcess(self)
-        self.fHostProccess.setProcessChannelMode(QProcess.ForwardedChannels)
+        # Process that runs mod-host
+        self.fProccessHost = QProcess(self)
+        self.fProccessHost.setProcessChannelMode(QProcess.ForwardedChannels)
+        self.fStoppingHost = False
 
+        # Thread for managing the webserver
         self.fWebServerThread = WebServerThread(self)
 
         # ----------------------------------------------------------------------------------------------------
@@ -141,6 +151,10 @@ class HostWindow(QMainWindow):
         self.SIGUSR1.connect(self.slot_handleSIGUSR1)
         self.SIGTERM.connect(self.slot_handleSIGTERM)
 
+        self.fProccessHost.error.connect(self.slot_hostError)
+        self.fProccessHost.started.connect(self.slot_hostStarted)
+        self.fProccessHost.finished.connect(self.slot_hostFinished)
+
         self.fWebServerThread.running.connect(self.slot_webServerRunning)
         self.fWebServerThread.finished.connect(self.slot_webServerFinished)
 
@@ -172,44 +186,30 @@ class HostWindow(QMainWindow):
         QTimer.singleShot(0, self.slot_hostStart)
 
     # --------------------------------------------------------------------------------------------------------
-    # Setup
-
-    def stopWebServer(self):
-        if self.fWebServerThread.isRunning() and not self.fWebServerThread.stopWait():
-            qWarning("WebServer Thread failed top stop cleanly, forcing terminate")
-            self.fWebServerThread.terminate()
-
-    def setProperWindowTitle(self):
-        title = "MOD Application"
-
-        if self.fCurrentPedalboard:
-            title += " - %s" % self.fCurrentPedalboard
-
-        self.setWindowTitle(title)
-
-    # --------------------------------------------------------------------------------------------------------
     # Files
 
     def loadProjectNow(self):
-        if not self.fCurrentPedalboard:
+        if not self.fProjectFilename:
             return qCritical("ERROR: loading project without filename set")
 
+        self.ui.webview.setEnabled(False)
+
         # TODO
+        #self.host.load_project(self.fProjectFilename)
+
+        self.ui.webview.setEnabled(True)
 
     def loadProjectLater(self, filename):
-        print("TODO")
-        return
-
-        #self.fProjectFilename = QFileInfo(filename).absoluteFilePath()
-        #self.setProperWindowTitle()
-        #QTimer.singleShot(0, self.slot_loadProjectNow)
+        self.fProjectFilename = QFileInfo(filename).absoluteFilePath()
+        self.setProperWindowTitle()
+        QTimer.singleShot(0, self.slot_loadProjectNow)
 
     def saveProjectNow(self):
-        if not self.fCurrentPedalboard:
+        if not self.fProjectFilename:
             return qCritical("ERROR: saving project without filename set")
 
-    def dummyCallback(self, a=None, b=None, c=None):
-        pass
+        # TODO
+        #self.host.save_project(self.fProjectFilename)
 
     # --------------------------------------------------------------------------------------------------------
     # Files (menu actions)
@@ -217,6 +217,9 @@ class HostWindow(QMainWindow):
     @pyqtSlot()
     def slot_fileNew(self):
         return QMessageBox.information(self, self.tr("information"), "TODO")
+        # TODO - clear pedalboard
+        self.fProjectFilename = ""
+        self.setProperWindowTitle()
 
     @pyqtSlot()
     def slot_fileOpen(self):
@@ -252,11 +255,11 @@ class HostWindow(QMainWindow):
     def slot_fileSave(self, saveAs=False):
         return QMessageBox.information(self, self.tr("information"), "TODO")
 
-        if self.fCurrentPedalboard and not saveAs:
+        if self.fProjectFilename and not saveAs:
             return self.saveProjectNow()
 
         name, ok = QInputDialog.getText(self, self.tr("Pedalboard name"), self.tr("Pedalboard name"),
-                                        QLineEdit.Normal, self.fCurrentPedalboard if saveAs else "")
+                                        QLineEdit.Normal, self.fProjectFilename if saveAs else "")
 
         print(name, ok)
 
@@ -271,8 +274,8 @@ class HostWindow(QMainWindow):
         #if not filename.lower().endswith(".mod-app"):
             #filename += ".mod-app"
 
-        if self.fCurrentPedalboard != name:
-            self.fCurrentPedalboard = name
+        if self.fProjectFilename != name:
+            self.fProjectFilename = name
             self.setProperWindowTitle()
 
         self.saveProjectNow()
@@ -353,73 +356,15 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_hostStart(self):
-        if self.fHostProccess.state() == QProcess.Running:
+        if self.fProccessHost.state() == QProcess.Running:
             return
-
-        # start mod-host asynchronously
-        # qt will signal either "error" or "started" depending on the process state
-        self.fHostProccess.error.connect(self.slot_hostStartError)
-        self.fHostProccess.started.connect(self.slot_hostStartSuccess)
-        self.fHostProccess.finished.connect(self.slot_hostFinished)
 
         hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
         hostArgs = "--verbose" if self.fSavedSettings[MOD_KEY_HOST_VERBOSE] else "--nofork"
-        self.fHostProccess.start(hostPath, [hostArgs])
-
-    @pyqtSlot(QProcess.ProcessError)
-    def slot_hostStartError(self, error):
-        print("host start error")
-        # we're not interested on any more errors
-        self.fHostProccess.error.disconnect(self.slot_hostStartError)
-        self.fHostProccess.started.disconnect(self.slot_hostStartSuccess)
-        self.fHostProccess.finished.disconnect(self.slot_hostFinished)
-
-        # stop webserver
-        self.stopWebServer()
-
-        # set error to print and display to user
-        if error == QProcess.FailedToStart:
-            errorStr = self.tr("Process failed to start.")
-        elif error == QProcess.Crashed:
-            errorStr = self.tr("Process crashed.")
-        elif error == QProcess.Timedout:
-            errorStr = self.tr("Process timed out.")
-        elif error == QProcess.WriteError:
-            errorStr = self.tr("Process write error.")
-        else:
-            errorStr = self.tr("Unkown error.")
-
-        errorStr = self.tr("Could not start host backend.\n") + errorStr
-        qWarning(errorStr)
-
-        # don't show error if this is the first time starting the host
-        if self.fFirstHostInit:
-            self.fFirstHostInit = False
-            return
-
-        # show the error message
-        QMessageBox.critical(self, self.tr("Error"), errorStr)
-
-    @pyqtSlot()
-    def slot_hostStartSuccess(self):
-        print("host start success")
-        self.fFirstHostInit = False
-        self.fWebServerThread.start()
-
-    @pyqtSlot(int, QProcess.ExitStatus)
-    def slot_hostFinished(self, exitCode, exitStatus):
-        print("host finished")
+        self.fProccessHost.start(hostPath, [hostArgs])
 
     @pyqtSlot()
     def slot_hostStop(self, forced = False):
-        # we're done with mod-host, disconnect to ignore possible errors when closing
-        try:
-            self.fHostProccess.error.disconnect(self.slot_hostStartError)
-            self.fHostProccess.started.disconnect(self.slot_hostStartSuccess)
-            self.fHostProccess.finished.disconnect(self.slot_hostFinished)
-        except:
-            pass
-
         self.fWebFrame = None
 
         #if self.fPluginCount > 0:
@@ -438,18 +383,51 @@ class HostWindow(QMainWindow):
         self.ui.webview.setHtml("<html><body bgcolor='green'></body></html>")
 
         # stop webserver
-        self.stopWebServer()
+        self.stopAndWaitForWebServer()
 
         # stop mod-host
-        if self.fHostProccess.state() == QProcess.Running:
-            self.fHostProccess.terminate()
-            self.fHostProccess.waitForFinished()
+        if self.fProccessHost.state() == QProcess.Running:
+            self.fStoppingHost = True
+            self.fProccessHost.terminate()
+            if not self.fProccessHost.waitForFinished(500):
+                self.fProccessHost.kill()
 
     @pyqtSlot()
     def slot_hostRestart(self):
         self.ui.stackedwidget.setCurrentIndex(0)
-        self.slot_hostStop(True)
+        self.slot_hostStop()
         self.slot_hostStart()
+
+    # --------------------------------------------------------------------------------------------------------
+
+    @pyqtSlot(QProcess.ProcessError)
+    def slot_hostError(self, error):
+        # crashed while stopping, ignore
+        if error == QProcess.Crashed and self.fStoppingHost:
+            return
+
+        # stop webserver
+        self.stopAndWaitForWebServer()
+
+        errorStr = self.tr("Could not start host backend.\n") + self.getProcessErrorAsString(error)
+        qWarning(errorStr)
+
+        # don't show error if this is the first time starting the host
+        if self.fFirstHostInit:
+            self.fFirstHostInit = False
+            return
+
+        # show the error message
+        QMessageBox.critical(self, self.tr("Error"), errorStr)
+
+    @pyqtSlot()
+    def slot_hostStarted(self):
+        self.fFirstHostInit = False
+        self.fWebServerThread.start()
+
+    @pyqtSlot(int, QProcess.ExitStatus)
+    def slot_hostFinished(self, exitCode, exitStatus):
+        self.fStoppingHost = False
 
     # --------------------------------------------------------------------------------------------------------
     # Web Server
@@ -586,5 +564,39 @@ class HostWindow(QMainWindow):
             pass
 
         QMainWindow.timerEvent(self, event)
+
+    # --------------------------------------------------------------------------------------------------------
+    # Internal stuff
+
+    def getProcessErrorAsString(self, error):
+        if error == QProcess.FailedToStart:
+            return self.tr("Process failed to start.")
+        if error == QProcess.Crashed:
+            return self.tr("Process crashed.")
+        if error == QProcess.Timedout:
+            return self.tr("Process timed out.")
+        if error == QProcess.WriteError:
+            return self.tr("Process write error.")
+        return self.tr("Unkown error.")
+
+    def stopHostIfNeeded(self):
+        if self.fProccessHost.state() != QProcess.Running:
+            return
+
+        self.fStoppingHost = True
+        self.fProccessHost.terminate()
+
+    def stopAndWaitForWebServer(self):
+        if self.fWebServerThread.isRunning() and not self.fWebServerThread.stopWait():
+            qWarning("WebServer Thread failed top stop cleanly, forcing terminate")
+            self.fWebServerThread.terminate()
+
+    def setProperWindowTitle(self):
+        title = "MOD Application"
+
+        if self.fProjectFilename:
+            title += " - %s" % self.fProjectFilename
+
+        self.setWindowTitle(title)
 
 # ------------------------------------------------------------------------------------------------------------

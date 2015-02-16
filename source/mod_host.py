@@ -28,12 +28,12 @@ if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices
     from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-    from PyQt5.QtWebKitWidgets import QWebView, QWebSettings
+    from PyQt5.QtWebKitWidgets import QWebPage, QWebView, QWebSettings
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices
     from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-    from PyQt4.QtWebKit import QWebView, QWebSettings
+    from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
@@ -72,6 +72,38 @@ class WebServerThread(QThread):
     def stopWait(self):
         webserver.stop()
         return self.wait(5000)
+
+# ------------------------------------------------------------------------------------------------------------
+# Host WebPage
+
+class HostWebPage(QWebPage):
+    def __init__(self, parent):
+        QWebPage.__init__(self, parent)
+
+    def javaScriptAlert(self, frame, msg):
+         QMessageBox.warning(self.parent(),
+                             self.tr("MOD-App Alert"),
+                             Qt.escape(msg),
+                             QMessageBox.Ok)
+
+    def javaScriptConfirm(self, frame, msg):
+        return (QMessageBox.question(self.parent(),
+                                     self.tr("MOD-App Confirm"),
+                                     Qt.escape(msg),
+                                     QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
+
+    def javaScriptPrompt(self, frame, msg, default):
+        res, ok = QInputDialog.getText(self.parent(),
+                                       self.tr("MOD-App Prompt"),
+                                       Qt.escape(msg),
+                                       QLineEdit.Normal, default)
+        return ok, res
+
+    def shouldInterruptJavaScript(self):
+        return (QMessageBox.question(self.parent(),
+                                     self.tr("MOD-App Problem"),
+                                     self.tr("The script on this page appears to have a problem. Do you want to stop the script?"),
+                                     QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
 # ------------------------------------------------------------------------------------------------------------
 # Host Window
@@ -120,6 +152,9 @@ class HostWindow(QMainWindow):
         self.ui.webview = QWebView(self.ui.swp_webview)
         self.ui.webview.setMinimumWidth(980)
         self.ui.swp_webview.layout().addWidget(self.ui.webview)
+
+        self.ui.webpage = HostWebPage(self)
+        self.ui.webview.setPage(self.ui.webpage)
 
         self.ui.label_progress.hide()
         self.ui.stackedwidget.setCurrentIndex(0)

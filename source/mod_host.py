@@ -543,7 +543,10 @@ class HostWindow(QMainWindow):
         websettings = self.ui.webview.settings()
 
         if firstTime:
-            self.restoreGeometry(qsettings.value("Geometry", ""))
+            if qsettings.contains("Geometry"):
+                self.restoreGeometry(qsettings.value("Geometry", ""))
+            else:
+                self.setWindowState(self.windowState() | Qt.WindowMaximized)
 
         self.fSavedSettings = {
             # Main

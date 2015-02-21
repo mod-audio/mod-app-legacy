@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=MOD-Remote
+GenericName=MOD Remote
+Comment=Application for connecting to a remote MOD device
+Exec=mod-remote %u
+Icon=mod-app
+Terminal=false
+Type=Application
+Categories=AudioVideo;AudioEditing;Qt;
+Version=1.0

@@ -181,7 +181,7 @@ class SettingsWindow(QDialog):
             return
 
         if not os.path.isfile(newPath):
-            return QMessageBox.error(self, self.tr("Error"), "Path to mod-host must be a valid filename")
+            return QMessageBox.critical(self, self.tr("Error"), "Path to mod-host must be a valid filename")
 
         self.ui.le_host_path.setText(newPath)
 

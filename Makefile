@@ -112,22 +112,28 @@ install:
 	# Install script files
 	install -m 755 \
 		data/mod-app \
+		data/mod-remote \
 		$(DESTDIR)$(PREFIX)/bin/
 
 	# Install python code
 	install -m 644 \
 		source/mod-app \
+		source/mod-remote \
 		source/*.py \
 		$(DESTDIR)$(PREFIX)/share/mod-app/
 
 	# Adjust PREFIX value in script files
-	sed -i "s?X-PREFIX-X?$(PREFIX)?" $(DESTDIR)$(PREFIX)/bin/mod-app
+	sed -i "s?X-PREFIX-X?$(PREFIX)?" \
+		$(DESTDIR)$(PREFIX)/bin/mod-app \
+		$(DESTDIR)$(PREFIX)/bin/mod-remote
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
 uninstall:
 	rm -f  $(DESTDIR)$(PREFIX)/bin/mod-app
+	rm -f  $(DESTDIR)$(PREFIX)/bin/mod-remote
 	rm -f  $(DESTDIR)$(PREFIX)/share/applications/mod-app.desktop
+	rm -f  $(DESTDIR)$(PREFIX)/share/applications/mod-remote.desktop
 	rm -f  $(DESTDIR)$(PREFIX)/share/mime/packages/mod-app.xml
 	rm -f  $(DESTDIR)$(PREFIX)/share/pixmaps/mod-app.png
 	rm -rf $(DESTDIR)$(PREFIX)/share/mod-app/

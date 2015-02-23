@@ -157,13 +157,13 @@ class HostWindow(QMainWindow):
         self.ui.webview.setPage(self.ui.webpage)
 
         self.ui.label_progress.hide()
+        self.ui.w_buttons.setEnabled(False)
         self.ui.stackedwidget.setCurrentIndex(0)
 
-        # TESTING
-        # webview will be blue until host and webserver are running
-        # when webserver finishes color will be red
-        # when host is stopped manually color will be green
-        self.ui.webview.setHtml("<html><body bgcolor='blue'></body></html>")
+        self.ui.act_file_connect.setEnabled(False)
+        self.ui.act_file_connect.setVisible(False)
+
+        self.ui.label_app.setText("MOD Application v%s" % config["version"])
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI (special stuff for Mac OS)
@@ -212,6 +212,10 @@ class HostWindow(QMainWindow):
         self.ui.act_help_about.triggered.connect(self.slot_about)
         self.ui.act_help_project.triggered.connect(self.slot_showProject)
         self.ui.act_help_website.triggered.connect(self.slot_showWebsite)
+
+        self.ui.b_start.clicked.connect(self.slot_hostStart)
+        self.ui.b_configure.clicked.connect(self.slot_configure)
+        self.ui.b_about.clicked.connect(self.slot_about)
 
         # ----------------------------------------------------------------------------------------------------
         # Final setup
@@ -463,6 +467,8 @@ class HostWindow(QMainWindow):
     @pyqtSlot(int, QProcess.ExitStatus)
     def slot_hostFinished(self, exitCode, exitStatus):
         self.fStoppingHost = False
+        self.ui.w_buttons.setEnabled(True)
+        self.ui.stackedwidget.setCurrentIndex(0)
 
     # --------------------------------------------------------------------------------------------------------
     # Web Server
@@ -510,6 +516,7 @@ class HostWindow(QMainWindow):
             # show webpage
             self.ui.label_progress.setText("")
             self.ui.label_progress.hide()
+            self.ui.w_buttons.setEnabled(False)
             self.ui.stackedwidget.setCurrentIndex(1)
 
             # postpone app stuff
@@ -522,6 +529,7 @@ class HostWindow(QMainWindow):
             # hide webpage
             self.ui.label_progress.setText(self.tr("Loading backend... failed!"))
             self.ui.label_progress.show()
+            self.ui.w_buttons.setEnabled(True)
             self.ui.stackedwidget.setCurrentIndex(0)
 
         print("load finished")

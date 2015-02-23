@@ -92,7 +92,7 @@
              </font>
             </property>
             <property name="text">
-             <string>MOD Application v0.0.0 (Desktop)</string>
+             <string>MOD Application v0.0.0</string>
             </property>
            </widget>
           </item>
@@ -131,10 +131,118 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
             <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QWidget" name="w_buttons" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <property name="spacing">
+            <number>12</number>
+           </property>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>113</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="b_start">
+             <property name="text">
+              <string>Start</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources.qrc">
+               <normaloff>:/48x48/media-playback-start.png</normaloff>:/48x48/media-playback-start.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+S</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="b_configure">
+             <property name="text">
+              <string>Configure</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources.qrc">
+               <normaloff>:/48x48/configure.png</normaloff>:/48x48/configure.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="b_about">
+             <property name="text">
+              <string>About</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources.qrc">
+               <normaloff>:/48x48/mod.png</normaloff>:/48x48/mod.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+S, Ctrl+S</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>112</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>232</height>
            </size>
           </property>
          </spacer>
@@ -165,6 +273,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="act_file_connect"/>
     <addaction name="act_file_new"/>
     <addaction name="act_file_open"/>
     <addaction name="act_file_save"/>
@@ -349,6 +458,11 @@
   <action name="act_pedalboard_share">
    <property name="text">
     <string>S&amp;hare...</string>
+   </property>
+  </action>
+  <action name="act_file_connect">
+   <property name="text">
+    <string>&amp;Connect...</string>
    </property>
   </action>
  </widget>

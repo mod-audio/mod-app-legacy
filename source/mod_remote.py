@@ -114,6 +114,41 @@ class RemoteWindow(QMainWindow):
         self.ui.label_progress.hide()
         self.ui.stackedwidget.setCurrentIndex(0)
 
+        self.ui.act_file_new.setEnabled(False)
+        self.ui.act_file_new.setVisible(False)
+        self.ui.act_file_open.setEnabled(False)
+        self.ui.act_file_open.setVisible(False)
+        self.ui.act_file_save.setEnabled(False)
+        self.ui.act_file_save.setVisible(False)
+        self.ui.act_file_save_as.setEnabled(False)
+        self.ui.act_file_save_as.setVisible(False)
+
+        self.ui.act_host_start.setEnabled(False)
+        self.ui.act_host_start.setVisible(False)
+        self.ui.act_host_stop.setEnabled(False)
+        self.ui.act_host_stop.setVisible(False)
+        self.ui.act_host_restart.setEnabled(False)
+        self.ui.act_host_restart.setVisible(False)
+        self.ui.menu_Host.menuAction().setEnabled(False)
+        self.ui.menu_Host.menuAction().setVisible(False)
+
+        self.ui.act_pedalboard_new.setEnabled(False)
+        self.ui.act_pedalboard_new.setVisible(False)
+        self.ui.act_pedalboard_save.setEnabled(False)
+        self.ui.act_pedalboard_save.setVisible(False)
+        self.ui.act_pedalboard_save_as.setEnabled(False)
+        self.ui.act_pedalboard_save_as.setVisible(False)
+        self.ui.act_pedalboard_share.setEnabled(False)
+        self.ui.act_pedalboard_share.setVisible(False)
+        self.ui.menu_Pedalboard.menuAction().setEnabled(False)
+        self.ui.menu_Pedalboard.menuAction().setVisible(False)
+
+        self.ui.act_settings_configure.setText(self.tr("Configure MOD-Remote"))
+        self.ui.b_start.setText(self.tr("Connect..."))
+        self.ui.label_app.setText("MOD Remote v%s" % config["version"])
+
+        # TODO - set connect icon
+
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI (special stuff for Mac OS)
 
@@ -134,6 +169,8 @@ class RemoteWindow(QMainWindow):
 
         self.SIGTERM.connect(self.slot_handleSIGTERM)
 
+        self.ui.act_file_connect.triggered.connect(self.slot_fileConnect)
+
         self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
         self.ui.act_pedalboard_save.triggered.connect(self.slot_pedalboardSave)
         self.ui.act_pedalboard_save_as.triggered.connect(self.slot_pedalboardSaveAs)
@@ -145,6 +182,10 @@ class RemoteWindow(QMainWindow):
         self.ui.act_help_project.triggered.connect(self.slot_showProject)
         self.ui.act_help_website.triggered.connect(self.slot_showWebsite)
 
+        self.ui.b_start.clicked.connect(self.slot_fileConnect)
+        self.ui.b_configure.clicked.connect(self.slot_configure)
+        self.ui.b_about.clicked.connect(self.slot_about)
+
         # ----------------------------------------------------------------------------------------------------
         # Final setup
 
@@ -152,6 +193,13 @@ class RemoteWindow(QMainWindow):
 
     # --------------------------------------------------------------------------------------------------------
     # Pedalboard (menu actions)
+
+    # --------------------------------------------------------------------------------------------------------
+    # Files (menu actions)
+
+    @pyqtSlot()
+    def slot_fileConnect(self):
+        return QMessageBox.information(self, self.tr("information"), "TODO")
 
     @pyqtSlot()
     def slot_pedalboardNew(self):

@@ -138,10 +138,10 @@ class HostWindow(QMainWindow):
         # to be filled with key-value pairs of current settings
         self.fSavedSettings = {}
 
-        # Process that runs mod-host
-        self.fProccessHost = QProcess(self)
-        self.fProccessHost.setProcessChannelMode(QProcess.ForwardedChannels)
-        self.fStoppingHost = False
+        # Process that runs the backend
+        self.fProccessBackend = QProcess(self)
+        self.fProccessBackend.setProcessChannelMode(QProcess.ForwardedChannels)
+        self.fStoppingBackend = False
 
         # Thread for managing the webserver
         self.fWebServerThread = WebServerThread(self)
@@ -186,9 +186,9 @@ class HostWindow(QMainWindow):
         self.SIGUSR1.connect(self.slot_handleSIGUSR1)
         self.SIGTERM.connect(self.slot_handleSIGTERM)
 
-        self.fProccessHost.error.connect(self.slot_hostError)
-        self.fProccessHost.started.connect(self.slot_hostStarted)
-        self.fProccessHost.finished.connect(self.slot_hostFinished)
+        self.fProccessBackend.error.connect(self.slot_backendError)
+        self.fProccessBackend.started.connect(self.slot_backendStarted)
+        self.fProccessBackend.finished.connect(self.slot_backendFinished)
 
         self.fWebServerThread.running.connect(self.slot_webServerRunning)
         self.fWebServerThread.finished.connect(self.slot_webServerFinished)
@@ -198,9 +198,10 @@ class HostWindow(QMainWindow):
         self.ui.act_file_save.triggered.connect(self.slot_fileSave)
         self.ui.act_file_save_as.triggered.connect(self.slot_fileSaveAs)
 
-        self.ui.act_host_start.triggered.connect(self.slot_hostStart)
-        self.ui.act_host_stop.triggered.connect(self.slot_hostStop)
-        self.ui.act_host_restart.triggered.connect(self.slot_hostRestart)
+        self.ui.act_backend_start.triggered.connect(self.slot_backendStart)
+        self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
+        self.ui.act_backend_restart.triggered.connect(self.slot_backendRestart)
+        self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
 
         self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
         self.ui.act_pedalboard_save.triggered.connect(self.slot_pedalboardSave)
@@ -213,7 +214,7 @@ class HostWindow(QMainWindow):
         self.ui.act_help_project.triggered.connect(self.slot_showProject)
         self.ui.act_help_website.triggered.connect(self.slot_showWebsite)
 
-        self.ui.b_start.clicked.connect(self.slot_hostStart)
+        self.ui.b_start.clicked.connect(self.slot_backendStart)
         self.ui.b_configure.clicked.connect(self.slot_configure)
         self.ui.b_about.clicked.connect(self.slot_about)
 
@@ -222,7 +223,7 @@ class HostWindow(QMainWindow):
 
         self.setProperWindowTitle()
 
-        QTimer.singleShot(0, self.slot_hostStart)
+        QTimer.singleShot(0, self.slot_backendStart)
 
     # --------------------------------------------------------------------------------------------------------
     # Files
@@ -394,16 +395,24 @@ class HostWindow(QMainWindow):
     # Host (menu actions)
 
     @pyqtSlot()
-    def slot_hostStart(self):
-        if self.fProccessHost.state() == QProcess.Running:
+    def slot_backendStart(self):
+        if self.fProccessBackend.state() == QProcess.Running:
             return
 
         hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
-        hostArgs = "--verbose" if self.fSavedSettings[MOD_KEY_HOST_VERBOSE] else "--nofork"
-        self.fProccessHost.start(hostPath, [hostArgs])
+        if hostPath.endswith("mod-host"):
+            hostPath = MOD_DEFAULT_HOST_PATH
+
+        #hostArgs = "--verbose" if self.fSavedSettings[MOD_KEY_HOST_VERBOSE] else "--nofork"
+        hostArgs = ["-e"]
+        self.fProccessBackend.start(hostPath, hostArgs)
+
+        # FIXME
+        from time import sleep
+        sleep(2)
 
     @pyqtSlot()
-    def slot_hostStop(self, forced = False):
+    def slot_backendStop(self, forced = False):
         self.fWebFrame = None
 
         #if self.fPluginCount > 0:
@@ -425,24 +434,28 @@ class HostWindow(QMainWindow):
         self.stopAndWaitForWebServer()
 
         # stop mod-host
-        if self.fProccessHost.state() == QProcess.Running:
-            self.fStoppingHost = True
-            self.fProccessHost.terminate()
-            if not self.fProccessHost.waitForFinished(500):
-                self.fProccessHost.kill()
+        if self.fProccessBackend.state() == QProcess.Running:
+            self.fStoppingBackend = True
+            self.fProccessBackend.terminate()
+            if not self.fProccessBackend.waitForFinished(500):
+                self.fProccessBackend.kill()
 
     @pyqtSlot()
-    def slot_hostRestart(self):
+    def slot_backendRestart(self):
         self.ui.stackedwidget.setCurrentIndex(0)
-        self.slot_hostStop()
-        self.slot_hostStart()
+        self.slot_backendStop()
+        self.slot_backendStart()
+
+    @pyqtSlot()
+    def slot_backendAlternateUI(self):
+        pass
 
     # --------------------------------------------------------------------------------------------------------
 
     @pyqtSlot(QProcess.ProcessError)
-    def slot_hostError(self, error):
+    def slot_backendError(self, error):
         # crashed while stopping, ignore
-        if error == QProcess.Crashed and self.fStoppingHost:
+        if error == QProcess.Crashed and self.fStoppingBackend:
             return
 
         # stop webserver
@@ -460,13 +473,13 @@ class HostWindow(QMainWindow):
         QMessageBox.critical(self, self.tr("Error"), errorStr)
 
     @pyqtSlot()
-    def slot_hostStarted(self):
+    def slot_backendStarted(self):
         self.fFirstHostInit = False
         self.fWebServerThread.start()
 
     @pyqtSlot(int, QProcess.ExitStatus)
-    def slot_hostFinished(self, exitCode, exitStatus):
-        self.fStoppingHost = False
+    def slot_backendFinished(self, exitCode, exitStatus):
+        self.fStoppingBackend = False
         self.ui.w_buttons.setEnabled(True)
         self.ui.stackedwidget.setCurrentIndex(0)
 
@@ -601,7 +614,7 @@ class HostWindow(QMainWindow):
             self.fIdleTimerId = 0
 
         self.saveSettings()
-        self.slot_hostStop(True)
+        self.slot_backendStop(True)
 
         QMainWindow.closeEvent(self, event)
 
@@ -625,12 +638,12 @@ class HostWindow(QMainWindow):
             return self.tr("Process write error.")
         return self.tr("Unkown error.")
 
-    def stopHostIfNeeded(self):
-        if self.fProccessHost.state() != QProcess.Running:
-            return
+    #def stopBackendIfNeeded(self):
+        #if self.fProccessBackend.state() != QProcess.Running:
+            #return
 
-        self.fStoppingHost = True
-        self.fProccessHost.terminate()
+        #self.fStoppingBackend = True
+        #self.fProccessBackend.terminate()
 
     def stopAndWaitForWebServer(self):
         if self.fWebServerThread.isRunning() and not self.fWebServerThread.stopWait():

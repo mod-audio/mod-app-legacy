@@ -57,7 +57,10 @@ class SettingsWindow(QDialog):
         # Set up GUI
 
         self.ui.cb_host_jack_bufsize_value.lineEdit().setInputMask("9999")
-        self.ui.lw_page.setFixedWidth(48 + 6*4 + QFontMetrics(self.ui.lw_page.font()).width(  "WebView  "))
+        self.ui.lw_page.setFixedWidth(48 + 6*4 + QFontMetrics(self.ui.lw_page.font()).width("  WebView  "))
+
+        # Not possible with ingen right now
+        self.ui.cb_host_verbose.setEnabled(False)
 
         # ----------------------------------------------------------------------------------------------------
         # Load Settings
@@ -94,7 +97,11 @@ class SettingsWindow(QDialog):
 
         self.ui.cb_host_jack_bufsize_change.setChecked(settings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool))
         self.ui.cb_host_verbose.setChecked(settings.value(MOD_KEY_HOST_VERBOSE, MOD_DEFAULT_HOST_VERBOSE, type=bool))
-        self.ui.le_host_path.setText(settings.value(MOD_KEY_HOST_PATH, MOD_DEFAULT_HOST_PATH, type=str))
+
+        hostPath = settings.value(MOD_KEY_HOST_PATH, MOD_DEFAULT_HOST_PATH, type=str)
+        if hostPath.endswith("mod-host"):
+            hostPath = MOD_DEFAULT_HOST_PATH
+        self.ui.le_host_path.setText(hostPath)
 
         availableBufSizes = [int(self.ui.cb_host_jack_bufsize_value.itemText(i)) for i in range(self.ui.cb_host_jack_bufsize_value.count())]
         currentBufSize    = settings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE, MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE, type=int)

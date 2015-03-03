@@ -296,14 +296,14 @@
     <addaction name="act_help_project"/>
     <addaction name="act_help_website"/>
    </widget>
-   <widget class="QMenu" name="menu_Host">
+   <widget class="QMenu" name="menu_Backend">
     <property name="title">
-     <string>&amp;Host</string>
+     <string>&amp;Backend</string>
     </property>
-    <addaction name="act_host_start"/>
-    <addaction name="act_host_stop"/>
+    <addaction name="act_backend_start"/>
+    <addaction name="act_backend_stop"/>
     <addaction name="separator"/>
-    <addaction name="act_host_restart"/>
+    <addaction name="act_backend_restart"/>
    </widget>
    <widget class="QMenu" name="menu_Pedalboard">
     <property name="title">
@@ -316,7 +316,7 @@
     <addaction name="act_pedalboard_share"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menu_Host"/>
+   <addaction name="menu_Backend"/>
    <addaction name="menu_Pedalboard"/>
    <addaction name="menu_Settings"/>
    <addaction name="menu_Help"/>
@@ -405,7 +405,7 @@
     <string>MOD Website</string>
    </property>
   </action>
-  <action name="act_host_start">
+  <action name="act_backend_start">
    <property name="icon">
     <iconset resource="../resources.qrc">
      <normaloff>:/16x16/media-playback-start.png</normaloff>:/16x16/media-playback-start.png</iconset>
@@ -414,7 +414,7 @@
     <string>Start</string>
    </property>
   </action>
-  <action name="act_host_stop">
+  <action name="act_backend_stop">
    <property name="icon">
     <iconset resource="../resources.qrc">
      <normaloff>:/16x16/media-playback-stop.png</normaloff>:/16x16/media-playback-stop.png</iconset>
@@ -423,7 +423,7 @@
     <string>Stop</string>
    </property>
   </action>
-  <action name="act_host_restart">
+  <action name="act_backend_restart">
    <property name="text">
     <string>Restart</string>
    </property>
@@ -463,6 +463,11 @@
   <action name="act_file_connect">
    <property name="text">
     <string>&amp;Connect...</string>
+   </property>
+  </action>
+  <action name="act_backend_alternate_ui">
+   <property name="text">
+    <string>Launch alternate UI</string>
    </property>
   </action>
  </widget>

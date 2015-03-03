@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>508</width>
-    <height>368</height>
+    <height>375</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -73,7 +73,7 @@
        </row>
        <row>
         <property name="text">
-         <string>host</string>
+         <string>backend</string>
         </property>
        </row>
        <row>
@@ -109,7 +109,7 @@
        </item>
        <item row="1" column="0">
         <property name="text">
-         <string>Host</string>
+         <string>Backend</string>
         </property>
         <property name="font">
          <font>
@@ -304,7 +304,7 @@
            <item>
             <widget class="QLabel" name="label_11">
              <property name="text">
-              <string>&lt;b&gt;Host&lt;/b&gt;</string>
+              <string>&lt;b&gt;Backend&lt;/b&gt;</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -367,7 +367,7 @@
                <bool>false</bool>
               </property>
               <property name="text">
-               <string>New buffer size:</string>
+               <string>Prefered buffer size:</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -455,7 +455,7 @@
             <item row="0" column="0" colspan="5">
              <widget class="QCheckBox" name="cb_host_jack_bufsize_change">
               <property name="text">
-               <string>Change JACK buffer-size when starting MOD-App</string>
+               <string>Allow to automatically change JACK buffer-size</string>
               </property>
              </widget>
             </item>
@@ -480,7 +480,7 @@
               <item>
                <widget class="QLabel" name="label_host_path">
                 <property name="text">
-                 <string>Path to mod-host:</string>
+                 <string>Path to ingen:</string>
                 </property>
                </widget>
               </item>

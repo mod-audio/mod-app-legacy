@@ -355,11 +355,9 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_pedalboardShare(self):
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
         if self.fWebFrame is None:
             return
-        self.fWebFrame.evaluateJavaScript("")
+        self.fWebFrame.evaluateJavaScript("desktop.shareCurrentPedalboard()")
 
     # --------------------------------------------------------------------------------------------------------
     # Settings (menu actions)

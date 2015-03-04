@@ -618,6 +618,9 @@ class HostWindow(QMainWindow):
 
         QMainWindow.closeEvent(self, event)
 
+        # Needed in case the web inspector is still alive
+        QApplication.instance().quit()
+
     def timerEvent(self, event):
         if event.timerId() == self.fIdleTimerId:
             pass

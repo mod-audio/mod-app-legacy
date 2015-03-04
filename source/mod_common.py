@@ -59,9 +59,13 @@ if os.path.isfile(CWD):
 if os.path.exists(os.path.join(CWD, "modules", "mod-ui")):
     print("NOTE: Using custom mod-ui module")
     sys.path = [os.path.join(CWD, "modules", "mod-ui")] + sys.path
-    usingCustomModules = True
+    usingCustomMODUI = True
 else:
-    usingCustomModules = False
+    usingCustomMODUI = False
+
+if os.path.exists(os.path.join(CWD, "modules", "mod-python")):
+    print("NOTE: Using custom modcommon module")
+    sys.path = [os.path.join(CWD, "modules", "mod-python")] + sys.path
 
 # ------------------------------------------------------------------------------------------------------------
 # Set Platform
@@ -86,7 +90,7 @@ else:
 # ------------------------------------------------------------------------------------------------------------
 # Set up environment for the webserver
 
-if usingCustomModules:
+if usingCustomMODUI:
     ROOT = os.path.join(CWD, "modules")
 else:
     ROOT = "/usr/share"

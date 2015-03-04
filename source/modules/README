@@ -2,5 +2,5 @@ Put custom modules here if wanted
 
 These can be:
 
-mod-ui     (lilv branch)
+mod-ui     (python3 branch)
 mod-common (python3 branch)

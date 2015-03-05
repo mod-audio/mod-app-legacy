@@ -408,7 +408,7 @@ class HostWindow(QMainWindow):
             hostPath = MOD_DEFAULT_HOST_PATH
 
         #hostArgs = "--verbose" if self.fSavedSettings[MOD_KEY_HOST_VERBOSE] else "--nofork"
-        hostArgs = ["-e"]
+        hostArgs = ["-e", "-n", "mod-app"]
         self.fProccessBackend.start(hostPath, hostArgs)
 
         # FIXME

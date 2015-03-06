@@ -75,16 +75,6 @@ def setUpSignals():
 
 if __name__ == '__main__':
     # --------------------------------------------------------------------------------------------------------
-    # Manual scanning (TODO remove once UI for this is operational)
-
-    if len(sys.argv) == 2 and sys.argv[1] == "--scan-lv2":
-        from mod import rebuild_database
-        print("Scanning and indexing your LV2 plugins...")
-        rebuild_database(True)
-        print("done")
-        sys.exit(0)
-
-    # --------------------------------------------------------------------------------------------------------
     # App initialization
 
     app = QApplication(sys.argv)
@@ -102,9 +92,15 @@ if __name__ == '__main__':
     setUpSignals()
 
     # --------------------------------------------------------------------------------------------------------
+    # Create Splash screen
+
+    gui = HostSplashScreen()
+    #gui.rescanIfNeeded()
+
+    # --------------------------------------------------------------------------------------------------------
     # Create GUI
 
-    gui = HostWindow()
+    gui = HostWindow(gui)
 
     # --------------------------------------------------------------------------------------------------------
     # Load project file if set

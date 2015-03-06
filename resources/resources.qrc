@@ -15,5 +15,7 @@
         <file>48x48/jack.png</file>
         <file>48x48/media-playback-start.png</file>
         <file>48x48/mod.png</file>
+
+        <file>mod-splash.png</file>
     </qresource>
 </RCC>

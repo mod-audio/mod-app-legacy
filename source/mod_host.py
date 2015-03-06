@@ -26,13 +26,13 @@ from mod_settings import *
 
 if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
-    from PyQt5.QtGui import QDesktopServices
-    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
+    from PyQt5.QtGui import QDesktopServices, QPixmap
+    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox, QSplashScreen
     from PyQt5.QtWebKitWidgets import QWebPage, QWebView, QWebSettings
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
-    from PyQt4.QtGui import QDesktopServices
-    from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox
+    from PyQt4.QtGui import QDesktopServices, QPixmap
+    from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox, QSplashScreen
     from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
 
 # ------------------------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ from ui_mod_host import Ui_HostWindow
 # need to set initial settings before importing MOD stuff
 setInitialSettings()
 
-from mod import jack, webserver
+from mod import jack, rebuild_database, webserver
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -106,6 +106,60 @@ class HostWebPage(QWebPage):
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
 # ------------------------------------------------------------------------------------------------------------
+# Host Splash Screen (used for LV2 scanning)
+
+class HostSplashScreen(QSplashScreen):
+    # signals
+    SIGTERM = pyqtSignal()
+    SIGUSR1 = pyqtSignal()
+
+    # --------------------------------------------------------------------------------------------------------
+
+    def __init__(self):
+        QSplashScreen.__init__(self, QPixmap(":/mod-splash.png"), Qt.SplashScreen|Qt.WindowStaysOnTopHint)
+
+        # ----------------------------------------------------------------------------------------------------
+        # Internal stuff
+
+        self.fApp           = QApplication.instance()
+        self.fStopRequested = False
+
+        # ----------------------------------------------------------------------------------------------------
+        # Connect actions to functions
+
+        self.SIGTERM.connect(self.slot_handleSIGTERM)
+
+    # --------------------------------------------------------------------------------------------------------
+    # Callback
+
+    def rescanIfNeeded(self):
+        self.show()
+        rebuild_database(True, self.callback)
+
+    def callback(self, percent, uri):
+        if self.fStopRequested:
+            return True
+
+        msg = "Scanning plugins: %.1f%%" % percent
+        if uri:
+            msg += " [ %s ]" % uri
+
+        self.showMessage(msg, Qt.AlignLeft, Qt.white)
+        self.fApp.processEvents()
+
+        return self.fStopRequested
+
+    # --------------------------------------------------------------------------------------------------------
+    # Misc
+
+    @pyqtSlot()
+    def slot_handleSIGTERM(self):
+        print("Got SIGTERM -> Stop discovering now")
+        self.fStopRequested = True
+        self.close()
+        self.fApp.quit()
+
+# ------------------------------------------------------------------------------------------------------------
 # Host Window
 
 class HostWindow(QMainWindow):
@@ -115,8 +169,8 @@ class HostWindow(QMainWindow):
 
     # --------------------------------------------------------------------------------------------------------
 
-    def __init__(self, parent=None):
-        QMainWindow.__init__(self, parent)
+    def __init__(self, splashScreen):
+        QMainWindow.__init__(self)
         self.ui = Ui_HostWindow()
         self.ui.setupUi(self)
 
@@ -137,6 +191,9 @@ class HostWindow(QMainWindow):
 
         # to be filled with key-value pairs of current settings
         self.fSavedSettings = {}
+
+        # Splash screen as passed in the constructor
+        self.fSplashScreen = splashScreen
 
         # Process that runs the backend
         self.fProccessBackend = QProcess(self)
@@ -489,6 +546,7 @@ class HostWindow(QMainWindow):
     def slot_backendStarted(self):
         self.fFirstHostInit = False
         self.fWebServerThread.start()
+        self.fSplashScreen.close()
 
     @pyqtSlot(int, QProcess.ExitStatus)
     def slot_backendFinished(self, exitCode, exitStatus):
@@ -500,6 +558,7 @@ class HostWindow(QMainWindow):
         self.ui.menu_Pedalboard.setEnabled(False)
         self.ui.w_buttons.setEnabled(True)
         self.ui.stackedwidget.setCurrentIndex(0)
+        self.fSplashScreen.close()
 
     # --------------------------------------------------------------------------------------------------------
     # Web Server

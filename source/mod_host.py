@@ -193,6 +193,8 @@ class HostWindow(QMainWindow):
         self.fWebServerThread.running.connect(self.slot_webServerRunning)
         self.fWebServerThread.finished.connect(self.slot_webServerFinished)
 
+        self.ui.menu_Pedalboard.aboutToShow.connect(self.slot_pedalboardCheckOnline)
+
         self.ui.act_file_new.triggered.connect(self.slot_fileNew)
         self.ui.act_file_open.triggered.connect(self.slot_fileOpen)
         self.ui.act_file_save.triggered.connect(self.slot_fileSave)
@@ -340,6 +342,11 @@ class HostWindow(QMainWindow):
 
     # --------------------------------------------------------------------------------------------------------
     # Pedalboard (menu actions)
+
+    @pyqtSlot()
+    def slot_pedalboardCheckOnline(self):
+        isOnline = self.fWebFrame.evaluateJavaScript("$('#mod-cloud').hasClass('online')")
+        self.ui.act_pedalboard_share.setEnabled(isOnline)
 
     @pyqtSlot()
     def slot_pedalboardNew(self):

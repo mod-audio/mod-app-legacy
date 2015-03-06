@@ -493,6 +493,11 @@ class HostWindow(QMainWindow):
     @pyqtSlot(int, QProcess.ExitStatus)
     def slot_backendFinished(self, exitCode, exitStatus):
         self.fStoppingBackend = False
+        self.ui.act_pedalboard_new.setEnabled(False)
+        self.ui.act_pedalboard_save.setEnabled(False)
+        self.ui.act_pedalboard_save_as.setEnabled(False)
+        self.ui.act_pedalboard_share.setEnabled(False)
+        self.ui.menu_Pedalboard.setEnabled(False)
         self.ui.w_buttons.setEnabled(True)
         self.ui.stackedwidget.setCurrentIndex(0)
 
@@ -539,6 +544,13 @@ class HostWindow(QMainWindow):
             # for js evaulation
             self.fWebFrame = self.ui.webview.page().currentFrame()
 
+            # enable pedalboard menu
+            self.ui.act_pedalboard_new.setEnabled(True)
+            self.ui.act_pedalboard_save.setEnabled(True)
+            self.ui.act_pedalboard_save_as.setEnabled(True)
+            self.ui.act_pedalboard_share.setEnabled(True)
+            self.ui.menu_Pedalboard.setEnabled(True)
+
             # show webpage
             self.ui.label_progress.setText("")
             self.ui.label_progress.hide()
@@ -549,14 +561,21 @@ class HostWindow(QMainWindow):
             QTimer.singleShot(0, self.slot_webviewPostFinished)
 
         else:
-            # stop js evaulation
-            self.fWebFrame = None
-
             # hide webpage
             self.ui.label_progress.setText(self.tr("Loading backend... failed!"))
             self.ui.label_progress.show()
             self.ui.w_buttons.setEnabled(True)
             self.ui.stackedwidget.setCurrentIndex(0)
+
+            # disable pedalboard menu
+            self.ui.act_pedalboard_new.setEnabled(False)
+            self.ui.act_pedalboard_save.setEnabled(False)
+            self.ui.act_pedalboard_save_as.setEnabled(False)
+            self.ui.act_pedalboard_share.setEnabled(False)
+            self.ui.menu_Pedalboard.setEnabled(False)
+
+            # stop js evaulation
+            self.fWebFrame = None
 
         print("load finished")
 

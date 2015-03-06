@@ -179,16 +179,19 @@ class SettingsWindow(QDialog):
         if not newPath:
             return
 
+        if not os.path.isdir(newPath):
+            return QMessageBox.critical(self, self.tr("Error"), "Path must be a valid directory")
+
         self.ui.le_main_proj_folder.setText(newPath)
 
     @pyqtSlot()
     def slot_getAndSetModHostPath(self):
-        newPath = QFileDialog.getExistingDirectory(self, self.tr("Set Path to mod-host"), self.ui.le_host_path.text())
+        newPath = QFileDialog.getOpenFileName(self, self.tr("Set Path to ingen"), self.ui.le_host_path.text())
         if not newPath:
             return
 
         if not os.path.isfile(newPath):
-            return QMessageBox.critical(self, self.tr("Error"), "Path to mod-host must be a valid filename")
+            return QMessageBox.critical(self, self.tr("Error"), "Path to ingen must be a valid filename")
 
         self.ui.le_host_path.setText(newPath)
 

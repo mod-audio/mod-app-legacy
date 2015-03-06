@@ -74,7 +74,7 @@ class SettingsWindow(QDialog):
         self.ui.buttonBox.button(QDialogButtonBox.Reset).clicked.connect(self.slot_resetSettings)
 
         self.ui.tb_main_proj_folder_open.clicked.connect(self.slot_getAndSetProjectPath)
-        self.ui.tb_host_path.clicked.connect(self.slot_getAndSetModHostPath)
+        self.ui.tb_host_path.clicked.connect(self.slot_getAndSetIngenPath)
 
         # ----------------------------------------------------------------------------------------------------
         # Post-connect setup
@@ -185,7 +185,7 @@ class SettingsWindow(QDialog):
         self.ui.le_main_proj_folder.setText(newPath)
 
     @pyqtSlot()
-    def slot_getAndSetModHostPath(self):
+    def slot_getAndSetIngenPath(self):
         newPath = QFileDialog.getOpenFileName(self, self.tr("Set Path to ingen"), self.ui.le_host_path.text())
         if not newPath:
             return

@@ -274,6 +274,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="act_file_connect"/>
+    <addaction name="act_file_disconnect"/>
     <addaction name="act_file_new"/>
     <addaction name="act_file_open"/>
     <addaction name="act_file_save"/>
@@ -468,6 +469,11 @@
   <action name="act_backend_alternate_ui">
    <property name="text">
     <string>Launch alternate UI</string>
+   </property>
+  </action>
+  <action name="act_file_disconnect">
+   <property name="text">
+    <string>Disconnect</string>
    </property>
   </action>
  </widget>

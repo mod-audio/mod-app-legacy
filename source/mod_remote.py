@@ -38,6 +38,7 @@ else:
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
 
+from ui_mod_connect import Ui_ConnectDialog
 from ui_mod_host import Ui_HostWindow
 
 # ------------------------------------------------------------------------------------------------------------
@@ -73,6 +74,49 @@ class RemoteWebPage(QWebPage):
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
 # ------------------------------------------------------------------------------------------------------------
+# Remote Connect Dialog
+
+class RemoteConnectDialog(QDialog):
+    INDEX_BT  = 0
+    INDEX_LAN = 1
+    INDEX_USB = 2
+
+    def __init__(self, parent):
+        QMainWindow.__init__(self, parent)
+        self.ui = Ui_ConnectDialog()
+        self.ui.setupUi(self)
+
+        self.fAddress = QUrl("")
+
+        self.accepted.connect(self.slot_setAddress)
+
+    def getAddress(self):
+        return self.fAddress
+
+    @pyqtSlot()
+    def slot_setAddress(self):
+        index = self.ui.stackedWidget.currentIndex()
+
+        if index == self.INDEX_BT:
+            address = "192.168.50.%i" % self.ui.sb_devnumber_bt.value()
+            port    = 0
+        elif index == self.INDEX_LAN:
+            address = self.ui.le_ip_lan.text()
+            port    = self.ui.sb_port_lan.value()
+        elif index == self.INDEX_USB:
+            address = self.ui.le_ip_usb.text()
+            port    = 0
+        else:
+            return
+
+        url = "http://%s" % address
+
+        if port != 0:
+            url += ":%i" % port
+
+        self.fAddress = QUrl(url)
+
+# ------------------------------------------------------------------------------------------------------------
 # Remote Window
 
 class RemoteWindow(QMainWindow):
@@ -94,9 +138,6 @@ class RemoteWindow(QMainWindow):
 
         # Qt idle timer
         self.fIdleTimerId = 0
-
-        # Qt web frame, used for evaulating javascript
-        self.fWebFrame = None
 
         # to be filled with key-value pairs of current settings
         self.fSavedSettings = {}
@@ -123,14 +164,14 @@ class RemoteWindow(QMainWindow):
         self.ui.act_file_save_as.setEnabled(False)
         self.ui.act_file_save_as.setVisible(False)
 
-        self.ui.act_host_start.setEnabled(False)
-        self.ui.act_host_start.setVisible(False)
-        self.ui.act_host_stop.setEnabled(False)
-        self.ui.act_host_stop.setVisible(False)
-        self.ui.act_host_restart.setEnabled(False)
-        self.ui.act_host_restart.setVisible(False)
-        self.ui.menu_Host.menuAction().setEnabled(False)
-        self.ui.menu_Host.menuAction().setVisible(False)
+        self.ui.act_backend_start.setEnabled(False)
+        self.ui.act_backend_start.setVisible(False)
+        self.ui.act_backend_stop.setEnabled(False)
+        self.ui.act_backend_stop.setVisible(False)
+        self.ui.act_backend_restart.setEnabled(False)
+        self.ui.act_backend_restart.setVisible(False)
+        self.ui.menu_Backend.menuAction().setEnabled(False)
+        self.ui.menu_Backend.menuAction().setVisible(False)
 
         self.ui.act_pedalboard_new.setEnabled(False)
         self.ui.act_pedalboard_new.setVisible(False)
@@ -170,11 +211,7 @@ class RemoteWindow(QMainWindow):
         self.SIGTERM.connect(self.slot_handleSIGTERM)
 
         self.ui.act_file_connect.triggered.connect(self.slot_fileConnect)
-
-        self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
-        self.ui.act_pedalboard_save.triggered.connect(self.slot_pedalboardSave)
-        self.ui.act_pedalboard_save_as.triggered.connect(self.slot_pedalboardSaveAs)
-        self.ui.act_pedalboard_share.triggered.connect(self.slot_pedalboardShare)
+        self.ui.act_file_disconnect.triggered.connect(self.slot_fileDisconnect)
 
         self.ui.act_settings_configure.triggered.connect(self.slot_configure)
 
@@ -186,46 +223,35 @@ class RemoteWindow(QMainWindow):
         self.ui.b_configure.clicked.connect(self.slot_configure)
         self.ui.b_about.clicked.connect(self.slot_about)
 
+        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
+
         # ----------------------------------------------------------------------------------------------------
         # Final setup
 
         self.setProperWindowTitle()
 
     # --------------------------------------------------------------------------------------------------------
-    # Pedalboard (menu actions)
-
-    # --------------------------------------------------------------------------------------------------------
     # Files (menu actions)
 
     @pyqtSlot()
     def slot_fileConnect(self):
-        return QMessageBox.information(self, self.tr("information"), "TODO")
+        dialog = RemoteConnectDialog(self)
+        if not dialog.exec_():
+            return
+        self.ui.w_buttons.setEnabled(False)
+        self.ui.webview.load(dialog.getAddress())
 
     @pyqtSlot()
-    def slot_pedalboardNew(self):
-        if self.fWebFrame is None:
-            return
-        self.fWebFrame.evaluateJavaScript("desktop.reset()")
+    def slot_fileDisconnect(self):
+        # testing cyan color for disconnected
+        self.ui.webview.blockSignals(True)
+        self.ui.webview.setHtml("<html><body bgcolor='cyan'></body></html>")
+        self.ui.webview.blockSignals(False)
 
-    @pyqtSlot()
-    def slot_pedalboardSave(self):
-        if self.fWebFrame is None:
-            return
-        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(false)")
-
-    @pyqtSlot()
-    def slot_pedalboardSaveAs(self):
-        if self.fWebFrame is None:
-            return
-        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(true)")
-
-    @pyqtSlot()
-    def slot_pedalboardShare(self):
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
-        if self.fWebFrame is None:
-            return
-        self.fWebFrame.evaluateJavaScript("")
+        self.ui.w_buttons.setEnabled(True)
+        self.ui.stackedwidget.setCurrentIndex(0)
 
     # --------------------------------------------------------------------------------------------------------
     # Settings (menu actions)
@@ -262,48 +288,33 @@ class RemoteWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_webviewLoadStarted(self):
-        self.ui.label_progress.setText(self.tr("Loading backend..."))
+        self.ui.w_buttons.setEnabled(False)
+        self.ui.label_progress.setText(self.tr("Loading remote..."))
         self.ui.label_progress.show()
         print("load started")
 
     @pyqtSlot(int)
     def slot_webviewLoadProgress(self, progress):
-        self.ui.label_progress.setText(self.tr("Loading backend... %i%%" % progress))
+        self.ui.label_progress.setText(self.tr("Loading remote... %i%%" % progress))
         print("load progress", progress)
 
     @pyqtSlot(bool)
     def slot_webviewLoadFinished(self, ok):
-        # load finished or failed
-        self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
-        self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
-        self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
+        self.ui.w_buttons.setEnabled(True)
 
         if ok:
-            # for js evaulation
-            self.fWebFrame = self.ui.webview.page().currentFrame()
-
             # show webpage
             self.ui.label_progress.setText("")
             self.ui.label_progress.hide()
             self.ui.stackedwidget.setCurrentIndex(1)
 
-            # postpone app stuff
-            QTimer.singleShot(0, self.slot_webviewPostFinished)
-
         else:
-            # stop js evaulation
-            self.fWebFrame = None
-
             # hide webpage
-            self.ui.label_progress.setText(self.tr("Loading backend... failed!"))
+            self.ui.label_progress.setText(self.tr("Loading remote... failed!"))
             self.ui.label_progress.show()
             self.ui.stackedwidget.setCurrentIndex(0)
 
         print("load finished")
-
-    @pyqtSlot(bool)
-    def slot_webviewPostFinished(self):
-        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp()")
 
     # --------------------------------------------------------------------------------------------------------
     # Settings

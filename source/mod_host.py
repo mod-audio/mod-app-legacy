@@ -186,7 +186,7 @@ class HostWindow(QMainWindow):
         # Qt idle timer
         self.fIdleTimerId = 0
 
-        # Qt web frame, used for evaulating javascript
+        # Qt web frame, used for evaluating javascript
         self.fWebFrame = None
 
         # to be filled with key-value pairs of current settings
@@ -219,6 +219,8 @@ class HostWindow(QMainWindow):
 
         self.ui.act_file_connect.setEnabled(False)
         self.ui.act_file_connect.setVisible(False)
+        self.ui.act_file_disconnect.setEnabled(False)
+        self.ui.act_file_disconnect.setVisible(False)
 
         self.ui.label_app.setText("MOD Application v%s" % config["version"])
 

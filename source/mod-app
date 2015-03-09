@@ -95,6 +95,7 @@ if __name__ == '__main__':
     # Create Splash screen
 
     gui = HostSplashScreen()
+    gui.rescanIfNeeded()
 
     # --------------------------------------------------------------------------------------------------------
     # Create GUI

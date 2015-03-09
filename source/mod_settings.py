@@ -95,6 +95,9 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Host
 
+        self.ui.cb_host_auto_connect_ins.setChecked(settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool))
+        self.ui.cb_host_auto_connect_outs.setChecked(settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool))
+
         self.ui.cb_host_jack_bufsize_change.setChecked(settings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool))
         self.ui.cb_host_verbose.setChecked(settings.value(MOD_KEY_HOST_VERBOSE, MOD_DEFAULT_HOST_VERBOSE, type=bool))
 
@@ -133,6 +136,8 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Host
 
+        settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_INS,   self.ui.cb_host_auto_connect_ins.isChecked())
+        settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_OUTS,  self.ui.cb_host_auto_connect_outs.isChecked())
         settings.setValue(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, self.ui.cb_host_jack_bufsize_change.isChecked())
         settings.setValue(MOD_KEY_HOST_JACK_BUFSIZE_VALUE,  int(self.ui.cb_host_jack_bufsize_value.currentText()))
         settings.setValue(MOD_KEY_HOST_VERBOSE,             self.ui.cb_host_verbose.isChecked())

@@ -116,7 +116,7 @@ class HostSplashScreen(QSplashScreen):
     # --------------------------------------------------------------------------------------------------------
 
     def __init__(self):
-        QSplashScreen.__init__(self, QPixmap(":/mod-splash.png"), Qt.SplashScreen|Qt.WindowStaysOnTopHint)
+        QSplashScreen.__init__(self, QPixmap(":/mod-splash.jpg"), Qt.SplashScreen|Qt.WindowStaysOnTopHint)
 
         # ----------------------------------------------------------------------------------------------------
         # Internal stuff
@@ -135,19 +135,19 @@ class HostSplashScreen(QSplashScreen):
         settings = QSettings()
 
         # read current value
-        needsRescan = settings.value("NeedsRescan", True, type=bool)
+        self.fNeedsRescan = settings.value("NeedsRescan", True, type=bool)
 
         # disable for next time
         settings.setValue("NeedsRescan", False)
-
-        if needsRescan:
-            self.show()
-            self.rescanIfNeeded()
 
     # --------------------------------------------------------------------------------------------------------
     # Callback
 
     def rescanIfNeeded(self):
+        if not self.fNeedsRescan:
+            return
+
+        self.show()
         rebuild_database(True, self.callback)
 
     def callback(self, percent, uri):
@@ -665,6 +665,16 @@ class HostWindow(QMainWindow):
     @pyqtSlot(bool)
     def slot_webviewPostFinished(self):
         self.fWebFrame.evaluateJavaScript("desktop.prepareForApp()")
+
+        settings = QSettings()
+
+        if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool):
+            os.system("jack_connect system:capture_1 mod-app:audio_in_1")
+            os.system("jack_connect system:capture_2 mod-app:audio_in_2")
+
+        if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
+            os.system("jack_connect mod-app:audio_out_1 system:playback_1")
+            os.system("jack_connect mod-app:audio_out_2 system:playback_2")
 
     # --------------------------------------------------------------------------------------------------------
     # Settings

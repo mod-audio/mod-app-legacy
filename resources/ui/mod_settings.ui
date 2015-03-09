@@ -348,20 +348,14 @@
             <bool>false</bool>
            </property>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="1" column="0">
-             <spacer name="horizontalSpacer_11">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+            <item row="1" column="0" colspan="5">
+             <widget class="QCheckBox" name="cb_host_auto_connect_outs">
+              <property name="text">
+               <string>Automatically connect to system input ports</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
+             </widget>
             </item>
-            <item row="1" column="1" colspan="2">
+            <item row="4" column="1" colspan="2">
              <widget class="QLabel" name="label_host_jack_bufsize_value">
               <property name="enabled">
                <bool>false</bool>
@@ -374,7 +368,7 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="3">
+            <item row="4" column="3">
              <widget class="QComboBox" name="cb_host_jack_bufsize_value">
               <property name="enabled">
                <bool>false</bool>
@@ -439,7 +433,7 @@
               </item>
              </widget>
             </item>
-            <item row="1" column="4">
+            <item row="4" column="4">
              <spacer name="horizontalSpacer_9">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -452,10 +446,30 @@
               </property>
              </spacer>
             </item>
-            <item row="0" column="0" colspan="5">
+            <item row="3" column="0" colspan="5">
              <widget class="QCheckBox" name="cb_host_jack_bufsize_change">
               <property name="text">
                <string>Allow to automatically change JACK buffer-size (needs restart)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <spacer name="horizontalSpacer_11">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="2" column="0" colspan="5">
+             <widget class="QCheckBox" name="cb_host_auto_connect_ins">
+              <property name="text">
+               <string>Automatically connect to system output ports</string>
               </property>
              </widget>
             </item>

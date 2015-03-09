@@ -121,6 +121,8 @@ MOD_KEY_MAIN_PROJECT_FOLDER      = "Main/ProjectFolder"     # str
 MOD_KEY_MAIN_REFRESH_INTERVAL    = "Main/RefreshInterval"   # int
 
 # Host
+MOD_KEY_HOST_AUTO_CONNNECT_INS   = "Host/AutoConnectIns"    # bool
+MOD_KEY_HOST_AUTO_CONNNECT_OUTS  = "Host/AutoConnectOuts"   # bool
 MOD_KEY_HOST_JACK_BUFSIZE_CHANGE = "Host/JackBufSizeChange" # bool
 MOD_KEY_HOST_JACK_BUFSIZE_VALUE  = "Host/JackBufSizeValue"  # int
 MOD_KEY_HOST_VERBOSE             = "Host/Verbose"           # bool
@@ -138,6 +140,8 @@ MOD_DEFAULT_MAIN_PROJECT_FOLDER      = QDir.toNativeSeparators(QDir.homePath())
 MOD_DEFAULT_MAIN_REFRESH_INTERVAL    = 30
 
 # Host
+MOD_DEFAULT_HOST_AUTO_CONNNECT_INS   = True
+MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS  = True
 MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE = False
 MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE  = 128
 MOD_DEFAULT_HOST_VERBOSE             = False

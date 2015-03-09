@@ -305,6 +305,8 @@
     <addaction name="act_backend_stop"/>
     <addaction name="separator"/>
     <addaction name="act_backend_restart"/>
+    <addaction name="separator"/>
+    <addaction name="act_backend_rescan"/>
    </widget>
    <widget class="QMenu" name="menu_Pedalboard">
     <property name="title">
@@ -474,6 +476,11 @@
   <action name="act_file_disconnect">
    <property name="text">
     <string>Disconnect</string>
+   </property>
+  </action>
+  <action name="act_backend_rescan">
+   <property name="text">
+    <string>Rescan plugins...</string>
    </property>
   </action>
  </widget>

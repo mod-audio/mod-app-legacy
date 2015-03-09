@@ -116,8 +116,6 @@ os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys
 
-MOD_KEY_FIRST_RUN                = "FirstRun"               # bool
-
 # Main
 MOD_KEY_MAIN_PROJECT_FOLDER      = "Main/ProjectFolder"     # str
 MOD_KEY_MAIN_REFRESH_INTERVAL    = "Main/RefreshInterval"   # int

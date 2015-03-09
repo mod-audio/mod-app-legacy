@@ -129,11 +129,25 @@ class HostSplashScreen(QSplashScreen):
 
         self.SIGTERM.connect(self.slot_handleSIGTERM)
 
+        # ----------------------------------------------------------------------------------------------------
+        # Rescan if needed
+
+        settings = QSettings()
+
+        # read current value
+        needsRescan = settings.value("NeedsRescan", True, type=bool)
+
+        # disable for next time
+        settings.setValue("NeedsRescan", False)
+
+        if needsRescan:
+            self.show()
+            self.rescanIfNeeded()
+
     # --------------------------------------------------------------------------------------------------------
     # Callback
 
     def rescanIfNeeded(self):
-        self.show()
         rebuild_database(True, self.callback)
 
     def callback(self, percent, uri):
@@ -262,7 +276,8 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_start.triggered.connect(self.slot_backendStart)
         self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
         self.ui.act_backend_restart.triggered.connect(self.slot_backendRestart)
-        self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
+        self.ui.act_backend_rescan.triggered.connect(self.slot_backendRescan)
+        #self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
 
         self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
         self.ui.act_pedalboard_save.triggered.connect(self.slot_pedalboardSave)
@@ -517,6 +532,13 @@ class HostWindow(QMainWindow):
         self.ui.stackedwidget.setCurrentIndex(0)
         self.slot_backendStop()
         self.slot_backendStart()
+
+    @pyqtSlot()
+    def slot_backendRescan(self):
+        QSettings().setValue("NeedsRescan", True)
+
+        QMessageBox.information(self, self.tr("information"),
+                                      self.tr("Rescan is now enabled for the next time you start MOD-App."))
 
     @pyqtSlot()
     def slot_backendAlternateUI(self):

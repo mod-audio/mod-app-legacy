@@ -421,7 +421,7 @@ class HostWindow(QMainWindow):
     def slot_pedalboardCheckOnline(self):
         if self.fWebFrame is None:
             return
-        isOnline = self.fWebFrame.evaluateJavaScript("$('#mod-cloud').hasClass('online')")
+        isOnline = self.fWebFrame.evaluateJavaScript("$('#mod-cloud').hasClass('logged')")
         self.ui.act_pedalboard_share.setEnabled(isOnline)
 
     @pyqtSlot()

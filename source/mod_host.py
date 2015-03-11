@@ -194,8 +194,8 @@ class HostWindow(QMainWindow):
         # Current project filename (used via 'File' menu actions)
         self.fProjectFilename = ""
 
-        # first attempt of auto-start engine doesn't show an error
-        self.fFirstEngineInit = True
+        # first attempt of auto-start backend doesn't show an error
+        self.fFirstBackendInit = True
 
         # Qt idle timer
         self.fIdleTimerId = 0
@@ -211,7 +211,8 @@ class HostWindow(QMainWindow):
 
         # Process that runs the backend
         self.fProccessBackend = QProcess(self)
-        self.fProccessBackend.setProcessChannelMode(QProcess.ForwardedChannels)
+        self.fProccessBackend.setProcessChannelMode(QProcess.MergedChannels)
+        self.fProccessBackend.setReadChannel(QProcess.StandardOutput)
         self.fStoppingBackend = False
 
         # Thread for managing the webserver
@@ -227,16 +228,28 @@ class HostWindow(QMainWindow):
         self.ui.webpage = HostWebPage(self)
         self.ui.webview.setPage(self.ui.webpage)
 
-        self.ui.label_progress.hide()
-        self.ui.w_buttons.setEnabled(False)
-        self.ui.stackedwidget.setCurrentIndex(0)
-
         self.ui.act_file_connect.setEnabled(False)
         self.ui.act_file_connect.setVisible(False)
         self.ui.act_file_disconnect.setEnabled(False)
         self.ui.act_file_disconnect.setVisible(False)
 
         self.ui.label_app.setText("MOD Application v%s" % config["version"])
+
+        # disable file menu
+        self.ui.act_file_new.setEnabled(False)
+        self.ui.act_file_open.setEnabled(False)
+        self.ui.act_file_save.setEnabled(False)
+        self.ui.act_file_save_as.setEnabled(False)
+
+        # disable pedalboard menu
+        self.ui.act_pedalboard_new.setEnabled(False)
+        self.ui.act_pedalboard_save.setEnabled(False)
+        self.ui.act_pedalboard_save_as.setEnabled(False)
+        self.ui.act_pedalboard_share.setEnabled(False)
+        self.ui.menu_Pedalboard.setEnabled(False)
+
+        # initial stopped state
+        self.slot_backendFinished(-1, -1)
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI (special stuff for Mac OS)
@@ -262,9 +275,14 @@ class HostWindow(QMainWindow):
         self.fProccessBackend.error.connect(self.slot_backendError)
         self.fProccessBackend.started.connect(self.slot_backendStarted)
         self.fProccessBackend.finished.connect(self.slot_backendFinished)
+        self.fProccessBackend.readyRead.connect(self.slot_backendRead)
 
         self.fWebServerThread.running.connect(self.slot_webServerRunning)
         self.fWebServerThread.finished.connect(self.slot_webServerFinished)
+
+        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
 
         self.ui.menu_Pedalboard.aboutToShow.connect(self.slot_pedalboardCheckOnline)
 
@@ -299,13 +317,11 @@ class HostWindow(QMainWindow):
 
         self.setProperWindowTitle()
 
-        QTimer.singleShot(0, self.slot_backendStart)
+        #QTimer.singleShot(0, self.slot_backendStart)
 
     def __del__(self):
-        self.fStoppingBackend = True
-        self.fProccessBackend.terminate()
-        if not self.fProccessBackend.waitForFinished(2000):
-            self.fProccessBackend.kill()
+        self.stopAndWaitForWebServer()
+        self.stopAndWaitForBackend()
 
     # --------------------------------------------------------------------------------------------------------
     # Files
@@ -324,7 +340,7 @@ class HostWindow(QMainWindow):
     def loadProjectLater(self, filename):
         self.fProjectFilename = QFileInfo(filename).absoluteFilePath()
         self.setProperWindowTitle()
-        QTimer.singleShot(0, self.slot_loadProjectNow)
+        #QTimer.singleShot(0, self.slot_loadProjectNow)
 
     def saveProjectNow(self):
         if not self.fProjectFilename:
@@ -484,7 +500,10 @@ class HostWindow(QMainWindow):
     @pyqtSlot()
     def slot_backendStart(self):
         if self.fProccessBackend.state() == QProcess.Running:
+            print("slot_backendStart ignored")
             return
+
+        print("slot_backendStart in progress...")
 
         hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
         if hostPath.endswith("mod-host"):
@@ -492,16 +511,14 @@ class HostWindow(QMainWindow):
 
         #hostArgs = "--verbose" if self.fSavedSettings[MOD_KEY_HOST_VERBOSE] else "--nofork"
         hostArgs = ["-e", "-n", "mod-app"]
-        self.fProccessBackend.start(hostPath, hostArgs)
 
-        # FIXME
-        from time import sleep
-        sleep(2)
+        if self.fProjectFilename and not self.fFirstBackendInit:
+            hostArgs.append(self.fProjectFilename)
+
+        self.fProccessBackend.start(hostPath, hostArgs)
 
     @pyqtSlot()
     def slot_backendStop(self, forced = False):
-        self.fWebFrame = None
-
         #if self.fPluginCount > 0:
             #if not forced:
                 #ask = QMessageBox.question(self, self.tr("Warning"), self.tr("There are still some plugins loaded, you need to remove them to stop the engine.\n"
@@ -514,23 +531,19 @@ class HostWindow(QMainWindow):
             #self.host.set_engine_about_to_close()
             #self.host.remove_all_plugins()
 
-        # unload page
+        # testing red color for server stopped
+        self.ui.webview.blockSignals(True)
         self.ui.webview.setHtml("<html><body bgcolor='green'></body></html>")
+        self.ui.webview.blockSignals(False)
 
-        # stop webserver
         self.stopAndWaitForWebServer()
-
-        # stop mod-host
-        if self.fProccessBackend.state() == QProcess.Running:
-            self.fStoppingBackend = True
-            self.fProccessBackend.terminate()
-            if not self.fProccessBackend.waitForFinished(2000):
-                self.fProccessBackend.kill()
+        self.stopAndWaitForBackend()
 
     @pyqtSlot()
     def slot_backendRestart(self):
-        self.ui.stackedwidget.setCurrentIndex(0)
+        #self.ui.stackedwidget.setCurrentIndex(0)
         self.slot_backendStop()
+        #QApplication.instance().processEvents()
         self.slot_backendStart()
 
     @pyqtSlot()
@@ -546,8 +559,32 @@ class HostWindow(QMainWindow):
 
     # --------------------------------------------------------------------------------------------------------
 
+    @pyqtSlot()
+    def slot_backendStarted(self):
+        self.fFirstBackendInit = False
+        self.fSplashScreen.close()
+        self.ui.act_backend_start.setEnabled(False)
+        self.ui.act_backend_stop.setEnabled(True)
+        self.ui.act_backend_restart.setEnabled(True)
+        self.ui.w_buttons.setEnabled(False)
+        self.ui.label_progress.setText(self.tr("Loading backend..."))
+
+    @pyqtSlot(int, QProcess.ExitStatus)
+    def slot_backendFinished(self, exitCode, exitStatus):
+        self.fStoppingBackend = False
+        self.ui.act_backend_start.setEnabled(True)
+        self.ui.act_backend_stop.setEnabled(False)
+        self.ui.act_backend_restart.setEnabled(False)
+        self.ui.w_buttons.setEnabled(True)
+        self.ui.label_progress.setText(self.tr(""))
+        self.ui.stackedwidget.setCurrentIndex(0)
+
     @pyqtSlot(QProcess.ProcessError)
     def slot_backendError(self, error):
+        firstBackendInit = self.fFirstBackendInit
+        self.fFirstBackendInit = False
+        self.fSplashScreen.close()
+
         # crashed while stopping, ignore
         if error == QProcess.Crashed and self.fStoppingBackend:
             return
@@ -559,73 +596,83 @@ class HostWindow(QMainWindow):
         qWarning(errorStr)
 
         # don't show error if this is the first time starting the host
-        if self.fFirstHostInit:
-            self.fFirstHostInit = False
+        if firstBackendInit:
             return
 
         # show the error message
         QMessageBox.critical(self, self.tr("Error"), errorStr)
 
     @pyqtSlot()
-    def slot_backendStarted(self):
-        self.fFirstHostInit = False
-        self.fWebServerThread.start()
-        self.fSplashScreen.close()
+    def slot_backendRead(self):
+        #if self.fProccessBackend.state() != QProcess.Running:
+            #return
 
-    @pyqtSlot(int, QProcess.ExitStatus)
-    def slot_backendFinished(self, exitCode, exitStatus):
-        self.fStoppingBackend = False
-        self.ui.act_pedalboard_new.setEnabled(False)
-        self.ui.act_pedalboard_save.setEnabled(False)
-        self.ui.act_pedalboard_save_as.setEnabled(False)
-        self.ui.act_pedalboard_share.setEnabled(False)
-        self.ui.menu_Pedalboard.setEnabled(False)
-        self.ui.w_buttons.setEnabled(True)
-        self.ui.stackedwidget.setCurrentIndex(0)
-        self.fSplashScreen.close()
+        for line in str(self.fProccessBackend.readAllStandardOutput().trimmed(), encoding="utf-8", errors="ignore").strip().split("\n"):
+            if not line:
+                continue
+            if not line.strip():
+                continue
+            #print("INGEN:", line)
+
+            if "Listening on socket unix:///tmp/ingen.sock" in line:
+                QTimer.singleShot(0, self.fWebServerThread.start)
+            elif "Activated Jack client" in line:
+                QTimer.singleShot(0, self.slot_ingenStarted)
+            elif "Failed to create UNIX socket" in line:
+                # need to wait for ingen to create sockets so it can delete them on termination
+                QTimer.singleShot(1000, self.slot_ingenStartError)
+            #else:
+                #print("INGEN:", line)
+
+    @pyqtSlot()
+    def slot_ingenStarted(self):
+        pass
+
+    @pyqtSlot()
+    def slot_ingenStartError(self):
+        self.stopAndWaitForBackend()
+        self.slot_backendError(-2)
 
     # --------------------------------------------------------------------------------------------------------
     # Web Server
 
     @pyqtSlot()
     def slot_webServerRunning(self):
-        # load webserver page in our webview
-        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
-        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
-        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
-
+        print("webserver running")
         self.ui.webview.load(QUrl(config["addr"]))
 
     @pyqtSlot()
     def slot_webServerFinished(self):
         print("webserver finished")
         # testing red color for server finished
+        self.ui.webview.blockSignals(True)
         self.ui.webview.setHtml("<html><body bgcolor='red'></body></html>")
+        self.ui.webview.blockSignals(False)
 
     # --------------------------------------------------------------------------------------------------------
     # Web View
 
     @pyqtSlot()
     def slot_webviewLoadStarted(self):
-        self.ui.label_progress.setText(self.tr("Loading backend..."))
-        self.ui.label_progress.show()
+        self.ui.label_progress.setText(self.tr("Loading UI..."))
         print("load started")
 
     @pyqtSlot(int)
     def slot_webviewLoadProgress(self, progress):
-        self.ui.label_progress.setText(self.tr("Loading backend... %i%%" % progress))
+        self.ui.label_progress.setText(self.tr("Loading UI... %i%%" % progress))
         print("load progress", progress)
 
     @pyqtSlot(bool)
     def slot_webviewLoadFinished(self, ok):
-        # load finished or failed
-        self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
-        self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
-        self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
-
         if ok:
-            # for js evaulation
-            self.fWebFrame = self.ui.webview.page().currentFrame()
+            # message
+            self.ui.label_progress.setText(self.tr("Loading UI... finished!"))
+
+            # enable file menu
+            self.ui.act_file_new.setEnabled(True)
+            self.ui.act_file_open.setEnabled(True)
+            self.ui.act_file_save.setEnabled(True)
+            self.ui.act_file_save_as.setEnabled(True)
 
             # enable pedalboard menu
             self.ui.act_pedalboard_new.setEnabled(True)
@@ -634,21 +681,21 @@ class HostWindow(QMainWindow):
             self.ui.act_pedalboard_share.setEnabled(True)
             self.ui.menu_Pedalboard.setEnabled(True)
 
-            # show webpage
-            self.ui.label_progress.setText("")
-            self.ui.label_progress.hide()
-            self.ui.w_buttons.setEnabled(False)
-            self.ui.stackedwidget.setCurrentIndex(1)
+            # for js evaulation
+            self.fWebFrame = self.ui.webview.page().currentFrame()
 
             # postpone app stuff
             QTimer.singleShot(0, self.slot_webviewPostFinished)
 
         else:
-            # hide webpage
-            self.ui.label_progress.setText(self.tr("Loading backend... failed!"))
-            self.ui.label_progress.show()
-            self.ui.w_buttons.setEnabled(True)
-            self.ui.stackedwidget.setCurrentIndex(0)
+            # message
+            self.ui.label_progress.setText(self.tr("Loading UI... failed!"))
+
+            # disable file menu
+            self.ui.act_file_new.setEnabled(False)
+            self.ui.act_file_open.setEnabled(False)
+            self.ui.act_file_save.setEnabled(False)
+            self.ui.act_file_save_as.setEnabled(False)
 
             # disable pedalboard menu
             self.ui.act_pedalboard_new.setEnabled(False)
@@ -660,9 +707,13 @@ class HostWindow(QMainWindow):
             # stop js evaulation
             self.fWebFrame = None
 
+            # stop backend&server
+            self.stopAndWaitForWebServer()
+            self.stopAndWaitForBackend()
+
         print("load finished")
 
-    @pyqtSlot(bool)
+    @pyqtSlot()
     def slot_webviewPostFinished(self):
         self.fWebFrame.evaluateJavaScript("desktop.prepareForApp()")
 
@@ -675,6 +726,12 @@ class HostWindow(QMainWindow):
         if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
             os.system("jack_connect mod-app:audio_out_1 system:playback_1")
             os.system("jack_connect mod-app:audio_out_2 system:playback_2")
+
+        QTimer.singleShot(0, self.slot_webviewPostFinished2)
+
+    @pyqtSlot()
+    def slot_webviewPostFinished2(self):
+        self.ui.stackedwidget.setCurrentIndex(1)
 
     # --------------------------------------------------------------------------------------------------------
     # Settings
@@ -756,6 +813,8 @@ class HostWindow(QMainWindow):
     # Internal stuff
 
     def getProcessErrorAsString(self, error):
+        if error == -2:
+            return self.tr("Ingen failed to create UNIX socket.")
         if error == QProcess.FailedToStart:
             return self.tr("Process failed to start.")
         if error == QProcess.Crashed:
@@ -766,16 +825,22 @@ class HostWindow(QMainWindow):
             return self.tr("Process write error.")
         return self.tr("Unkown error.")
 
-    #def stopBackendIfNeeded(self):
-        #if self.fProccessBackend.state() != QProcess.Running:
-            #return
+    def stopAndWaitForBackend(self):
+        if self.fProccessBackend.state() == QProcess.NotRunning:
+            return
 
-        #self.fStoppingBackend = True
-        #self.fProccessBackend.terminate()
+        self.fStoppingBackend = True
+        self.fProccessBackend.terminate()
+        if not self.fProccessBackend.waitForFinished(2000):
+            qWarning("Backend failed top stop cleanly, forced kill")
+            self.fProccessBackend.kill()
 
     def stopAndWaitForWebServer(self):
-        if self.fWebServerThread.isRunning() and not self.fWebServerThread.stopWait():
-            qWarning("WebServer Thread failed top stop cleanly, forcing terminate")
+        if not self.fWebServerThread.isRunning():
+            return
+
+        if not self.fWebServerThread.stopWait():
+            qWarning("WebServer Thread failed top stop cleanly, forced terminate")
             self.fWebServerThread.terminate()
 
     def setProperWindowTitle(self):

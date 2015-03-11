@@ -28,7 +28,7 @@ if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices, QPixmap
     from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox, QSplashScreen
-    from PyQt5.QtWebKitWidgets import QWebPage, QWebView, QWebSettings
+    from PyQt5.QtWebKitWidgets import QWebPage, QWebView #, QWebSettings
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices, QPixmap
@@ -83,19 +83,19 @@ class HostWebPage(QWebPage):
     def javaScriptAlert(self, frame, msg):
          QMessageBox.warning(self.parent(),
                              self.tr("MOD-App Alert"),
-                             Qt.escape(msg),
+                             msg if config_UseQt5 else Qt.escape(msg),
                              QMessageBox.Ok)
 
     def javaScriptConfirm(self, frame, msg):
         return (QMessageBox.question(self.parent(),
                                      self.tr("MOD-App Confirm"),
-                                     Qt.escape(msg),
+                                     msg if config_UseQt5 else Qt.escape(msg),
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
     def javaScriptPrompt(self, frame, msg, default):
         res, ok = QInputDialog.getText(self.parent(),
                                        self.tr("MOD-App Prompt"),
-                                       Qt.escape(msg),
+                                       msg if config_UseQt5 else Qt.escape(msg),
                                        QLineEdit.Normal, default)
         return ok, res
 
@@ -304,7 +304,7 @@ class HostWindow(QMainWindow):
     def __del__(self):
         self.fStoppingBackend = True
         self.fProccessBackend.terminate()
-        if not self.fProccessBackend.waitForFinished(500):
+        if not self.fProccessBackend.waitForFinished(2000):
             self.fProccessBackend.kill()
 
     # --------------------------------------------------------------------------------------------------------
@@ -524,7 +524,7 @@ class HostWindow(QMainWindow):
         if self.fProccessBackend.state() == QProcess.Running:
             self.fStoppingBackend = True
             self.fProccessBackend.terminate()
-            if not self.fProccessBackend.waitForFinished(500):
+            if not self.fProccessBackend.waitForFinished(2000):
                 self.fProccessBackend.kill()
 
     @pyqtSlot()
@@ -708,7 +708,9 @@ class HostWindow(QMainWindow):
             MOD_KEY_WEBVIEW_VERBOSE:          qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
         }
 
-        websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR])
+        # FIXME
+        if not config_UseQt5:
+            websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR])
 
         if self.fIdleTimerId != 0:
             self.killTimer(self.fIdleTimerId)

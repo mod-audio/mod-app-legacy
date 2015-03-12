@@ -38,6 +38,7 @@ cp $WINEPREFIX/drive_c/Python34/python34.dll                                    
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/icu*.dll                 MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/libEGL.dll               MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/libGLESv2.dll            MOD-Remote/
+cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/*eay32.dll               MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Core.dll              MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Gui.dll               MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Multimedia.dll        MOD-Remote/

@@ -331,10 +331,7 @@ class RemoteWindow(QMainWindow):
         websettings = self.ui.webview.settings()
 
         if firstTime:
-            if qsettings.contains("Geometry"):
-                self.restoreGeometry(qsettings.value("Geometry", ""))
-            else:
-                self.setWindowState(self.windowState() | Qt.WindowMaximized)
+            self.restoreGeometry(qsettings.value("Geometry", ""))
 
         self.fSavedSettings = {
             # Main

@@ -15,7 +15,7 @@ from mod_common import config
 # ------------------------------------------------------------------------------------------------------------
 
 options = {
-  "packages": [],
+  "packages": ["PyQt5.QtNetwork", "PyQt5.QtPrintSupport", "PyQt5.QtWebKit"],
   "includes": ["re", "sip", "subprocess", "inspect"],
   "create_shared_zip":    False,
   "append_script_to_exe": True,

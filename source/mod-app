@@ -77,6 +77,8 @@ if __name__ == '__main__':
     # --------------------------------------------------------------------------------------------------------
     # App initialization
 
+    QApplication.addLibraryPath(CWD)
+
     app = QApplication(sys.argv)
     app.setApplicationName("MOD-App")
     app.setApplicationVersion(config["version"])

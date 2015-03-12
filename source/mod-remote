@@ -64,6 +64,8 @@ if __name__ == '__main__':
     # --------------------------------------------------------------------------------------------------------
     # App initialization
 
+    QApplication.addLibraryPath(CWD)
+
     app = QApplication(sys.argv)
     app.setApplicationName("MOD-Remote")
     app.setApplicationVersion(config["version"])

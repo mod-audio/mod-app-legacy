@@ -16,6 +16,7 @@ Binary builds will be available at a later date.
 mod-remote
 ==========
 
-This repository also includes mod-remote, an application that allows you to connect to a remote MOD device.<br/>
-The only required dependency for it is PyQt.<br/>
+This is a work-in-progress application that allows you to connect to a remote MOD device.<br/>
+The only required dependency for it is PyQt.
+
 Binary builds for Windows and MacOS are available, see the releases section on GitHub.

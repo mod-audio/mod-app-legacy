@@ -18,8 +18,9 @@ export PYUIC5=/opt/carla/bin/pyuic5
 ##############################################################################################
 # Build Mac App
 
-rm -rf ./data/macos/MOD-*
-rm -rf ./data/macos/exe.*
+make
+
+rm -rf ./build/
 
 cp ./source/mod-app    ./source/MOD-App.pyw
 cp ./source/mod-remote ./source/MOD-Remote.pyw

@@ -28,8 +28,7 @@ cp ./source/mod-app    ./source/mod-app.pyw
 cp ./source/mod-remote ./source/mod-remote.pyw
 # $PYTHON_EXE ./data/windows/app.py    build_exe
 $PYTHON_EXE ./data/windows/remote.py build_exe
-rm -f ./source/mod-app.pyw
-rm -f ./source/mod-remote.pyw
+rm -f ./source/*.pyw
 
 cd data/windows/
 

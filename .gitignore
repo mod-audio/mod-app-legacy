@@ -1,6 +1,8 @@
 *~
 *.pyc
+.DS_Store
 .kdev4/
+build/
 
 source/mod_config.py
 source/resources_rc.py

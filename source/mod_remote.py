@@ -28,7 +28,7 @@ if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices
     from PyQt5.QtWidgets import QAction, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-    from PyQt5.QtWebKitWidgets import QWebPage, QWebView, QWebSettings
+    from PyQt5.QtWebKitWidgets import QWebPage, QWebView #, QWebSettings
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices
@@ -51,19 +51,19 @@ class RemoteWebPage(QWebPage):
     def javaScriptAlert(self, frame, msg):
          QMessageBox.warning(self.parent(),
                              self.tr("MOD-Remote Alert"),
-                             Qt.escape(msg),
+                             msg if config_UseQt5 else Qt.escape(msg),
                              QMessageBox.Ok)
 
     def javaScriptConfirm(self, frame, msg):
         return (QMessageBox.question(self.parent(),
                                      self.tr("MOD-Remote Confirm"),
-                                     Qt.escape(msg),
+                                     msg if config_UseQt5 else Qt.escape(msg),
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
     def javaScriptPrompt(self, frame, msg, default):
         res, ok = QInputDialog.getText(self.parent(),
                                        self.tr("MOD-Remote Prompt"),
-                                       Qt.escape(msg),
+                                      msg if config_UseQt5 else Qt.escape(msg),
                                        QLineEdit.Normal, default)
         return ok, res
 
@@ -345,7 +345,9 @@ class RemoteWindow(QMainWindow):
             MOD_KEY_WEBVIEW_VERBOSE:       qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,       MOD_DEFAULT_WEBVIEW_VERBOSE,       type=bool)
         }
 
-        websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR])
+        # FIXME
+        if not config_UseQt5:
+            websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR])
 
         if self.fIdleTimerId != 0:
             self.killTimer(self.fIdleTimerId)

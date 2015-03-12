@@ -50,6 +50,8 @@ cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Qml.dll              
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Quick.dll             MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Sensors.dll           MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Sql.dll               MOD-Remote/
+cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Svg.dll               MOD-Remote/
+cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5WebChannel.dll        MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5WebKit.dll            MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Widgets.dll           MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5WebKitWidgets.dll     MOD-Remote/

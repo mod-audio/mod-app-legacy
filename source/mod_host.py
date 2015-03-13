@@ -25,12 +25,12 @@ from mod_settings import *
 # Imports (Global)
 
 if config_UseQt5:
-    from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
+    from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices, QPixmap
     from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox, QSplashScreen
     from PyQt5.QtWebKitWidgets import QWebPage, QWebView #, QWebSettings
 else:
-    from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QThread, QTimer, QUrl
+    from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices, QPixmap
     from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox, QSplashScreen
     from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
@@ -226,6 +226,7 @@ class HostWindow(QMainWindow):
         self.ui.swp_webview.layout().addWidget(self.ui.webview)
 
         self.ui.webpage = HostWebPage(self)
+        self.ui.webpage.setViewportSize(QSize(980, 600))
         self.ui.webview.setPage(self.ui.webpage)
 
         self.ui.act_file_connect.setEnabled(False)
@@ -250,6 +251,10 @@ class HostWindow(QMainWindow):
 
         # initial stopped state
         self.slot_backendFinished(-1, -1)
+
+        # Qt needs this so it properly creates & resizes the webview
+        self.ui.stackedwidget.setCurrentIndex(1)
+        self.ui.stackedwidget.setCurrentIndex(0)
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI (special stuff for Mac OS)
@@ -317,7 +322,8 @@ class HostWindow(QMainWindow):
 
         self.setProperWindowTitle()
 
-        #QTimer.singleShot(0, self.slot_backendStart)
+        QTimer.singleShot(0, self.slot_backendStart)
+        QTimer.singleShot(1, self.fixWebViewSize)
 
     def __del__(self):
         self.stopAndWaitForWebServer()
@@ -809,6 +815,10 @@ class HostWindow(QMainWindow):
 
         QMainWindow.timerEvent(self, event)
 
+    def resizeEvent(self, event):
+        QMainWindow.resizeEvent(self, event)
+        self.fixWebViewSize()
+
     # --------------------------------------------------------------------------------------------------------
     # Internal stuff
 
@@ -824,6 +834,15 @@ class HostWindow(QMainWindow):
         if error == QProcess.WriteError:
             return self.tr("Process write error.")
         return self.tr("Unkown error.")
+
+    def fixWebViewSize(self):
+        if self.ui.stackedwidget.currentIndex() == 1:
+            return
+
+        size = self.ui.swp_intro.size()
+        self.ui.swp_webview.resize(size)
+        self.ui.webview.resize(size)
+        self.ui.webpage.setViewportSize(size)
 
     def stopAndWaitForBackend(self):
         if self.fProccessBackend.state() == QProcess.NotRunning:

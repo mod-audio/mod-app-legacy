@@ -192,6 +192,10 @@ class RemoteWindow(QMainWindow):
 
         # TODO - set connect icon
 
+        # Qt needs this so it properly creates & resizes the webview
+        self.ui.stackedwidget.setCurrentIndex(1)
+        self.ui.stackedwidget.setCurrentIndex(0)
+
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI (special stuff for Mac OS)
 
@@ -233,6 +237,8 @@ class RemoteWindow(QMainWindow):
         # Final setup
 
         self.setProperWindowTitle()
+
+        QTimer.singleShot(1, self.fixWebViewSize)
 
     # --------------------------------------------------------------------------------------------------------
     # Files (menu actions)
@@ -377,8 +383,21 @@ class RemoteWindow(QMainWindow):
 
         QMainWindow.timerEvent(self, event)
 
+    def resizeEvent(self, event):
+        QMainWindow.resizeEvent(self, event)
+        self.fixWebViewSize()
+
     # --------------------------------------------------------------------------------------------------------
     # Internal stuff
+
+    def fixWebViewSize(self):
+        if self.ui.stackedwidget.currentIndex() == 1:
+            return
+
+        size = self.ui.swp_intro.size()
+        self.ui.swp_webview.resize(size)
+        self.ui.webview.resize(size)
+        self.ui.webpage.setViewportSize(size)
 
     def setProperWindowTitle(self):
         title = "MOD Remote"

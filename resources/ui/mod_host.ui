@@ -251,6 +251,9 @@
       </widget>
       <widget class="QWidget" name="swp_webview">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <property name="margin">
          <number>0</number>
         </property>

@@ -618,7 +618,9 @@ class HostWindow(QMainWindow):
                 continue
             if not line.strip():
                 continue
-            #print("INGEN:", line)
+
+            if self.fSavedSettings[MOD_KEY_HOST_VERBOSE]:
+                print("INGEN:", line)
 
             if "Listening on socket unix:///tmp/ingen.sock" in line:
                 QTimer.singleShot(0, self.fWebServerThread.start)
@@ -627,8 +629,6 @@ class HostWindow(QMainWindow):
             elif "Failed to create UNIX socket" in line:
                 # need to wait for ingen to create sockets so it can delete them on termination
                 QTimer.singleShot(1000, self.slot_ingenStartError)
-            #else:
-                #print("INGEN:", line)
 
     @pyqtSlot()
     def slot_ingenStarted(self):

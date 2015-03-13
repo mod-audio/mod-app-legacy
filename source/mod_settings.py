@@ -59,9 +59,6 @@ class SettingsWindow(QDialog):
         self.ui.cb_host_jack_bufsize_value.lineEdit().setInputMask("9999")
         self.ui.lw_page.setFixedWidth(48 + 6*4 + QFontMetrics(self.ui.lw_page.font()).width("  WebView  "))
 
-        # Not possible with ingen right now
-        self.ui.cb_host_verbose.setEnabled(False)
-
         # ----------------------------------------------------------------------------------------------------
         # Load Settings
 

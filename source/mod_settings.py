@@ -48,7 +48,7 @@ class SettingsWindow(QDialog):
 
     # --------------------------------------------------------------------------------------------------------
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, isApp):
         QDialog.__init__(self, parent)
         self.ui = Ui_SettingsWindow()
         self.ui.setupUi(self)
@@ -58,6 +58,12 @@ class SettingsWindow(QDialog):
 
         self.ui.cb_host_jack_bufsize_value.lineEdit().setInputMask("9999")
         self.ui.lw_page.setFixedWidth(48 + 6*4 + QFontMetrics(self.ui.lw_page.font()).width("  WebView  "))
+
+        if not isApp:
+            self.ui.lw_page.hideRow(self.TAB_INDEX_MAIN)
+            self.ui.lw_page.hideRow(self.TAB_INDEX_HOST)
+            self.ui.cb_webview_verbose.setEnabled(False)
+            self.ui.cb_webview_verbose.setVisible(False)
 
         # ----------------------------------------------------------------------------------------------------
         # Load Settings
@@ -76,7 +82,7 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Post-connect setup
 
-        self.ui.lw_page.setCurrentCell(0, 0)
+        self.ui.lw_page.setCurrentCell(self.TAB_INDEX_MAIN if isApp else self.TAB_INDEX_WEBVIEW, 0)
 
     # --------------------------------------------------------------------------------------------------------
 

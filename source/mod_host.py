@@ -475,7 +475,7 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_configure(self):
-        dialog = SettingsWindow(self)
+        dialog = SettingsWindow(self, True)
         if not dialog.exec_():
             return
 

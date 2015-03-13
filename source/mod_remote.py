@@ -266,7 +266,7 @@ class RemoteWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_configure(self):
-        dialog = SettingsWindow(self)
+        dialog = SettingsWindow(self, False)
         if not dialog.exec_():
             return
 

@@ -47,6 +47,7 @@ from ui_mod_host import Ui_HostWindow
 setInitialSettings()
 
 from mod import jack, rebuild_database, webserver
+from mod.session import SESSION
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -195,7 +196,8 @@ class HostWindow(QMainWindow):
         self.fProjectFilename = ""
 
         # first attempt of auto-start backend doesn't show an error
-        self.fFirstBackendInit = True
+        self.fFirstBackendInit  = True
+        self.fFirstBackendInit2 = True
 
         # Qt idle timer
         self.fIdleTimerId = 0
@@ -515,7 +517,7 @@ class HostWindow(QMainWindow):
         if hostPath.endswith("mod-host"):
             hostPath = MOD_DEFAULT_HOST_PATH
 
-        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"]] #, "-S", "/tmp/ingen.sock-%s" % config["port"]]
+        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", "/tmp/mod-app-%s.sock" % config["port"]]
 
         #if self.fProjectFilename and not self.fFirstBackendInit:
             #hostArgs.append("-l")
@@ -614,25 +616,28 @@ class HostWindow(QMainWindow):
             #return
 
         for line in str(self.fProccessBackend.readAllStandardOutput().trimmed(), encoding="utf-8", errors="ignore").strip().split("\n"):
+            line = line.replace("\x1b[0m","").replace("\x1b[0;31m","").strip()
             if not line:
-                continue
-            if not line.strip():
                 continue
 
             if self.fSavedSettings[MOD_KEY_HOST_VERBOSE]:
                 print("INGEN:", line)
 
             if "Listening on socket " in line:
-                QTimer.singleShot(0, self.fWebServerThread.start)
-            elif "Activated Jack client" in line:
-                QTimer.singleShot(0, self.slot_ingenStarted)
-            elif "Failed to create UNIX socket" in line:
+                QTimer.singleShot(1000, self.slot_ingenStarted)
+            #if "Activated Jack client " in line:
+                #QTimer.singleShot(1000, self.fWebServerThread.start)
+            elif "Failed to create UNIX socket" in line or "Could not activate Jack client" in line:
                 # need to wait for ingen to create sockets so it can delete them on termination
                 QTimer.singleShot(1000, self.slot_ingenStartError)
 
     @pyqtSlot()
     def slot_ingenStarted(self):
-        pass
+        if not self.fFirstBackendInit2:
+            SESSION.reconnect()
+        self.fFirstBackendInit2 = False
+
+        self.fWebServerThread.start()
 
     @pyqtSlot()
     def slot_ingenStartError(self):

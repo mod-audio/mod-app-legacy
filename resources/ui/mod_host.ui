@@ -304,6 +304,7 @@
     <property name="title">
      <string>&amp;Backend</string>
     </property>
+    <addaction name="act_backend_information"/>
     <addaction name="act_backend_start"/>
     <addaction name="act_backend_stop"/>
     <addaction name="separator"/>
@@ -321,8 +322,18 @@
     <addaction name="separator"/>
     <addaction name="act_pedalboard_share"/>
    </widget>
+   <widget class="QMenu" name="menu_Presets">
+    <property name="title">
+     <string>Presets</string>
+    </property>
+    <addaction name="act_presets_new"/>
+    <addaction name="act_presets_save"/>
+    <addaction name="act_presets_save_as"/>
+    <addaction name="separator"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Backend"/>
+   <addaction name="menu_Presets"/>
    <addaction name="menu_Pedalboard"/>
    <addaction name="menu_Settings"/>
    <addaction name="menu_Help"/>
@@ -484,6 +495,26 @@
   <action name="act_backend_rescan">
    <property name="text">
     <string>Rescan plugins...</string>
+   </property>
+  </action>
+  <action name="act_backend_information">
+   <property name="text">
+    <string>&amp;Information</string>
+   </property>
+  </action>
+  <action name="act_presets_new">
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+  </action>
+  <action name="act_presets_save">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="act_presets_save_as">
+   <property name="text">
+    <string>&amp;Save as...</string>
    </property>
   </action>
  </widget>

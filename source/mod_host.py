@@ -47,6 +47,7 @@ from ui_mod_host import Ui_HostWindow
 setInitialSettings()
 
 from mod import jack, rebuild_database, webserver
+from mod.lv2 import PLUGINS, modgui as NSMODGUI
 from mod.session import SESSION
 
 # ------------------------------------------------------------------------------------------------------------
@@ -257,6 +258,21 @@ class HostWindow(QMainWindow):
         # Qt needs this so it properly creates & resizes the webview
         self.ui.stackedwidget.setCurrentIndex(1)
         self.ui.stackedwidget.setCurrentIndex(0)
+
+        thumbnail = NSMODGUI.thumbnail
+        print(thumbnail)
+        print(thumbnail.me)
+
+        for plugin in PLUGINS:
+            t = plugin.get_value(thumbnail)
+
+            if t.me is None:
+                continue
+
+            print("----------------------------------------------")
+            print(plugin.get_name().as_string())
+            print(plugin.get_uri().as_string())
+            print("----------------------------------------------")
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI (special stuff for Mac OS)
@@ -517,7 +533,8 @@ class HostWindow(QMainWindow):
         if hostPath.endswith("mod-host"):
             hostPath = MOD_DEFAULT_HOST_PATH
 
-        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", "/tmp/mod-app-%s.sock" % config["port"]]
+        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"]]
+        #hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", "/tmp/mod-app-%s.sock" % config["port"]]
 
         #if self.fProjectFilename and not self.fFirstBackendInit:
             #hostArgs.append("-l")
@@ -616,7 +633,7 @@ class HostWindow(QMainWindow):
             #return
 
         for line in str(self.fProccessBackend.readAllStandardOutput().trimmed(), encoding="utf-8", errors="ignore").strip().split("\n"):
-            line = line.replace("\x1b[0m","").replace("\x1b[0;31m","").strip()
+            line = line.replace("\x1b[0m","").replace("\x1b[0;31m","").replace("\x1b[0;33m","").strip()
             if not line:
                 continue
 

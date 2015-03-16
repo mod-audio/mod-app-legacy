@@ -206,7 +206,7 @@ class HostWindow(QMainWindow):
         # to be filled with key-value pairs of current settings
         self.fSavedSettings = {}
 
-        # Splash screen as passed in the constructor
+        # Splash screen, as passed in the constructor
         self.fSplashScreen = splashScreen
 
         # Process that runs the backend
@@ -515,11 +515,11 @@ class HostWindow(QMainWindow):
         if hostPath.endswith("mod-host"):
             hostPath = MOD_DEFAULT_HOST_PATH
 
-        #hostArgs = "--verbose" if self.fSavedSettings[MOD_KEY_HOST_VERBOSE] else "--nofork"
-        hostArgs = ["-e", "-n", "mod-app"]
+        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"]] #, "-S", "/tmp/ingen.sock-%s" % config["port"]]
 
-        if self.fProjectFilename and not self.fFirstBackendInit:
-            hostArgs.append(self.fProjectFilename)
+        #if self.fProjectFilename and not self.fFirstBackendInit:
+            #hostArgs.append("-l")
+            #hostArgs.append(self.fProjectFilename)
 
         self.fProccessBackend.start(hostPath, hostArgs)
 
@@ -622,7 +622,7 @@ class HostWindow(QMainWindow):
             if self.fSavedSettings[MOD_KEY_HOST_VERBOSE]:
                 print("INGEN:", line)
 
-            if "Listening on socket unix:///tmp/ingen.sock" in line:
+            if "Listening on socket " in line:
                 QTimer.singleShot(0, self.fWebServerThread.start)
             elif "Activated Jack client" in line:
                 QTimer.singleShot(0, self.slot_ingenStarted)
@@ -726,12 +726,12 @@ class HostWindow(QMainWindow):
         settings = QSettings()
 
         if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool):
-            os.system("jack_connect system:capture_1 mod-app:audio_in_1")
-            os.system("jack_connect system:capture_2 mod-app:audio_in_2")
+            os.system("jack_connect system:capture_1 mod-app-%s:audio_in_1" % config["port"])
+            os.system("jack_connect system:capture_2 mod-app-%s:audio_in_2" % config["port"])
 
         if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
-            os.system("jack_connect mod-app:audio_out_1 system:playback_1")
-            os.system("jack_connect mod-app:audio_out_2 system:playback_2")
+            os.system("jack_connect mod-app-%s:audio_out_1 system:playback_1" % config["port"])
+            os.system("jack_connect mod-app-%s:audio_out_2 system:playback_2" % config["port"])
 
         QTimer.singleShot(0, self.slot_webviewPostFinished2)
 

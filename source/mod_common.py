@@ -17,18 +17,27 @@
 # For a full copy of the GNU General Public License see the LICENSE file.
 
 # ------------------------------------------------------------------------------------------------------------
+# Generate a random port number between 9000 and 18000
+
+from random import random
+
+_PORT = "8888" # str(8998 + int(random()*9000))
+
+# ------------------------------------------------------------------------------------------------------------
 # Mod-App Configuration
 
 from mod_config import *
 
 config = {
     # Address used for the webserver
-    "addr": "http://127.0.0.1:7988",
+    "addr": "http://127.0.0.1:%s" % _PORT,
     # Port used for the webserver
-    "port": "7988",
+    "port": _PORT,
     # MOD-App version
     "version": "0.0.0"
 }
+
+del _PORT
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
@@ -112,6 +121,7 @@ os.environ['MOD_DEFAULT_JACK_BUFSIZE']  = "0"
 os.environ['MOD_PHANTOM_BINARY']        = "/usr/bin/phantomjs"
 os.environ['MOD_SCREENSHOT_JS']         = os.path.join(ROOT, "mod-ui", "screenshot.js")
 os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
+#os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys
@@ -155,20 +165,23 @@ MOD_DEFAULT_WEBVIEW_VERBOSE          = False
 # Set initial settings
 
 def setInitialSettings():
-    from mod import jack
+    qsettings = QSettings("MOD", "MOD-App")
 
-    settings = QSettings("MOD", "MOD-App")
-
-    changeBufSize  = settings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool)
-    wantedBufSize  = settings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE, MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE, type=int)
-    webviewVerbose = settings.value(MOD_KEY_WEBVIEW_VERBOSE, MOD_DEFAULT_WEBVIEW_VERBOSE, type=bool)
+    changeBufSize  = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool)
+    wantedBufSize  = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE, MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE, type=int)
+    webviewVerbose = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE, MOD_DEFAULT_WEBVIEW_VERBOSE, type=bool)
 
     os.environ['MOD_DEFAULT_JACK_BUFSIZE'] = str(wantedBufSize) if changeBufSize  else "0"
     os.environ['MOD_LOG']                  = "1"                if webviewVerbose else "0"
 
+    from mod import jack
     jack.DEV_HOST = 0 if wantedBufSize else 1
 
+    from mod import settings
+    settings.DEFAULT_JACK_BUFSIZE = wantedBufSize  if changeBufSize else  0
+    settings.LOG                  = webviewVerbose
+
     # cleanup
-    del settings, changeBufSize, wantedBufSize, webviewVerbose
+    del qsettings, changeBufSize, wantedBufSize, webviewVerbose
 
 # ------------------------------------------------------------------------------------------------------------

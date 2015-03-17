@@ -27,18 +27,19 @@ from mod_settings import *
 if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices, QPixmap
-    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox, QSplashScreen
+    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QSplashScreen
     from PyQt5.QtWebKitWidgets import QWebPage, QWebView #, QWebSettings
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices, QPixmap
-    from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QMainWindow, QMessageBox, QSplashScreen
+    from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QSplashScreen
     from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
 
 from ui_mod_host import Ui_HostWindow
+from ui_mod_pedalboards import Ui_Pedalboards
 
 # ------------------------------------------------------------------------------------------------------------
 # Import (WebServer)
@@ -176,6 +177,21 @@ class HostSplashScreen(QSplashScreen):
         self.fApp.quit()
 
 # ------------------------------------------------------------------------------------------------------------
+# Pedalboards Window
+
+class PedalboardsWindow(QDialog):
+    def __init__(self, parent):
+        QDialog.__init__(self)
+        self.ui = Ui_Pedalboards()
+        self.ui.setupUi(self)
+
+        for name, uri, thumbnail, presets in get_pedalboards():
+            item = QListWidgetItem(self.ui.listWidget)
+            item.setIcon(QIcon(thumbnail.replace("file://","")))
+            item.setText(name)
+            self.ui.listWidget.addItem(item)
+
+# ------------------------------------------------------------------------------------------------------------
 # Host Window
 
 class HostWindow(QMainWindow):
@@ -194,7 +210,10 @@ class HostWindow(QMainWindow):
         # Internal stuff
 
         # Current project filename (used via 'File' menu actions)
-        self.fProjectFilename = ""
+        self.fCurrentPedalboard = ""
+
+        # TESTING
+        self.fCurrentPedalboard = os.path.expanduser("~/.lv2/c_ds1_phase_reverb.pedalboard/c_ds1_phase_reverb.ttl")
 
         # first attempt of auto-start backend doesn't show an error
         self.fFirstBackendInit  = True
@@ -211,6 +230,9 @@ class HostWindow(QMainWindow):
 
         # List of pedalboards
         self.fPedalboards = get_pedalboards()
+
+        # List of current-pedalboard presets
+        self.fPresetMenuList = []
 
         # Splash screen, as passed in the constructor
         self.fSplashScreen = splashScreen
@@ -242,14 +264,9 @@ class HostWindow(QMainWindow):
 
         self.ui.label_app.setText("MOD Application v%s" % config["version"])
 
-        # disable file menu
-        self.ui.act_file_new.setEnabled(False)
-        self.ui.act_file_open.setEnabled(False)
-        self.ui.act_file_save.setEnabled(False)
-        self.ui.act_file_save_as.setEnabled(False)
-
         # disable pedalboard menu
         self.ui.act_pedalboard_new.setEnabled(False)
+        self.ui.act_pedalboard_open.setEnabled(False)
         self.ui.act_pedalboard_save.setEnabled(False)
         self.ui.act_pedalboard_save_as.setEnabled(False)
         self.ui.act_pedalboard_share.setEnabled(False)
@@ -291,24 +308,17 @@ class HostWindow(QMainWindow):
         self.fWebServerThread.running.connect(self.slot_webServerRunning)
         self.fWebServerThread.finished.connect(self.slot_webServerFinished)
 
-        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
-        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
-        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
-
         self.ui.menu_Pedalboard.aboutToShow.connect(self.slot_pedalboardCheckOnline)
 
-        self.ui.act_file_new.triggered.connect(self.slot_fileNew)
-        self.ui.act_file_open.triggered.connect(self.slot_fileOpen)
-        self.ui.act_file_save.triggered.connect(self.slot_fileSave)
-        self.ui.act_file_save_as.triggered.connect(self.slot_fileSaveAs)
-
+        self.ui.act_backend_information.triggered.connect(self.slot_backendInformation)
         self.ui.act_backend_start.triggered.connect(self.slot_backendStart)
         self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
         self.ui.act_backend_restart.triggered.connect(self.slot_backendRestart)
         self.ui.act_backend_rescan.triggered.connect(self.slot_backendRescan)
-        #self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
+        self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
 
         self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
+        self.ui.act_pedalboard_open.triggered.connect(self.slot_pedalboardOpen)
         self.ui.act_pedalboard_save.triggered.connect(self.slot_pedalboardSave)
         self.ui.act_pedalboard_save_as.triggered.connect(self.slot_pedalboardSaveAs)
         self.ui.act_pedalboard_share.triggered.connect(self.slot_pedalboardShare)
@@ -326,6 +336,9 @@ class HostWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Final setup
 
+        # TESTING, remove next line later
+        self.updatePresetsMenu()
+
         self.setProperWindowTitle()
 
         QTimer.singleShot(0, self.slot_backendStart)
@@ -339,40 +352,66 @@ class HostWindow(QMainWindow):
     # Files
 
     def loadProjectNow(self):
-        if not self.fProjectFilename:
+        if not self.fCurrentPedalboard:
             return qCritical("ERROR: loading project without filename set")
 
         self.ui.webview.setEnabled(False)
 
         # TODO
-        #self.host.load_project(self.fProjectFilename)
+        #self.host.load_project(self.fCurrentPedalboard)
 
         self.ui.webview.setEnabled(True)
 
     def loadProjectLater(self, filename):
-        self.fProjectFilename = QFileInfo(filename).absoluteFilePath()
+        self.fCurrentPedalboard = QFileInfo(filename).absoluteFilePath()
         self.setProperWindowTitle()
+        self.updatePresetsMenu()
         #QTimer.singleShot(0, self.slot_loadProjectNow)
 
     def saveProjectNow(self):
-        if not self.fProjectFilename:
+        if not self.fCurrentPedalboard:
             return qCritical("ERROR: saving project without filename set")
 
         # TODO
-        #self.host.save_project(self.fProjectFilename)
+        #self.host.save_project(self.fCurrentPedalboard)
 
     # --------------------------------------------------------------------------------------------------------
     # Files (menu actions)
 
     @pyqtSlot()
-    def slot_fileNew(self):
+    def slot_loadProjectNow(self):
         return QMessageBox.information(self, self.tr("information"), "TODO")
-        # TODO - clear pedalboard
-        self.fProjectFilename = ""
-        self.setProperWindowTitle()
+
+        self.loadProjectNow()
+
+    # --------------------------------------------------------------------------------------------------------
+    # Pedalboard (menu actions)
 
     @pyqtSlot()
-    def slot_fileOpen(self):
+    def slot_pedalboardCheckOnline(self):
+        if self.fWebFrame is None:
+            return
+        isOnline = self.fWebFrame.evaluateJavaScript("$('#mod-cloud').hasClass('logged')")
+        self.ui.act_pedalboard_share.setEnabled(isOnline)
+
+    #@pyqtSlot()
+    def slot_pedalboardNew(self):
+        self.fCurrentPedalboard = ""
+        self.updatePresetsMenu()
+        self.setProperWindowTitle()
+
+        if self.fWebFrame is None:
+            return
+
+        self.fWebFrame.evaluateJavaScript("desktop.reset()")
+
+    #@pyqtSlot()
+    def slot_pedalboardOpen(self):
+        dialog = PedalboardsWindow(self)
+
+        if not dialog.exec_():
+            return
+
         return QMessageBox.information(self, self.tr("information"), "TODO")
 
         fileFilter = self.tr("MOD Project File (*.modp)")
@@ -392,24 +431,24 @@ class HostWindow(QMainWindow):
 
         if newFile:
             # TODO - clear all
-            #self.fProjectFilename = filename
+            #self.fCurrentPedalboard = filename
             self.setProperWindowTitle()
             self.loadProjectNow()
         else:
-            #filenameOld = self.fProjectFilename
-            #self.fProjectFilename = filename
+            #filenameOld = self.fCurrentPedalboard
+            #self.fCurrentPedalboard = filename
             self.loadProjectNow()
-            #self.fProjectFilename = filenameOld
+            #self.fCurrentPedalboard = filenameOld
 
     @pyqtSlot()
-    def slot_fileSave(self, saveAs=False):
+    def slot_pedalboardSave(self, saveAs=False):
         return QMessageBox.information(self, self.tr("information"), "TODO")
 
-        if self.fProjectFilename and not saveAs:
+        if self.fCurrentPedalboard and not saveAs:
             return self.saveProjectNow()
 
         name, ok = QInputDialog.getText(self, self.tr("Pedalboard name"), self.tr("Pedalboard name"),
-                                        QLineEdit.Normal, self.fProjectFilename if saveAs else "")
+                                        QLineEdit.Normal, self.fCurrentPedalboard if saveAs else "")
 
         print(name, ok)
 
@@ -424,57 +463,34 @@ class HostWindow(QMainWindow):
         #if not filename.lower().endswith(".mod-app"):
             #filename += ".mod-app"
 
-        if self.fProjectFilename != name:
-            self.fProjectFilename = name
+        if self.fCurrentPedalboard != name:
+            self.fCurrentPedalboard = name
+            self.updatePresetsMenu()
             self.setProperWindowTitle()
 
         self.saveProjectNow()
 
-    @pyqtSlot()
-    def slot_fileSaveAs(self):
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
-        self.slot_fileSave(True)
-
-    @pyqtSlot()
-    def slot_loadProjectNow(self):
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
-        self.loadProjectNow()
-
-    # --------------------------------------------------------------------------------------------------------
-    # Pedalboard (menu actions)
-
-    @pyqtSlot()
-    def slot_pedalboardCheckOnline(self):
-        if self.fWebFrame is None:
-            return
-        isOnline = self.fWebFrame.evaluateJavaScript("$('#mod-cloud').hasClass('logged')")
-        self.ui.act_pedalboard_share.setEnabled(isOnline)
-
-    @pyqtSlot()
-    def slot_pedalboardNew(self):
-        if self.fWebFrame is None:
-            return
-        self.fWebFrame.evaluateJavaScript("desktop.reset()")
-
-    @pyqtSlot()
-    def slot_pedalboardSave(self):
-        if self.fWebFrame is None:
-            return
-        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(false)")
+        #self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(false)")
 
     @pyqtSlot()
     def slot_pedalboardSaveAs(self):
-        if self.fWebFrame is None:
-            return
-        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(true)")
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
+        self.slot_pedalboardSave(True)
+        #self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(true)")
 
     @pyqtSlot()
     def slot_pedalboardShare(self):
         if self.fWebFrame is None:
             return
         self.fWebFrame.evaluateJavaScript("desktop.shareCurrentPedalboard()")
+
+    # --------------------------------------------------------------------------------------------------------
+    # Presets (menu actions)
+
+    @pyqtSlot()
+    def slot_presetClicked(self):
+        print(self.sender().data())
 
     # --------------------------------------------------------------------------------------------------------
     # Settings (menu actions)
@@ -510,6 +526,19 @@ class HostWindow(QMainWindow):
     # Host (menu actions)
 
     @pyqtSlot()
+    def slot_backendInformation(self):
+        table = """
+        <table><tr>
+        <td> MOD-UI port:      <td></td> %s </td>
+        </tr><tr>
+        <td> Ingen address:    <td></td> %s </td>
+        </tr><tr>
+        <td> JACK client name: <td></td> %s </td>
+        </tr></table>
+        """ % (config["port"], "unix:///tmp/mod-app-%s.sock" % config["port"], "mod-app-%s" % config["port"])
+        QMessageBox.information(self, self.tr("information"), table)
+
+    @pyqtSlot()
     def slot_backendStart(self):
         if self.fProccessBackend.state() == QProcess.Running:
             print("slot_backendStart ignored")
@@ -521,12 +550,12 @@ class HostWindow(QMainWindow):
         if hostPath.endswith("mod-host"):
             hostPath = MOD_DEFAULT_HOST_PATH
 
-        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"]]
-        #hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", "/tmp/mod-app-%s.sock" % config["port"]]
+        #hostArgs = ["-e", "-n", "mod-app-%s" % config["port"]]
+        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", "/tmp/mod-app-%s.sock" % config["port"]]
 
-        #if self.fProjectFilename and not self.fFirstBackendInit:
+        #if self.fCurrentPedalboard: # and self.fFirstBackendInit:
             #hostArgs.append("-l")
-            #hostArgs.append(self.fProjectFilename)
+            #hostArgs.append(self.fCurrentPedalboard)
 
         self.fProccessBackend.start(hostPath, hostArgs)
 
@@ -559,22 +588,25 @@ class HostWindow(QMainWindow):
         #QApplication.instance().processEvents()
         self.slot_backendStart()
 
-    @pyqtSlot()
+    @pyqtSlot(bool)
     def slot_backendRescan(self):
-        QSettings().setValue("NeedsRescan", True)
+        QSettings().setValue("NeedsRescan", self.ui.act_backend_rescan.isChecked())
 
-        QMessageBox.information(self, self.tr("information"),
-                                      self.tr("Rescan is now enabled for the next time you start MOD-App."))
+        #QMessageBox.information(self, self.tr("information"),
+                                      #self.tr("Rescan is now enabled for the next time you start MOD-App."))
 
     @pyqtSlot()
     def slot_backendAlternateUI(self):
-        pass
+        hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
+        if hostPath.endswith("mod-host"):
+            hostPath = MOD_DEFAULT_HOST_PATH
+
+        os.system("%s -c %s -g &" % (hostPath, "unix:///tmp/mod-app-%s.sock" % config["port"]))
 
     # --------------------------------------------------------------------------------------------------------
 
     @pyqtSlot()
     def slot_backendStarted(self):
-        self.fFirstBackendInit = False
         self.fSplashScreen.close()
         self.ui.act_backend_start.setEnabled(False)
         self.ui.act_backend_stop.setEnabled(True)
@@ -584,6 +616,7 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot(int, QProcess.ExitStatus)
     def slot_backendFinished(self, exitCode, exitStatus):
+        self.fFirstBackendInit = False
         self.fStoppingBackend = False
         self.ui.act_backend_start.setEnabled(True)
         self.ui.act_backend_stop.setEnabled(False)
@@ -592,18 +625,21 @@ class HostWindow(QMainWindow):
         self.ui.label_progress.setText(self.tr(""))
         self.ui.stackedwidget.setCurrentIndex(0)
 
+        # stop webserver
+        self.stopAndWaitForWebServer()
+
     @pyqtSlot(QProcess.ProcessError)
     def slot_backendError(self, error):
         firstBackendInit = self.fFirstBackendInit
         self.fFirstBackendInit = False
         self.fSplashScreen.close()
 
+        # stop webserver
+        self.stopAndWaitForWebServer()
+
         # crashed while stopping, ignore
         if error == QProcess.Crashed and self.fStoppingBackend:
             return
-
-        # stop webserver
-        self.stopAndWaitForWebServer()
 
         errorStr = self.tr("Could not start host backend.\n") + self.getProcessErrorAsString(error)
         qWarning(errorStr)
@@ -654,11 +690,19 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_webServerRunning(self):
+        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
+
         print("webserver running")
         self.ui.webview.load(QUrl(config["addr"]))
 
     @pyqtSlot()
     def slot_webServerFinished(self):
+        self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
+
         print("webserver finished")
         # testing red color for server finished
         self.ui.webview.blockSignals(True)
@@ -680,18 +724,17 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot(bool)
     def slot_webviewLoadFinished(self, ok):
+        self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
+
         if ok:
             # message
             self.ui.label_progress.setText(self.tr("Loading UI... finished!"))
 
-            # enable file menu
-            self.ui.act_file_new.setEnabled(True)
-            self.ui.act_file_open.setEnabled(True)
-            self.ui.act_file_save.setEnabled(True)
-            self.ui.act_file_save_as.setEnabled(True)
-
             # enable pedalboard menu
             self.ui.act_pedalboard_new.setEnabled(True)
+            self.ui.act_pedalboard_open.setEnabled(True)
             self.ui.act_pedalboard_save.setEnabled(True)
             self.ui.act_pedalboard_save_as.setEnabled(True)
             self.ui.act_pedalboard_share.setEnabled(True)
@@ -707,14 +750,9 @@ class HostWindow(QMainWindow):
             # message
             self.ui.label_progress.setText(self.tr("Loading UI... failed!"))
 
-            # disable file menu
-            self.ui.act_file_new.setEnabled(False)
-            self.ui.act_file_open.setEnabled(False)
-            self.ui.act_file_save.setEnabled(False)
-            self.ui.act_file_save_as.setEnabled(False)
-
             # disable pedalboard menu
             self.ui.act_pedalboard_new.setEnabled(False)
+            self.ui.act_pedalboard_open.setEnabled(False)
             self.ui.act_pedalboard_save.setEnabled(False)
             self.ui.act_pedalboard_save_as.setEnabled(False)
             self.ui.act_pedalboard_share.setEnabled(False)
@@ -796,7 +834,7 @@ class HostWindow(QMainWindow):
     @pyqtSlot()
     def slot_handleSIGUSR1(self):
         print("Got SIGUSR1 -> Saving project now")
-        self.slot_fileSave()
+        self.slot_pedalboardSave()
 
     @pyqtSlot()
     def slot_handleSIGTERM(self):
@@ -875,9 +913,33 @@ class HostWindow(QMainWindow):
     def setProperWindowTitle(self):
         title = "MOD Application"
 
-        if self.fProjectFilename:
-            title += " - %s" % self.fProjectFilename
+        if self.fCurrentPedalboard:
+            title += " - %s" % self.fCurrentPedalboard
 
         self.setWindowTitle(title)
 
+    def updatePresetsMenu(self):
+        for action in self.fPresetMenuList:
+            self.ui.menu_Presets.removeAction(action)
+
+        self.fPresetMenuList = []
+
+        if not self.fCurrentPedalboard:
+            return
+
+        for name, uri, thumbnail, presets in self.fPedalboards:
+            if self.fCurrentPedalboard not in uri:
+                continue
+            for preset in presets:
+                act = self.ui.menu_Presets.addAction(preset["label"])
+                act.setData(preset["uri"])
+                act.triggered.connect(self.slot_presetClicked)
+                self.fPresetMenuList.append(act)
+
 # ------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    gui = PedalboardsWindow(None)
+    gui.show()
+    sys.exit(app.exec_())

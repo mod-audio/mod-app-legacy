@@ -278,10 +278,6 @@
     </property>
     <addaction name="act_file_connect"/>
     <addaction name="act_file_disconnect"/>
-    <addaction name="act_file_new"/>
-    <addaction name="act_file_open"/>
-    <addaction name="act_file_save"/>
-    <addaction name="act_file_save_as"/>
     <addaction name="separator"/>
     <addaction name="act_file_quit"/>
    </widget>
@@ -309,14 +305,16 @@
     <addaction name="act_backend_stop"/>
     <addaction name="separator"/>
     <addaction name="act_backend_restart"/>
-    <addaction name="separator"/>
     <addaction name="act_backend_rescan"/>
+    <addaction name="separator"/>
+    <addaction name="act_backend_alternate_ui"/>
    </widget>
    <widget class="QMenu" name="menu_Pedalboard">
     <property name="title">
      <string>&amp;Pedalboard</string>
     </property>
     <addaction name="act_pedalboard_new"/>
+    <addaction name="act_pedalboard_open"/>
     <addaction name="act_pedalboard_save"/>
     <addaction name="act_pedalboard_save_as"/>
     <addaction name="separator"/>
@@ -333,12 +331,12 @@
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Backend"/>
-   <addaction name="menu_Presets"/>
    <addaction name="menu_Pedalboard"/>
+   <addaction name="menu_Presets"/>
    <addaction name="menu_Settings"/>
    <addaction name="menu_Help"/>
   </widget>
-  <action name="act_file_new">
+  <action name="act_pedalboard_new">
    <property name="icon">
     <iconset resource="../resources.qrc">
      <normaloff>:/16x16/document-new.png</normaloff>:/16x16/document-new.png</iconset>
@@ -350,7 +348,7 @@
     <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="act_file_open">
+  <action name="act_pedalboard_open">
    <property name="icon">
     <iconset resource="../resources.qrc">
      <normaloff>:/16x16/document-open.png</normaloff>:/16x16/document-open.png</iconset>
@@ -362,7 +360,7 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="act_file_save">
+  <action name="act_pedalboard_save">
    <property name="icon">
     <iconset resource="../resources.qrc">
      <normaloff>:/16x16/document-save.png</normaloff>:/16x16/document-save.png</iconset>
@@ -374,7 +372,7 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="act_file_save_as">
+  <action name="act_pedalboard_save_as">
    <property name="icon">
     <iconset resource="../resources.qrc">
      <normaloff>:/16x16/document-save-as.png</normaloff>:/16x16/document-save-as.png</iconset>
@@ -445,33 +443,6 @@
     <string>Restart</string>
    </property>
   </action>
-  <action name="act_pedalboard_new">
-   <property name="icon">
-    <iconset resource="../resources.qrc">
-     <normaloff>:/16x16/document-new.png</normaloff>:/16x16/document-new.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;New</string>
-   </property>
-  </action>
-  <action name="act_pedalboard_save">
-   <property name="icon">
-    <iconset resource="../resources.qrc">
-     <normaloff>:/16x16/document-save.png</normaloff>:/16x16/document-save.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Save</string>
-   </property>
-  </action>
-  <action name="act_pedalboard_save_as">
-   <property name="icon">
-    <iconset resource="../resources.qrc">
-     <normaloff>:/16x16/document-save-as.png</normaloff>:/16x16/document-save-as.png</iconset>
-   </property>
-   <property name="text">
-    <string>Save &amp;as...</string>
-   </property>
-  </action>
   <action name="act_pedalboard_share">
    <property name="text">
     <string>S&amp;hare...</string>
@@ -482,19 +453,17 @@
     <string>&amp;Connect...</string>
    </property>
   </action>
-  <action name="act_backend_alternate_ui">
-   <property name="text">
-    <string>Launch alternate UI</string>
-   </property>
-  </action>
   <action name="act_file_disconnect">
    <property name="text">
     <string>Disconnect</string>
    </property>
   </action>
   <action name="act_backend_rescan">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Rescan plugins...</string>
+    <string>Rescan plugins on next startup</string>
    </property>
   </action>
   <action name="act_backend_information">
@@ -515,6 +484,16 @@
   <action name="act_presets_save_as">
    <property name="text">
     <string>&amp;Save as...</string>
+   </property>
+  </action>
+  <action name="act_backend_alternate_ui">
+   <property name="text">
+    <string>Open Ingen's UI</string>
+   </property>
+  </action>
+  <action name="act_backend_reconnect">
+   <property name="text">
+    <string>Reconnect</string>
    </property>
   </action>
  </widget>

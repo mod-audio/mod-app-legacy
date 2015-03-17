@@ -79,6 +79,7 @@ bin/resources/%.py: source/%.py
 
 UIs = \
 	source/ui_mod_connect.py \
+	source/ui_mod_pedalboards.py \
 	source/ui_mod_host.py \
 	source/ui_mod_settings.py
 

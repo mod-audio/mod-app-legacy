@@ -47,7 +47,7 @@ from ui_mod_host import Ui_HostWindow
 setInitialSettings()
 
 from mod import jack, rebuild_database, webserver
-from mod.lv2 import PLUGINS, modgui as NSMODGUI
+from mod.lv2 import get_pedalboards
 from mod.session import SESSION
 
 # ------------------------------------------------------------------------------------------------------------
@@ -209,6 +209,9 @@ class HostWindow(QMainWindow):
         # to be filled with key-value pairs of current settings
         self.fSavedSettings = {}
 
+        # List of pedalboards
+        self.fPedalboards = get_pedalboards()
+
         # Splash screen, as passed in the constructor
         self.fSplashScreen = splashScreen
 
@@ -258,21 +261,6 @@ class HostWindow(QMainWindow):
         # Qt needs this so it properly creates & resizes the webview
         self.ui.stackedwidget.setCurrentIndex(1)
         self.ui.stackedwidget.setCurrentIndex(0)
-
-        thumbnail = NSMODGUI.thumbnail
-        print(thumbnail)
-        print(thumbnail.me)
-
-        for plugin in PLUGINS:
-            t = plugin.get_value(thumbnail)
-
-            if t.me is None:
-                continue
-
-            print("----------------------------------------------")
-            print(plugin.get_name().as_string())
-            print(plugin.get_uri().as_string())
-            print("----------------------------------------------")
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI (special stuff for Mac OS)

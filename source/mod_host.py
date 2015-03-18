@@ -28,12 +28,12 @@ if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices, QPixmap
     from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QSplashScreen
-    from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView #, QWebSettings
+    from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices, QPixmap
     from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QSplashScreen
-    from PyQt4.QtWebKit import QWebInspector, QWebPage, QWebView, QWebSettings
+    from PyQt4.QtWebKit import QWebInspector, QWebPage, QWebView
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
@@ -848,9 +848,8 @@ class HostWindow(QMainWindow):
 
         inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR]
 
-        # FIXME
-        if not config_UseQt5:
-            websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, inspectorEnabled)
+        # QWebSettings::DeveloperExtrasEnabled == 7
+        websettings.setAttribute(7, inspectorEnabled)
 
         self.ui.act_file_inspect.setVisible(inspectorEnabled)
 

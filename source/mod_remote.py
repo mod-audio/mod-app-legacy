@@ -28,8 +28,6 @@ if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices
     from PyQt5.QtWidgets import QAction, QApplication, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-
-
     from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
@@ -90,14 +88,38 @@ class RemoteConnectDialog(QDialog):
 
         self.fAddress = QUrl("")
 
+        self.loadSettings()
+
         self.accepted.connect(self.slot_setAddress)
+        self.finished.connect(self.slot_saveSettings)
 
     def getAddress(self):
         return self.fAddress
 
+    def loadSettings(self):
+        settings = QSettings()
+        settings.beginGroup("ConnectDialog")
+
+        self.ui.comboBox.setCurrentIndex(settings.value("index", 0, type=int))
+        self.ui.sb_devnumber_bt.setValue(settings.value("bt-number", 1, type=int))
+        self.ui.le_ip_lan.setText(settings.value("lan-ip", "127.0.0.1", type=str))
+        self.ui.sb_port_lan.setValue(settings.value("lan-port", 8888, type=int))
+        self.ui.le_ip_usb.setText(settings.value("usb-ip", "192.168.51.1", type=str))
+
+    @pyqtSlot()
+    def slot_saveSettings(self):
+        settings = QSettings()
+        settings.beginGroup("ConnectDialog")
+
+        settings.setValue("index",     self.ui.comboBox.currentIndex())
+        settings.setValue("bt-number", self.ui.sb_devnumber_bt.value())
+        settings.setValue("lan-ip",    self.ui.le_ip_lan.text())
+        settings.setValue("lan-port",  self.ui.sb_port_lan.value())
+        settings.setValue("usb-ip",    self.ui.le_ip_usb.text())
+
     @pyqtSlot()
     def slot_setAddress(self):
-        index = self.ui.stackedWidget.currentIndex()
+        index = self.ui.comboBox.currentIndex()
 
         if index == self.INDEX_BT:
             address = "192.168.50.%i" % self.ui.sb_devnumber_bt.value()
@@ -117,6 +139,10 @@ class RemoteConnectDialog(QDialog):
             url += ":%i" % port
 
         self.fAddress = QUrl(url)
+
+    def done(self, r):
+        QDialog.done(self, r)
+        self.close()
 
 # ------------------------------------------------------------------------------------------------------------
 # Remote Window
@@ -266,19 +292,27 @@ class RemoteWindow(QMainWindow):
         self.ui.webview.load(dialog.getAddress())
 
         # allow to disconnect
-        self.ui.act_file_disconnect.setEnabled(False)
+        self.ui.act_file_disconnect.setEnabled(True)
 
     @pyqtSlot()
     def slot_fileDisconnect(self):
-        self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
-        self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
-        self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
+        try:
+            self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
+            self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
+            self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
+        except:
+            pass
 
         self.ui.w_buttons.setEnabled(True)
         self.ui.stackedwidget.setCurrentIndex(0)
 
         # testing cyan color for disconnected
         self.ui.webview.setHtml("<html><body bgcolor='cyan'></body></html>")
+
+        # disable file menu
+        self.ui.act_file_disconnect.setEnabled(False)
+        self.ui.act_file_refresh.setEnabled(False)
+        self.ui.act_file_inspect.setEnabled(False)
 
     @pyqtSlot()
     def slot_fileRefresh(self):

@@ -28,6 +28,8 @@ if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices
     from PyQt5.QtWidgets import QAction, QApplication, QInputDialog, QLineEdit, QMainWindow, QMessageBox
+
+
     from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView #, QWebSettings
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
@@ -196,6 +198,7 @@ class RemoteWindow(QMainWindow):
         self.ui.label_progress.hide()
 
         # disable file menu
+        self.ui.act_file_disconnect.setEnabled(False)
         self.ui.act_file_refresh.setEnabled(False)
         self.ui.act_file_inspect.setEnabled(False)
 
@@ -261,6 +264,9 @@ class RemoteWindow(QMainWindow):
 
         self.ui.w_buttons.setEnabled(False)
         self.ui.webview.load(dialog.getAddress())
+
+        # allow to disconnect
+        self.ui.act_file_disconnect.setEnabled(False)
 
     @pyqtSlot()
     def slot_fileDisconnect(self):
@@ -337,6 +343,7 @@ class RemoteWindow(QMainWindow):
 
         if ok:
             # enable file menu
+            self.ui.act_file_disconnect.setEnabled(True)
             self.ui.act_file_refresh.setEnabled(True)
             self.ui.act_file_inspect.setEnabled(True)
 
@@ -347,6 +354,7 @@ class RemoteWindow(QMainWindow):
 
         else:
             # disable file menu
+            self.ui.act_file_disconnect.setEnabled(False)
             self.ui.act_file_refresh.setEnabled(False)
             self.ui.act_file_inspect.setEnabled(False)
 

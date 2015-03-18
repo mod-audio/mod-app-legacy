@@ -279,6 +279,9 @@
     <addaction name="act_file_connect"/>
     <addaction name="act_file_disconnect"/>
     <addaction name="separator"/>
+    <addaction name="act_file_refresh"/>
+    <addaction name="act_file_inspect"/>
+    <addaction name="separator"/>
     <addaction name="act_file_quit"/>
    </widget>
    <widget class="QMenu" name="menu_Settings">
@@ -412,12 +415,12 @@
   </action>
   <action name="act_help_project">
    <property name="text">
-    <string>MOD-App Project page</string>
+    <string>MOD-App &amp;Project page</string>
    </property>
   </action>
   <action name="act_help_website">
    <property name="text">
-    <string>MOD Website</string>
+    <string>MOD &amp;Website</string>
    </property>
   </action>
   <action name="act_backend_start">
@@ -426,7 +429,7 @@
      <normaloff>:/16x16/media-playback-start.png</normaloff>:/16x16/media-playback-start.png</iconset>
    </property>
    <property name="text">
-    <string>Start</string>
+    <string>&amp;Start</string>
    </property>
   </action>
   <action name="act_backend_stop">
@@ -435,12 +438,12 @@
      <normaloff>:/16x16/media-playback-stop.png</normaloff>:/16x16/media-playback-stop.png</iconset>
    </property>
    <property name="text">
-    <string>Stop</string>
+    <string>St&amp;op</string>
    </property>
   </action>
   <action name="act_backend_restart">
    <property name="text">
-    <string>Restart</string>
+    <string>&amp;Restart</string>
    </property>
   </action>
   <action name="act_pedalboard_share">
@@ -455,7 +458,7 @@
   </action>
   <action name="act_file_disconnect">
    <property name="text">
-    <string>Disconnect</string>
+    <string>&amp;Disconnect</string>
    </property>
   </action>
   <action name="act_backend_rescan">
@@ -483,17 +486,27 @@
   </action>
   <action name="act_presets_save_as">
    <property name="text">
-    <string>&amp;Save as...</string>
+    <string>Save &amp;as...</string>
    </property>
   </action>
   <action name="act_backend_alternate_ui">
    <property name="text">
-    <string>Open Ingen's UI</string>
+    <string>Open Ingen's &amp;UI</string>
    </property>
   </action>
   <action name="act_backend_reconnect">
    <property name="text">
     <string>Reconnect</string>
+   </property>
+  </action>
+  <action name="act_file_refresh">
+   <property name="text">
+    <string>&amp;Refresh</string>
+   </property>
+  </action>
+  <action name="act_file_inspect">
+   <property name="text">
+    <string>&amp;Inspect</string>
    </property>
   </action>
  </widget>

@@ -27,13 +27,13 @@ from mod_settings import *
 if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices
-    from PyQt5.QtWidgets import QAction, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-    from PyQt5.QtWebKitWidgets import QWebPage, QWebView #, QWebSettings
+    from PyQt5.QtWidgets import QAction, QApplication, QInputDialog, QLineEdit, QMainWindow, QMessageBox
+    from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView #, QWebSettings
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices
-    from PyQt4.QtGui import QAction, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-    from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
+    from PyQt4.QtGui import QAction, QApplication, QInputDialog, QLineEdit, QMainWindow, QMessageBox
+    from PyQt4.QtWebKit import QWebInspector, QWebPage, QWebView, QWebSettings
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
@@ -152,8 +152,9 @@ class RemoteWindow(QMainWindow):
         self.ui.webpage = RemoteWebPage(self)
         self.ui.webview.setPage(self.ui.webpage)
 
-        self.ui.label_progress.hide()
-        self.ui.stackedwidget.setCurrentIndex(0)
+        self.ui.webinspector = QWebInspector(None)
+        self.ui.webinspector.setPage(self.ui.webpage)
+        self.ui.webinspector.setVisible(False)
 
         self.ui.act_backend_start.setEnabled(False)
         self.ui.act_backend_start.setVisible(False)
@@ -191,6 +192,7 @@ class RemoteWindow(QMainWindow):
         self.ui.act_settings_configure.setText(self.tr("Configure MOD-Remote"))
         self.ui.b_start.setText(self.tr("Connect..."))
         self.ui.label_app.setText("MOD Remote v%s" % config["version"])
+        self.ui.label_progress.hide()
 
         # TODO - set connect icon
 
@@ -220,6 +222,9 @@ class RemoteWindow(QMainWindow):
 
         self.ui.act_file_connect.triggered.connect(self.slot_fileConnect)
         self.ui.act_file_disconnect.triggered.connect(self.slot_fileDisconnect)
+
+        self.ui.act_file_refresh.triggered.connect(self.slot_fileRefresh)
+        self.ui.act_file_inspect.triggered.connect(self.slot_fileInspect)
 
         self.ui.act_settings_configure.triggered.connect(self.slot_configure)
 
@@ -262,6 +267,14 @@ class RemoteWindow(QMainWindow):
 
         self.ui.w_buttons.setEnabled(True)
         self.ui.stackedwidget.setCurrentIndex(0)
+
+    @pyqtSlot()
+    def slot_fileRefresh(self):
+        self.ui.webview.reload()
+
+    @pyqtSlot()
+    def slot_fileInspect(self):
+        self.ui.webinspector.show()
 
     # --------------------------------------------------------------------------------------------------------
     # Settings (menu actions)
@@ -350,9 +363,14 @@ class RemoteWindow(QMainWindow):
             MOD_KEY_WEBVIEW_VERBOSE:       qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,       MOD_DEFAULT_WEBVIEW_VERBOSE,       type=bool)
         }
 
+        inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR]
+
         # FIXME
         if not config_UseQt5:
-            websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR])
+            websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, inspectorEnabled)
+
+        self.ui.act_file_inspect.setEnabled(inspectorEnabled)
+        self.ui.act_file_inspect.setVisible(inspectorEnabled)
 
         if self.fIdleTimerId != 0:
             self.killTimer(self.fIdleTimerId)
@@ -378,6 +396,10 @@ class RemoteWindow(QMainWindow):
         self.saveSettings()
 
         QMainWindow.closeEvent(self, event)
+
+        # Needed in case the web inspector is still alive
+        #self.ui.webinspector.close()
+        QApplication.instance().quit()
 
     def timerEvent(self, event):
         if event.timerId() == self.fIdleTimerId:

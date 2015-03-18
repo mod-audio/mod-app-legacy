@@ -28,12 +28,12 @@ if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices, QPixmap
     from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QSplashScreen
-    from PyQt5.QtWebKitWidgets import QWebPage, QWebView #, QWebSettings
+    from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView #, QWebSettings
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices, QPixmap
     from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QSplashScreen
-    from PyQt4.QtWebKit import QWebPage, QWebView, QWebSettings
+    from PyQt4.QtWebKit import QWebInspector, QWebPage, QWebView, QWebSettings
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
@@ -219,6 +219,9 @@ class HostWindow(QMainWindow):
         self.fFirstBackendInit  = True
         self.fFirstBackendInit2 = True
 
+        # special check for loading progress when only refreshing page
+        self.fIsRefreshingPage = False
+
         # Qt idle timer
         self.fIdleTimerId = 0
 
@@ -256,6 +259,10 @@ class HostWindow(QMainWindow):
         self.ui.webpage = HostWebPage(self)
         self.ui.webpage.setViewportSize(QSize(980, 600))
         self.ui.webview.setPage(self.ui.webpage)
+
+        self.ui.webinspector = QWebInspector(None)
+        self.ui.webinspector.setPage(self.ui.webpage)
+        self.ui.webinspector.setVisible(False)
 
         self.ui.act_file_connect.setEnabled(False)
         self.ui.act_file_connect.setVisible(False)
@@ -316,6 +323,9 @@ class HostWindow(QMainWindow):
 
         self.ui.menu_Pedalboard.aboutToShow.connect(self.slot_pedalboardCheckOnline)
 
+        self.ui.act_file_refresh.triggered.connect(self.slot_fileRefresh)
+        self.ui.act_file_inspect.triggered.connect(self.slot_fileInspect)
+
         self.ui.act_backend_information.triggered.connect(self.slot_backendInformation)
         self.ui.act_backend_start.triggered.connect(self.slot_backendStart)
         self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
@@ -338,6 +348,11 @@ class HostWindow(QMainWindow):
         self.ui.b_start.clicked.connect(self.slot_backendStart)
         self.ui.b_configure.clicked.connect(self.slot_configure)
         self.ui.b_about.clicked.connect(self.slot_about)
+
+        # force our custom refresh
+        webReloadAction = self.ui.webpage.action(QWebPage.Reload)
+        webReloadAction.triggered.disconnect()
+        webReloadAction.triggered.connect(self.slot_fileRefresh)
 
         # ----------------------------------------------------------------------------------------------------
         # Final setup
@@ -383,6 +398,28 @@ class HostWindow(QMainWindow):
 
     # --------------------------------------------------------------------------------------------------------
     # Files (menu actions)
+
+    @pyqtSlot()
+    def slot_fileRefresh(self):
+        if self.fWebFrame is None:
+            return
+
+        self.ui.label_progress.setText(self.tr("Refreshing UI..."))
+        self.ui.stackedwidget.setCurrentIndex(0)
+
+        QTimer.singleShot(0, self.slot_fileRefreshPost)
+
+    @pyqtSlot()
+    def slot_fileRefreshPost(self):
+        self.fIsRefreshingPage = True
+        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
+        self.ui.webview.reload()
+
+    @pyqtSlot()
+    def slot_fileInspect(self):
+        self.ui.webinspector.show()
 
     @pyqtSlot()
     def slot_loadProjectNow(self):
@@ -529,7 +566,7 @@ class HostWindow(QMainWindow):
         QDesktopServices.openUrl(QUrl("http://portalmod.com/"))
 
     # --------------------------------------------------------------------------------------------------------
-    # Host (menu actions)
+    # Backend (menu actions)
 
     @pyqtSlot()
     def slot_backendInformation(self):
@@ -747,7 +784,7 @@ class HostWindow(QMainWindow):
             self.ui.menu_Pedalboard.setEnabled(True)
 
             # for js evaulation
-            self.fWebFrame = self.ui.webview.page().currentFrame()
+            self.fWebFrame = self.ui.webpage.currentFrame()
 
             # postpone app stuff
             QTimer.singleShot(0, self.slot_webviewPostFinished)
@@ -755,6 +792,7 @@ class HostWindow(QMainWindow):
         else:
             # message
             self.ui.label_progress.setText(self.tr("Loading UI... failed!"))
+            self.fIsRefreshingPage = False
 
             # disable pedalboard menu
             self.ui.act_pedalboard_new.setEnabled(False)
@@ -777,15 +815,18 @@ class HostWindow(QMainWindow):
     def slot_webviewPostFinished(self):
         self.fWebFrame.evaluateJavaScript("desktop.prepareForApp()")
 
-        settings = QSettings()
+        if not self.fIsRefreshingPage:
+            settings = QSettings()
 
-        if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool):
-            os.system("jack_connect system:capture_1 mod-app-%s:audio_in_1" % config["port"])
-            os.system("jack_connect system:capture_2 mod-app-%s:audio_in_2" % config["port"])
+            if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool):
+                os.system("jack_connect system:capture_1 mod-app-%s:audio_in_1" % config["port"])
+                os.system("jack_connect system:capture_2 mod-app-%s:audio_in_2" % config["port"])
 
-        if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
-            os.system("jack_connect mod-app-%s:audio_out_1 system:playback_1" % config["port"])
-            os.system("jack_connect mod-app-%s:audio_out_2 system:playback_2" % config["port"])
+            if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
+                os.system("jack_connect mod-app-%s:audio_out_1 system:playback_1" % config["port"])
+                os.system("jack_connect mod-app-%s:audio_out_2 system:playback_2" % config["port"])
+
+        self.fIsRefreshingPage = False
 
         QTimer.singleShot(0, self.slot_webviewPostFinished2)
 
@@ -825,9 +866,14 @@ class HostWindow(QMainWindow):
             MOD_KEY_WEBVIEW_VERBOSE:          qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
         }
 
+        inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR]
+
         # FIXME
         if not config_UseQt5:
-            websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR])
+            websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, inspectorEnabled)
+
+        self.ui.act_file_inspect.setEnabled(inspectorEnabled)
+        self.ui.act_file_inspect.setVisible(inspectorEnabled)
 
         if self.fIdleTimerId != 0:
             self.killTimer(self.fIdleTimerId)
@@ -861,6 +907,7 @@ class HostWindow(QMainWindow):
         QMainWindow.closeEvent(self, event)
 
         # Needed in case the web inspector is still alive
+        #self.ui.webinspector.close()
         QApplication.instance().quit()
 
     def timerEvent(self, event):

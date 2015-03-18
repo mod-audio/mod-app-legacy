@@ -271,6 +271,10 @@ class HostWindow(QMainWindow):
 
         self.ui.label_app.setText("MOD Application v%s" % config["version"])
 
+        # disable file menu
+        self.ui.act_file_refresh.setEnabled(False)
+        self.ui.act_file_inspect.setEnabled(False)
+
         # disable pedalboard menu
         self.ui.act_pedalboard_new.setEnabled(False)
         self.ui.act_pedalboard_open.setEnabled(False)
@@ -743,6 +747,10 @@ class HostWindow(QMainWindow):
             # message
             self.ui.label_progress.setText(self.tr("Loading UI... finished!"))
 
+            # enable file menu
+            self.ui.act_file_refresh.setEnabled(True)
+            self.ui.act_file_inspect.setEnabled(True)
+
             # enable pedalboard menu
             self.ui.act_pedalboard_new.setEnabled(True)
             self.ui.act_pedalboard_open.setEnabled(True)
@@ -761,6 +769,10 @@ class HostWindow(QMainWindow):
             # message
             self.ui.label_progress.setText(self.tr("Loading UI... failed!"))
             self.fIsRefreshingPage = False
+
+            # disable file menu
+            self.ui.act_file_refresh.setEnabled(False)
+            self.ui.act_file_inspect.setEnabled(False)
 
             # disable pedalboard menu
             self.ui.act_pedalboard_new.setEnabled(False)
@@ -840,7 +852,6 @@ class HostWindow(QMainWindow):
         if not config_UseQt5:
             websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, inspectorEnabled)
 
-        self.ui.act_file_inspect.setEnabled(inspectorEnabled)
         self.ui.act_file_inspect.setVisible(inspectorEnabled)
 
         if self.fIdleTimerId != 0:

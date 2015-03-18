@@ -190,11 +190,14 @@ class RemoteWindow(QMainWindow):
         self.ui.menu_Presets.menuAction().setVisible(False)
 
         self.ui.act_settings_configure.setText(self.tr("Configure MOD-Remote"))
+        self.ui.b_start.setIcon(QIcon(":/48x48/network-connect.png"))
         self.ui.b_start.setText(self.tr("Connect..."))
         self.ui.label_app.setText("MOD Remote v%s" % config["version"])
         self.ui.label_progress.hide()
 
-        # TODO - set connect icon
+        # disable file menu
+        self.ui.act_file_refresh.setEnabled(False)
+        self.ui.act_file_inspect.setEnabled(False)
 
         # Qt needs this so it properly creates & resizes the webview
         self.ui.stackedwidget.setCurrentIndex(1)
@@ -236,10 +239,6 @@ class RemoteWindow(QMainWindow):
         self.ui.b_configure.clicked.connect(self.slot_configure)
         self.ui.b_about.clicked.connect(self.slot_about)
 
-        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
-        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
-        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
-
         # ----------------------------------------------------------------------------------------------------
         # Final setup
 
@@ -255,18 +254,25 @@ class RemoteWindow(QMainWindow):
         dialog = RemoteConnectDialog(self)
         if not dialog.exec_():
             return
+
+        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
+
         self.ui.w_buttons.setEnabled(False)
         self.ui.webview.load(dialog.getAddress())
 
     @pyqtSlot()
     def slot_fileDisconnect(self):
-        # testing cyan color for disconnected
-        self.ui.webview.blockSignals(True)
-        self.ui.webview.setHtml("<html><body bgcolor='cyan'></body></html>")
-        self.ui.webview.blockSignals(False)
+        self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
 
         self.ui.w_buttons.setEnabled(True)
         self.ui.stackedwidget.setCurrentIndex(0)
+
+        # testing cyan color for disconnected
+        self.ui.webview.setHtml("<html><body bgcolor='cyan'></body></html>")
 
     @pyqtSlot()
     def slot_fileRefresh(self):
@@ -323,15 +329,27 @@ class RemoteWindow(QMainWindow):
 
     @pyqtSlot(bool)
     def slot_webviewLoadFinished(self, ok):
+        self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
+
         self.ui.w_buttons.setEnabled(True)
 
         if ok:
+            # enable file menu
+            self.ui.act_file_refresh.setEnabled(True)
+            self.ui.act_file_inspect.setEnabled(True)
+
             # show webpage
             self.ui.label_progress.setText("")
             self.ui.label_progress.hide()
             self.ui.stackedwidget.setCurrentIndex(1)
 
         else:
+            # disable file menu
+            self.ui.act_file_refresh.setEnabled(False)
+            self.ui.act_file_inspect.setEnabled(False)
+
             # hide webpage
             self.ui.label_progress.setText(self.tr("Loading remote... failed!"))
             self.ui.label_progress.show()
@@ -369,7 +387,6 @@ class RemoteWindow(QMainWindow):
         if not config_UseQt5:
             websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, inspectorEnabled)
 
-        self.ui.act_file_inspect.setEnabled(inspectorEnabled)
         self.ui.act_file_inspect.setVisible(inspectorEnabled)
 
         if self.fIdleTimerId != 0:

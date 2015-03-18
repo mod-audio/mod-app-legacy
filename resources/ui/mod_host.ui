@@ -452,11 +452,19 @@
    </property>
   </action>
   <action name="act_file_connect">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/network-connect.png</normaloff>:/16x16/network-connect.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Connect...</string>
    </property>
   </action>
   <action name="act_file_disconnect">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/network-disconnect.png</normaloff>:/16x16/network-disconnect.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Disconnect</string>
    </property>
@@ -470,6 +478,10 @@
    </property>
   </action>
   <action name="act_backend_information">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/dialog-information.png</normaloff>:/16x16/dialog-information.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Information</string>
    </property>
@@ -490,6 +502,10 @@
    </property>
   </action>
   <action name="act_backend_alternate_ui">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/ingen.png</normaloff>:/16x16/ingen.png</iconset>
+   </property>
    <property name="text">
     <string>Open Ingen's &amp;UI</string>
    </property>
@@ -500,11 +516,19 @@
    </property>
   </action>
   <action name="act_file_refresh">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/view-refresh.png</normaloff>:/16x16/view-refresh.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Refresh</string>
    </property>
   </action>
   <action name="act_file_inspect">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/16x16/system-search.png</normaloff>:/16x16/system-search.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Inspect</string>
    </property>

@@ -370,33 +370,6 @@ class HostWindow(QMainWindow):
         self.stopAndWaitForBackend()
 
     # --------------------------------------------------------------------------------------------------------
-    # Files
-
-    def loadProjectNow(self):
-        if not self.fCurrentPedalboard:
-            return qCritical("ERROR: loading project without filename set")
-
-        self.ui.webview.setEnabled(False)
-
-        # TODO
-        #self.host.load_project(self.fCurrentPedalboard)
-
-        self.ui.webview.setEnabled(True)
-
-    def loadProjectLater(self, filename):
-        self.fCurrentPedalboard = QFileInfo(filename).absoluteFilePath()
-        self.setProperWindowTitle()
-        self.updatePresetsMenu()
-        #QTimer.singleShot(0, self.slot_loadProjectNow)
-
-    def saveProjectNow(self):
-        if not self.fCurrentPedalboard:
-            return qCritical("ERROR: saving project without filename set")
-
-        # TODO
-        #self.host.save_project(self.fCurrentPedalboard)
-
-    # --------------------------------------------------------------------------------------------------------
     # Files (menu actions)
 
     @pyqtSlot()
@@ -420,12 +393,6 @@ class HostWindow(QMainWindow):
     @pyqtSlot()
     def slot_fileInspect(self):
         self.ui.webinspector.show()
-
-    @pyqtSlot()
-    def slot_loadProjectNow(self):
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
-        self.loadProjectNow()
 
     # --------------------------------------------------------------------------------------------------------
     # Pedalboard (menu actions)
@@ -457,76 +424,77 @@ class HostWindow(QMainWindow):
 
         return QMessageBox.information(self, self.tr("information"), "TODO")
 
-        fileFilter = self.tr("MOD Project File (*.modp)")
-        filename   = QFileDialog.getOpenFileName(self, self.tr("Open MOD Project File"), self.fSavedSettings[MOD_KEY_MAIN_PROJECT_FOLDER], filter=fileFilter)
+        # TODO - get pedalboard URI
 
-        if config_UseQt5:
-            filename = filename[0]
-        if not filename:
-            return
-
-        newFile = True
-
-        #if self.fPluginCount > 0:
-            #ask = QMessageBox.question(self, self.tr("Question"), self.tr("There are some plugins loaded, do you want to remove them now?"),
-                                                                          #QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            #newFile = (ask == QMessageBox.Yes)
-
-        if newFile:
-            # TODO - clear all
-            #self.fCurrentPedalboard = filename
-            self.setProperWindowTitle()
-            self.loadProjectNow()
-        else:
-            #filenameOld = self.fCurrentPedalboard
-            #self.fCurrentPedalboard = filename
-            self.loadProjectNow()
-            #self.fCurrentPedalboard = filenameOld
+        self.fCurrentPedalboard = ""
+        self.updatePresetsMenu()
+        self.setProperWindowTitle()
+        self.loadPedalboardNow()
 
     @pyqtSlot()
     def slot_pedalboardSave(self, saveAs=False):
         return QMessageBox.information(self, self.tr("information"), "TODO")
 
         if self.fCurrentPedalboard and not saveAs:
-            return self.saveProjectNow()
+            return self.savePedalboardNow()
 
         name, ok = QInputDialog.getText(self, self.tr("Pedalboard name"), self.tr("Pedalboard name"),
                                         QLineEdit.Normal, self.fCurrentPedalboard if saveAs else "")
 
         print(name, ok)
 
-        #fileFilter = self.tr("MOD Project File (*.mod-app)")
-        #filename   = QFileDialog.getSaveFileName(self, self.tr("Save MOD Project File"), self.fSavedSettings[MOD_KEY_MAIN_PROJECT_FOLDER], filter=fileFilter)
+        if not ok:
+            return
 
-        #if config_UseQt5:
-            #filename = filename[0]
-        #if not filename:
-            #return
-
-        #if not filename.lower().endswith(".mod-app"):
-            #filename += ".mod-app"
+        # FIXME - convert name to full path
 
         if self.fCurrentPedalboard != name:
             self.fCurrentPedalboard = name
             self.updatePresetsMenu()
             self.setProperWindowTitle()
 
-        self.saveProjectNow()
-
-        #self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(false)")
+        self.savePedalboardNow()
 
     @pyqtSlot()
     def slot_pedalboardSaveAs(self):
         return QMessageBox.information(self, self.tr("information"), "TODO")
 
         self.slot_pedalboardSave(True)
-        #self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(true)")
 
     @pyqtSlot()
     def slot_pedalboardShare(self):
         if self.fWebFrame is None:
             return
+
+        # TODO: check if pedalboard was changed, show our save-dialog instead of the html one
+
         self.fWebFrame.evaluateJavaScript("desktop.shareCurrentPedalboard()")
+
+    def loadPedalboardNow(self):
+        if not self.fCurrentPedalboard:
+            return qCritical("ERROR: loading project without pedalboard set")
+
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
+        # TODO - implement this
+
+    def loadPedalboardLater(self, filename):
+        self.fCurrentPedalboard = QFileInfo(filename).absoluteFilePath()
+        self.updatePresetsMenu()
+        self.setProperWindowTitle()
+        QTimer.singleShot(0, self.slot_loadPedalboardNow)
+
+    def savePedalboardNow(self):
+        if not self.fCurrentPedalboard:
+            return qCritical("ERROR: saving project without pedalboard set")
+
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
+        # TODO - implement this
+
+    @pyqtSlot()
+    def slot_loadPedalboardNow(self):
+        self.loadPedalboardNow()
 
     # --------------------------------------------------------------------------------------------------------
     # Presets (menu actions)

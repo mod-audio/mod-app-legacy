@@ -111,7 +111,7 @@ if __name__ == '__main__':
         arg = sys.argv[-1]
 
         if os.path.exists(arg):
-            gui.loadProjectLater(arg)
+            gui.loadPedalboardLater(arg)
 
     # --------------------------------------------------------------------------------------------------------
     # Show GUI

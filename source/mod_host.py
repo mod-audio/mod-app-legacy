@@ -272,6 +272,12 @@ class HostWindow(QMainWindow):
         self.ui.act_pedalboard_share.setEnabled(False)
         self.ui.menu_Pedalboard.setEnabled(False)
 
+        # disable presets menu
+        self.ui.act_presets_new.setEnabled(False)
+        self.ui.act_presets_save.setEnabled(False)
+        self.ui.act_presets_save_as.setEnabled(False)
+        self.ui.menu_Presets.setEnabled(False)
+
         # initial stopped state
         self.slot_backendFinished(-1, -1)
 

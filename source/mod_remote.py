@@ -155,15 +155,6 @@ class RemoteWindow(QMainWindow):
         self.ui.label_progress.hide()
         self.ui.stackedwidget.setCurrentIndex(0)
 
-        self.ui.act_file_new.setEnabled(False)
-        self.ui.act_file_new.setVisible(False)
-        self.ui.act_file_open.setEnabled(False)
-        self.ui.act_file_open.setVisible(False)
-        self.ui.act_file_save.setEnabled(False)
-        self.ui.act_file_save.setVisible(False)
-        self.ui.act_file_save_as.setEnabled(False)
-        self.ui.act_file_save_as.setVisible(False)
-
         self.ui.act_backend_start.setEnabled(False)
         self.ui.act_backend_start.setVisible(False)
         self.ui.act_backend_stop.setEnabled(False)
@@ -177,6 +168,8 @@ class RemoteWindow(QMainWindow):
 
         self.ui.act_pedalboard_new.setEnabled(False)
         self.ui.act_pedalboard_new.setVisible(False)
+        self.ui.act_pedalboard_open.setEnabled(False)
+        self.ui.act_pedalboard_open.setVisible(False)
         self.ui.act_pedalboard_save.setEnabled(False)
         self.ui.act_pedalboard_save.setVisible(False)
         self.ui.act_pedalboard_save_as.setEnabled(False)
@@ -185,6 +178,15 @@ class RemoteWindow(QMainWindow):
         self.ui.act_pedalboard_share.setVisible(False)
         self.ui.menu_Pedalboard.menuAction().setEnabled(False)
         self.ui.menu_Pedalboard.menuAction().setVisible(False)
+
+        self.ui.act_presets_new.setEnabled(False)
+        self.ui.act_presets_new.setVisible(False)
+        self.ui.act_presets_save.setEnabled(False)
+        self.ui.act_presets_save.setVisible(False)
+        self.ui.act_presets_save_as.setEnabled(False)
+        self.ui.act_presets_save_as.setVisible(False)
+        self.ui.menu_Presets.menuAction().setEnabled(False)
+        self.ui.menu_Presets.menuAction().setVisible(False)
 
         self.ui.act_settings_configure.setText(self.tr("Configure MOD-Remote"))
         self.ui.b_start.setText(self.tr("Connect..."))

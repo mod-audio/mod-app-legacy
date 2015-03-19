@@ -180,16 +180,39 @@ class HostSplashScreen(QSplashScreen):
 # Pedalboards Window
 
 class PedalboardsWindow(QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, pedalboards):
         QDialog.__init__(self)
         self.ui = Ui_Pedalboards()
         self.ui.setupUi(self)
 
-        for name, uri, thumbnail, presets in get_pedalboards():
+        self.fSelectedURI = ""
+
+        for name, uri, thumbnail, presets in pedalboards:
             item = QListWidgetItem(self.ui.listWidget)
+            item.setData(Qt.UserRole, uri)
             item.setIcon(QIcon(thumbnail.replace("file://","")))
             item.setText(name)
             self.ui.listWidget.addItem(item)
+
+        self.ui.listWidget.setCurrentRow(0)
+
+        self.accepted.connect(self.slot_setSelectedURI)
+        self.ui.listWidget.doubleClicked.connect(self.accept)
+
+    def getSelectedURI(self):
+        return self.fSelectedURI
+
+    def slot_setSelectedURI(self):
+        item = self.ui.listWidget.currentItem()
+
+        if item is None:
+            return
+
+        self.fSelectedURI = item.data(Qt.UserRole)
+
+    def done(self, r):
+        QDialog.done(self, r)
+        self.close()
 
 # ------------------------------------------------------------------------------------------------------------
 # Host Window
@@ -421,16 +444,22 @@ class HostWindow(QMainWindow):
 
     #@pyqtSlot()
     def slot_pedalboardOpen(self):
-        dialog = PedalboardsWindow(self)
+        pedalboards = get_pedalboards()
+
+        if len(pedalboards) == 0:
+            return QMessageBox.information(self, self.tr("information"), "No pedalboards found")
+
+        dialog = PedalboardsWindow(self, pedalboards)
 
         if not dialog.exec_():
             return
 
-        return QMessageBox.information(self, self.tr("information"), "TODO")
+        pedalboard = dialog.getSelectedURI().replace("file://","")
 
-        # TODO - get pedalboard URI
+        if not pedalboard:
+            return QMessageBox.information(self, self.tr("information"), "Invalid pedalboard selected")
 
-        self.fCurrentPedalboard = ""
+        self.fCurrentPedalboard = pedalboard
         self.updatePresetsMenu()
         self.setProperWindowTitle()
         self.loadPedalboardNow()
@@ -972,6 +1001,6 @@ class HostWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    gui = PedalboardsWindow(None)
+    gui = PedalboardsWindow(None, get_pedalboards())
     gui.show()
     sys.exit(app.exec_())

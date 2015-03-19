@@ -39,7 +39,8 @@ else:
 # Imports (UI)
 
 from ui_mod_host import Ui_HostWindow
-from ui_mod_pedalboards import Ui_Pedalboards
+from ui_mod_pedalboard_open import Ui_PedalboardOpen
+from ui_mod_pedalboard_save import Ui_PedalboardSave
 
 # ------------------------------------------------------------------------------------------------------------
 # Import (WebServer)
@@ -177,12 +178,12 @@ class HostSplashScreen(QSplashScreen):
         self.fApp.quit()
 
 # ------------------------------------------------------------------------------------------------------------
-# Pedalboards Window
+# Open Pedalboard Window
 
-class PedalboardsWindow(QDialog):
+class OpenPedalboardWindow(QDialog):
     def __init__(self, parent, pedalboards):
         QDialog.__init__(self)
-        self.ui = Ui_Pedalboards()
+        self.ui = Ui_PedalboardOpen()
         self.ui.setupUi(self)
 
         self.fSelectedURI = ""
@@ -202,6 +203,7 @@ class PedalboardsWindow(QDialog):
     def getSelectedURI(self):
         return self.fSelectedURI
 
+    @pyqtSlot()
     def slot_setSelectedURI(self):
         item = self.ui.listWidget.currentItem()
 
@@ -209,6 +211,27 @@ class PedalboardsWindow(QDialog):
             return
 
         self.fSelectedURI = item.data(Qt.UserRole)
+
+    def done(self, r):
+        QDialog.done(self, r)
+        self.close()
+
+# ------------------------------------------------------------------------------------------------------------
+# Save Pedalboard Window
+
+class SavePedalboardWindow(QDialog):
+    def __init__(self, parent, pedalboards):
+        QDialog.__init__(self)
+        self.ui = Ui_PedalboardSave()
+        self.ui.setupUi(self)
+
+        self.fExistingNames = (name for name, uri, thumbnail, presets in pedalboards)
+
+        self.accepted.connect(self.slot_savePedalboard)
+
+    @pyqtSlot()
+    def slot_savePedalboard(self):
+        pass
 
     def done(self, r):
         QDialog.done(self, r)
@@ -431,7 +454,7 @@ class HostWindow(QMainWindow):
         isOnline = self.fWebFrame.evaluateJavaScript("$('#mod-cloud').hasClass('logged')")
         self.ui.act_pedalboard_share.setEnabled(isOnline)
 
-    #@pyqtSlot()
+    @pyqtSlot()
     def slot_pedalboardNew(self):
         self.fCurrentPedalboard = ""
         self.updatePresetsMenu()
@@ -442,14 +465,14 @@ class HostWindow(QMainWindow):
 
         self.fWebFrame.evaluateJavaScript("desktop.reset()")
 
-    #@pyqtSlot()
-    def slot_pedalboardOpen(self):
-        pedalboards = get_pedalboards()
+    # --------------------------------------------------------------------------------------------------------
 
-        if len(pedalboards) == 0:
+    @pyqtSlot()
+    def slot_pedalboardOpen(self):
+        if len(self.fPedalboards) == 0:
             return QMessageBox.information(self, self.tr("information"), "No pedalboards found")
 
-        dialog = PedalboardsWindow(self, pedalboards)
+        dialog = OpenPedalboardWindow(self, self.fPedalboards)
 
         if not dialog.exec_():
             return
@@ -462,7 +485,27 @@ class HostWindow(QMainWindow):
         self.fCurrentPedalboard = pedalboard
         self.updatePresetsMenu()
         self.setProperWindowTitle()
-        self.loadPedalboardNow()
+        self.openPedalboardNow()
+
+    @pyqtSlot()
+    def slot_openPedalboardNow(self):
+        self.openPedalboardNow()
+
+    def openPedalboardNow(self):
+        if not self.fCurrentPedalboard:
+            return qCritical("ERROR: loading project without pedalboard set")
+
+        return QMessageBox.information(self, self.tr("information"), "TODO")
+
+        # TODO - implement this
+
+    def openPedalboardLater(self, filename):
+        self.fCurrentPedalboard = QFileInfo(filename).absoluteFilePath()
+        self.updatePresetsMenu()
+        self.setProperWindowTitle()
+        QTimer.singleShot(0, self.slot_openPedalboardNow)
+
+    # --------------------------------------------------------------------------------------------------------
 
     @pyqtSlot()
     def slot_pedalboardSave(self, saveAs=False):
@@ -471,18 +514,18 @@ class HostWindow(QMainWindow):
         if self.fCurrentPedalboard and not saveAs:
             return self.savePedalboardNow()
 
-        name, ok = QInputDialog.getText(self, self.tr("Pedalboard name"), self.tr("Pedalboard name"),
-                                        QLineEdit.Normal, self.fCurrentPedalboard if saveAs else "")
+        dialog = SavePedalboardWindow(self, self.fPedalboards)
 
-        print(name, ok)
-
-        if not ok:
+        if not dialog.exec_():
             return
 
-        # FIXME - convert name to full path
+        pedalboard = dialog.getSavedURI().replace("file://","")
 
-        if self.fCurrentPedalboard != name:
-            self.fCurrentPedalboard = name
+        if not pedalboard:
+            return QMessageBox.information(self, self.tr("information"), "Invalid pedalboard saved")
+
+        if self.fCurrentPedalboard != pedalboard:
+            self.fCurrentPedalboard = pedalboard
             self.updatePresetsMenu()
             self.setProperWindowTitle()
 
@@ -494,29 +537,6 @@ class HostWindow(QMainWindow):
 
         self.slot_pedalboardSave(True)
 
-    @pyqtSlot()
-    def slot_pedalboardShare(self):
-        if self.fWebFrame is None:
-            return
-
-        # TODO: check if pedalboard was changed, show our save-dialog instead of the html one
-
-        self.fWebFrame.evaluateJavaScript("desktop.shareCurrentPedalboard()")
-
-    def loadPedalboardNow(self):
-        if not self.fCurrentPedalboard:
-            return qCritical("ERROR: loading project without pedalboard set")
-
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
-        # TODO - implement this
-
-    def loadPedalboardLater(self, filename):
-        self.fCurrentPedalboard = QFileInfo(filename).absoluteFilePath()
-        self.updatePresetsMenu()
-        self.setProperWindowTitle()
-        QTimer.singleShot(0, self.slot_loadPedalboardNow)
-
     def savePedalboardNow(self):
         if not self.fCurrentPedalboard:
             return qCritical("ERROR: saving project without pedalboard set")
@@ -525,9 +545,16 @@ class HostWindow(QMainWindow):
 
         # TODO - implement this
 
+    # --------------------------------------------------------------------------------------------------------
+
     @pyqtSlot()
-    def slot_loadPedalboardNow(self):
-        self.loadPedalboardNow()
+    def slot_pedalboardShare(self):
+        if self.fWebFrame is None:
+            return
+
+        # TODO: check if pedalboard was changed, show our save-dialog instead of the html one
+
+        self.fWebFrame.evaluateJavaScript("desktop.shareCurrentPedalboard()")
 
     # --------------------------------------------------------------------------------------------------------
     # Presets (menu actions)
@@ -1001,6 +1028,6 @@ class HostWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    gui = PedalboardsWindow(None, get_pedalboards())
+    gui = SavePedalboardWindow(None, get_pedalboards())
     gui.show()
     sys.exit(app.exec_())

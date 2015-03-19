@@ -226,12 +226,18 @@ class SavePedalboardWindow(QDialog):
         self.ui.setupUi(self)
 
         self.fExistingNames = (name for name, uri, thumbnail, presets in pedalboards)
+        self.fUserData      = ()
 
-        self.accepted.connect(self.slot_savePedalboard)
+        self.accepted.connect(self.slot_setUserData)
+
+    def getUserData(self):
+        return self.fUserData
 
     @pyqtSlot()
-    def slot_savePedalboard(self):
-        pass
+    def slot_setUserData(self):
+        name   = self.ui.le_name.text()
+        author = self.ui.le_author.text()
+        self.fUserData = (name, author)
 
     def done(self, r):
         QDialog.done(self, r)
@@ -259,7 +265,7 @@ class HostWindow(QMainWindow):
         self.fCurrentPedalboard = ""
 
         # TESTING
-        self.fCurrentPedalboard = os.path.expanduser("~/.lv2/c_ds1_phase_reverb.pedalboard/c_ds1_phase_reverb.ttl")
+        #self.fCurrentPedalboard = os.path.expanduser("~/.lv2/c_ds1_phase_reverb.pedalboard/c_ds1_phase_reverb.ttl")
 
         # first attempt of auto-start backend doesn't show an error
         self.fFirstBackendInit  = True
@@ -509,8 +515,6 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_pedalboardSave(self, saveAs=False):
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
         if self.fCurrentPedalboard and not saveAs:
             return self.savePedalboardNow()
 
@@ -519,10 +523,14 @@ class HostWindow(QMainWindow):
         if not dialog.exec_():
             return
 
-        pedalboard = dialog.getSavedURI().replace("file://","")
+        name, author = dialog.getUserData()
 
-        if not pedalboard:
-            return QMessageBox.information(self, self.tr("information"), "Invalid pedalboard saved")
+        if not name:
+            return QMessageBox.information(self, self.tr("information"),
+                                           self.tr("Pedalboard name is required but not given, not saving."))
+
+        # TODO - make proper pedalboard uri
+        pedalboard = os.path.expanduser("~/.lv2/%s/%s.ttl" % (name, name))
 
         if self.fCurrentPedalboard != pedalboard:
             self.fCurrentPedalboard = pedalboard
@@ -533,8 +541,6 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_pedalboardSaveAs(self):
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
         self.slot_pedalboardSave(True)
 
     def savePedalboardNow(self):

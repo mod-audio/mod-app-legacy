@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0" colspan="2">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="label_image">
      <property name="text">
       <string>IMAGE HERE</string>
      </property>
@@ -25,7 +25,7 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_name">
      <property name="text">
       <string>Name:</string>
      </property>
@@ -35,10 +35,10 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEdit"/>
+    <widget class="QLineEdit" name="le_name"/>
    </item>
    <item row="2" column="0">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="label_author">
      <property name="text">
       <string>Author:</string>
      </property>
@@ -48,7 +48,7 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QLineEdit" name="lineEdit_2"/>
+    <widget class="QLineEdit" name="le_author"/>
    </item>
    <item row="3" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">

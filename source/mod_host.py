@@ -767,18 +767,24 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_webServerRunning(self):
-        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
-        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
-        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
+        try:
+            self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
+            self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
+            self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
+        except:
+            pass
 
         print("webserver running")
         self.ui.webview.load(QUrl(config["addr"]))
 
     @pyqtSlot()
     def slot_webServerFinished(self):
-        self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
-        self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
-        self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
+        try:
+            self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
+            self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
+            self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
+        except:
+            pass
 
         print("webserver finished")
         # testing red color for server finished

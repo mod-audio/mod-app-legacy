@@ -27,12 +27,12 @@ from mod_settings import *
 if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt5.QtGui import QDesktopServices, QPixmap
-    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QSplashScreen
+    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QPlainTextEdit, QSplashScreen, QVBoxLayout
     from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices, QPixmap
-    from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QSplashScreen
+    from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QPlainTextEdit, QSplashScreen, QVBoxLayout
     from PyQt4.QtWebKit import QWebInspector, QWebPage, QWebView
 
 # ------------------------------------------------------------------------------------------------------------
@@ -178,6 +178,62 @@ class HostSplashScreen(QSplashScreen):
         self.fApp.quit()
 
 # ------------------------------------------------------------------------------------------------------------
+# Dump Window
+
+import socket
+
+class DumpWindow(QDialog):
+    def __init__(self, parent, uri):
+        QDialog.__init__(self, parent)
+
+        if uri.startswith('unix://'):
+            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self.sock.connect(uri[len('unix://'):])
+        elif uri.startswith('tcp://'):
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            parsed = re.split('[:/]', uri[len('tcp://'):])
+            addr = (parsed[0], int(parsed[1]))
+            self.sock.connect(addr)
+        else:
+            raise Exception('Unsupported server URI `%s' % uri)
+
+        self.sock.setblocking(False)
+
+        self.fLayout = QVBoxLayout(self)
+        self.setLayout(self.fLayout)
+
+        self.fTextArea = QPlainTextEdit(self)
+        self.fLayout.addWidget(self.fTextArea)
+
+        self.resize(500, 600)
+        self.setWindowTitle(self.tr("Dump Window"))
+
+        self.fTimerId = self.startTimer(100)
+        self.fTmpData = b""
+
+    def __del__(self):
+        self.sock.close()
+
+    def timerEvent(self, event):
+        if event.timerId() == self.fTimerId:
+            self.dump()
+
+        QDialog.timerEvent(self, event)
+
+    def dump(self):
+        while True:
+            try:
+                c = self.sock.recv(1)
+            except:
+                break
+
+            if c == b"\n":
+                self.fTextArea.appendPlainText(str(self.fTmpData, encoding="utf-8", errors="ignore"))
+                self.fTmpData = b""
+            else:
+                self.fTmpData += c
+
+# ------------------------------------------------------------------------------------------------------------
 # Open Pedalboard Window
 
 class OpenPedalboardWindow(QDialog):
@@ -292,6 +348,9 @@ class HostWindow(QMainWindow):
         # Splash screen, as passed in the constructor
         self.fSplashScreen = splashScreen
 
+        # Dump window used for debug
+        self.fDumpWindow = None
+
         # Process that runs the backend
         self.fProccessBackend = QProcess(self)
         self.fProccessBackend.setProcessChannelMode(QProcess.MergedChannels)
@@ -387,6 +446,7 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
         self.ui.act_backend_restart.triggered.connect(self.slot_backendRestart)
         self.ui.act_backend_rescan.triggered.connect(self.slot_backendRescan)
+        self.ui.act_backend_dump.triggered.connect(self.slot_backendDump)
         self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
 
         self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
@@ -501,7 +561,12 @@ class HostWindow(QMainWindow):
         if not self.fCurrentPedalboard:
             return qCritical("ERROR: loading project without pedalboard set")
 
-        return QMessageBox.information(self, self.tr("information"), "TODO")
+        def callback(ok):
+            print("set callback",  ok)
+
+        SESSION.host.set("", "<http://drobilla.net/ns/ingen#file>", "<%s>" % self.fCurrentPedalboard, callback)
+
+        #return QMessageBox.information(self, self.tr("information"), "TODO")
 
         # TODO - implement this
 
@@ -671,6 +736,14 @@ class HostWindow(QMainWindow):
 
         #QMessageBox.information(self, self.tr("information"),
                                       #self.tr("Rescan is now enabled for the next time you start MOD-App."))
+
+    @pyqtSlot()
+    def slot_backendDump(self):
+        if self.fDumpWindow is None:
+            uri = "unix:///tmp/mod-app-%s.sock" % config["port"]
+            self.fDumpWindow = DumpWindow(self, uri)
+
+        self.fDumpWindow.show()
 
     @pyqtSlot()
     def slot_backendAlternateUI(self):
@@ -1040,6 +1113,7 @@ class HostWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    gui = SavePedalboardWindow(None, get_pedalboards())
+    #gui = SavePedalboardWindow(None, get_pedalboards())
+    gui = DumpWindow(None, "unix:///tmp/ingen.sock")
     gui.show()
     sys.exit(app.exec_())

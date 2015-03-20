@@ -310,6 +310,7 @@
     <addaction name="act_backend_restart"/>
     <addaction name="act_backend_rescan"/>
     <addaction name="separator"/>
+    <addaction name="act_backend_dump"/>
     <addaction name="act_backend_alternate_ui"/>
    </widget>
    <widget class="QMenu" name="menu_Pedalboard">
@@ -531,6 +532,11 @@
    </property>
    <property name="text">
     <string>&amp;Inspect</string>
+   </property>
+  </action>
+  <action name="act_backend_dump">
+   <property name="text">
+    <string>Open Dump Window</string>
    </property>
   </action>
  </widget>

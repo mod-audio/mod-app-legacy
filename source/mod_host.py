@@ -682,7 +682,7 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_backendStart(self):
-        if self.fProccessBackend.state() == QProcess.Running:
+        if self.fProccessBackend.state() != QProcess.NotRunning:
             print("slot_backendStart ignored")
             return
 
@@ -824,6 +824,9 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_ingenStarted(self):
+        if self.fProccessBackend.state() == QProcess.NotRunning:
+            return
+
         if not self.fFirstBackendInit2:
             SESSION.reconnect()
         self.fFirstBackendInit2 = False

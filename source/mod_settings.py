@@ -24,13 +24,9 @@ from mod_common import *
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
 
-if config_UseQt5:
-    from PyQt5.QtCore import pyqtSlot
-    from PyQt5.QtGui import QFontMetrics, QIcon
-    from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QMessageBox
-else:
-    from PyQt4.QtCore import pyqtSlot
-    from PyQt4.QtGui import QDialog, QDialogButtonBox, QFileDialog, QFontMetrics, QIcon, QMessageBox
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtGui import QFontMetrics, QIcon
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QMessageBox
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
@@ -216,10 +212,7 @@ if __name__ == '__main__':
     # --------------------------------------------------------------------------------------------------------
     # App initialization
 
-    if config_UseQt5:
-        from PyQt5.QtWidgets import QApplication
-    else:
-        from PyQt4.QtGui import QApplication
+    from PyQt5.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     app.setApplicationName("MOD-Settings")

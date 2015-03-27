@@ -24,16 +24,10 @@ from mod_settings import *
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
 
-if config_UseQt5:
-    from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
-    from PyQt5.QtGui import QDesktopServices
-    from PyQt5.QtWidgets import QAction, QApplication, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-    from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
-else:
-    from PyQt4.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
-    from PyQt4.QtGui import QDesktopServices
-    from PyQt4.QtGui import QAction, QApplication, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-    from PyQt4.QtWebKit import QWebInspector, QWebPage, QWebView
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
+from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtWidgets import QAction, QApplication, QInputDialog, QLineEdit, QMainWindow, QMessageBox
+from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)

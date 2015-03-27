@@ -24,12 +24,8 @@ from mod_remote import *
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
 
-if config_UseQt5:
-    from PyQt5.QtCore import Qt
-    from PyQt5.QtWidgets import QApplication
-else:
-    from PyQt4.QtCore import Qt
-    from PyQt4.QtGui import QApplication
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication
 
 # ------------------------------------------------------------------------------------------------------------
 # Import Signal

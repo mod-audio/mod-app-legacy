@@ -26,8 +26,6 @@ _PORT = str(8998 + int(random()*9000))
 # ------------------------------------------------------------------------------------------------------------
 # Mod-App Configuration
 
-from mod_config import *
-
 config = {
     # Address used for the webserver
     "addr": "http://127.0.0.1:%s" % _PORT,
@@ -45,10 +43,7 @@ del _PORT
 import os
 import sys
 
-if config_UseQt5:
-    from PyQt5.QtCore import QDir, QSettings
-else:
-    from PyQt4.QtCore import QDir, QSettings
+from PyQt5.QtCore import QDir, QSettings
 
 # ------------------------------------------------------------------------------------------------------------
 # Set CWD

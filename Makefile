@@ -12,40 +12,20 @@ DESTDIR :=
 # ----------------------------------------------------------------------------------------------------------------------------
 # Set PyQt tools
 
-PYUIC4 ?= /usr/bin/pyuic4
 PYUIC5 ?= /usr/bin/pyuic5
 
-ifneq (,$(wildcard $(PYUIC4)))
-HAVE_PYQT=true
-HAVE_PYQT4=true
-else
-HAVE_PYQT4=false
-endif
-
 ifneq (,$(wildcard $(PYUIC5)))
-HAVE_PYQT=true
 HAVE_PYQT5=true
 else
 HAVE_PYQT5=false
 endif
 
-ifneq ($(HAVE_PYQT),true)
-$(error PyQt is not available, please install it)
+ifneq ($(HAVE_PYQT5),true)
+$(error PyQt5 is not available, please install it)
 endif
 
-ifeq ($(HAVE_PYQT4),true)
-DEFAULT_QT ?= 4
-else
-DEFAULT_QT ?= 5
-endif
-
-ifeq ($(DEFAULT_QT),4)
-PYUIC ?= pyuic4 -w
-PYRCC ?= pyrcc4 -py3
-else
 PYUIC ?= pyuic5
 PYRCC ?= pyrcc5
-endif
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
@@ -55,18 +35,9 @@ all: RES UI
 # Resources
 
 RES = \
-	source/mod_config.py \
 	source/resources_rc.py
 
 RES: $(RES)
-
-source/mod_config.py:
-	@echo "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n" > $@
-ifeq ($(DEFAULT_QT),4)
-	@echo "config_UseQt5 = False" >> $@
-else
-	@echo "config_UseQt5 = True" >> $@
-endif
 
 source/resources_rc.py: resources/resources.qrc resources/*/*.png # resources/*/*.svg
 	$(PYRCC) $< -o $@

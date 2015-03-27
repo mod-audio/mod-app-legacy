@@ -281,13 +281,20 @@ class SavePedalboardWindow(QDialog):
         self.ui = Ui_PedalboardSave()
         self.ui.setupUi(self)
 
-        self.fExistingNames = (name for name, uri, thumbnail, presets in pedalboards)
+        self.fExistingNames = list(name for name, uri, thumbnail, presets in pedalboards)
         self.fUserData      = ()
 
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
         self.accepted.connect(self.slot_setUserData)
+        self.ui.le_name.textChanged.connect(self.slot_nameChanged)
 
     def getUserData(self):
         return self.fUserData
+
+    @pyqtSlot(str)
+    def slot_nameChanged(self, name):
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(name and name not in self.fExistingNames)
 
     @pyqtSlot()
     def slot_setUserData(self):

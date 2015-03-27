@@ -569,12 +569,12 @@ class HostWindow(QMainWindow):
         if not self.fCurrentPedalboard:
             return qCritical("ERROR: loading project without pedalboard set")
 
-        def callback(ok):
-            print("set callback",  ok)
+        #def callback(ok):
+            #print("set callback",  ok)
 
-        SESSION.host.set("", "<http://drobilla.net/ns/ingen#file>", "<%s>" % self.fCurrentPedalboard, callback)
+        #SESSION.host.set("", "<http://drobilla.net/ns/ingen#file>", "<%s>" % self.fCurrentPedalboard, callback)
 
-        #return QMessageBox.information(self, self.tr("information"), "TODO")
+        return QMessageBox.information(self, self.tr("information"), "TODO")
 
         # TODO - implement this
 
@@ -600,7 +600,7 @@ class HostWindow(QMainWindow):
         painter.end()
         del painter
 
-        dialog = SavePedalboardWindow(self, self.fPedalboards, image.scaled(500, 200, Qt.KeepAspectRatio))
+        dialog = SavePedalboardWindow(self, self.fPedalboards, image.scaled(500, 500, Qt.KeepAspectRatio))
 
         if not dialog.exec_():
             return
@@ -639,6 +639,16 @@ class HostWindow(QMainWindow):
     def slot_pedalboardShare(self):
         if self.fWebFrame is None:
             return
+
+        # FIXME
+        if len(SESSION._pedalboard.data['instances']) == 0:
+            return QMessageBox.information(self, self.tr("information"),
+                                           self.tr("Nothing to share."))
+
+        # save first, prevent dialog by mod-ui
+        self.slot_pedalboardSave()
+
+        return QMessageBox.information(self, self.tr("information"), "TODO")
 
         # TODO: check if pedalboard was changed, show our save-dialog instead of the html one
 

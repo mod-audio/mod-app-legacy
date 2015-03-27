@@ -26,12 +26,12 @@ from mod_settings import *
 
 if config_UseQt5:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
-    from PyQt5.QtGui import QDesktopServices, QPixmap
+    from PyQt5.QtGui import QDesktopServices, QImage, QPainter, QPixmap
     from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QPlainTextEdit, QSplashScreen, QVBoxLayout
     from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 else:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
-    from PyQt4.QtGui import QDesktopServices, QPixmap
+    from PyQt4.QtGui import QDesktopServices, QImage, QPainter, QPixmap
     from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QPlainTextEdit, QSplashScreen, QVBoxLayout
     from PyQt4.QtWebKit import QWebInspector, QWebPage, QWebView
 
@@ -276,7 +276,7 @@ class OpenPedalboardWindow(QDialog):
 # Save Pedalboard Window
 
 class SavePedalboardWindow(QDialog):
-    def __init__(self, parent, pedalboards):
+    def __init__(self, parent, pedalboards, image):
         QDialog.__init__(self)
         self.ui = Ui_PedalboardSave()
         self.ui.setupUi(self)
@@ -284,6 +284,7 @@ class SavePedalboardWindow(QDialog):
         self.fExistingNames = list(name for name, uri, thumbnail, presets in pedalboards)
         self.fUserData      = ()
 
+        self.ui.label_image.setPixmap(QPixmap.fromImage(image))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
         self.accepted.connect(self.slot_setUserData)
@@ -590,7 +591,16 @@ class HostWindow(QMainWindow):
         if self.fCurrentPedalboard and not saveAs:
             return self.savePedalboardNow()
 
-        dialog = SavePedalboardWindow(self, self.fPedalboards)
+        # render web frame to image
+        image = QImage(self.ui.webpage.viewportSize(), QImage.Format_ARGB32_Premultiplied)
+        image.fill(Qt.transparent)
+
+        painter = QPainter(image)
+        self.fWebFrame.render(painter)
+        painter.end()
+        del painter
+
+        dialog = SavePedalboardWindow(self, self.fPedalboards, image.scaled(500, 200, Qt.KeepAspectRatio))
 
         if not dialog.exec_():
             return

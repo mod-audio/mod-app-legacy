@@ -45,19 +45,19 @@ class RemoteWebPage(QWebPage):
     def javaScriptAlert(self, frame, msg):
          QMessageBox.warning(self.parent(),
                              self.tr("MOD-Remote Alert"),
-                             msg if config_UseQt5 else Qt.escape(msg),
+                             msg,
                              QMessageBox.Ok)
 
     def javaScriptConfirm(self, frame, msg):
         return (QMessageBox.question(self.parent(),
                                      self.tr("MOD-Remote Confirm"),
-                                     msg if config_UseQt5 else Qt.escape(msg),
+                                     msg,
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
     def javaScriptPrompt(self, frame, msg, default):
         res, ok = QInputDialog.getText(self.parent(),
                                        self.tr("MOD-Remote Prompt"),
-                                      msg if config_UseQt5 else Qt.escape(msg),
+                                       msg,
                                        QLineEdit.Normal, default)
         return ok, res
 

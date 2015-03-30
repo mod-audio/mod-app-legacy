@@ -81,19 +81,19 @@ class HostWebPage(QWebPage):
     def javaScriptAlert(self, frame, msg):
          QMessageBox.warning(self.parent(),
                              self.tr("MOD-App Alert"),
-                             msg if config_UseQt5 else Qt.escape(msg),
+                             msg,
                              QMessageBox.Ok)
 
     def javaScriptConfirm(self, frame, msg):
         return (QMessageBox.question(self.parent(),
                                      self.tr("MOD-App Confirm"),
-                                     msg if config_UseQt5 else Qt.escape(msg),
+                                     msg,
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
     def javaScriptPrompt(self, frame, msg, default):
         res, ok = QInputDialog.getText(self.parent(),
                                        self.tr("MOD-App Prompt"),
-                                       msg if config_UseQt5 else Qt.escape(msg),
+                                       msg,
                                        QLineEdit.Normal, default)
         return ok, res
 
@@ -635,7 +635,7 @@ class HostWindow(QMainWindow):
             return
 
         # FIXME
-        if len(SESSION._pedalboard.data['instances']) == 0:
+        if len(SESSION.instances) == 0:
             return QMessageBox.information(self, self.tr("information"),
                                            self.tr("Nothing to share."))
 

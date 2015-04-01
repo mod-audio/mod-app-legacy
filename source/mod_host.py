@@ -928,7 +928,7 @@ class HostWindow(QMainWindow):
             self.fWebFrame = self.ui.webpage.currentFrame()
 
             # postpone app stuff
-            QTimer.singleShot(0, self.slot_webviewPostFinished)
+            QTimer.singleShot(100, self.slot_webviewPostFinished)
 
         else:
             # message

@@ -136,6 +136,7 @@ MOD_KEY_HOST_PATH                = "Host/Path"              # str
 # WebView
 MOD_KEY_WEBVIEW_INSPECTOR        = "WebView/Inspector"      # bool
 MOD_KEY_WEBVIEW_VERBOSE          = "WebView/Verbose"        # bool
+MOD_KEY_WEBVIEW_SHOW_INSPECTOR   = "WebView/ShowInspector"  # bool
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings defaults
@@ -155,6 +156,7 @@ MOD_DEFAULT_HOST_PATH                = "/usr/bin/ingen"
 # WebView
 MOD_DEFAULT_WEBVIEW_INSPECTOR        = False
 MOD_DEFAULT_WEBVIEW_VERBOSE          = False
+MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR   = False
 
 # ------------------------------------------------------------------------------------------------------------
 # Set initial settings

@@ -119,6 +119,8 @@ class SettingsWindow(QDialog):
 
         self.ui.cb_webview_inspector.setChecked(settings.value(MOD_KEY_WEBVIEW_INSPECTOR, MOD_DEFAULT_WEBVIEW_INSPECTOR, type=bool))
         self.ui.cb_webview_verbose.setChecked(settings.value(MOD_KEY_WEBVIEW_VERBOSE, MOD_DEFAULT_WEBVIEW_VERBOSE, type=bool))
+        self.ui.cb_webview_show_inspector.setChecked(settings.value(MOD_KEY_WEBVIEW_SHOW_INSPECTOR, MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR, type=bool))
+        self.ui.cb_webview_show_inspector.setEnabled(self.ui.cb_webview_inspector.isChecked())
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -147,6 +149,7 @@ class SettingsWindow(QDialog):
 
         settings.setValue(MOD_KEY_WEBVIEW_INSPECTOR, self.ui.cb_webview_inspector.isChecked())
         settings.setValue(MOD_KEY_WEBVIEW_VERBOSE,   self.ui.cb_webview_verbose.isChecked())
+        settings.setValue(MOD_KEY_WEBVIEW_SHOW_INSPECTOR, self.ui.cb_webview_show_inspector.isChecked())
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -174,6 +177,7 @@ class SettingsWindow(QDialog):
         elif self.ui.lw_page.currentRow() == self.TAB_INDEX_WEBVIEW:
             self.ui.cb_webview_inspector.setChecked(MOD_DEFAULT_WEBVIEW_INSPECTOR)
             self.ui.cb_webview_verbose.setChecked(MOD_DEFAULT_WEBVIEW_VERBOSE)
+            self.ui.cb_webview_show_inspector.setChecked(MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR)
 
     # --------------------------------------------------------------------------------------------------------
 

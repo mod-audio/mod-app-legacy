@@ -175,6 +175,7 @@ class RemoteWindow(QMainWindow):
         self.ui.webview.setPage(self.ui.webpage)
 
         self.ui.webinspector = QWebInspector(None)
+        self.ui.webinspector.resize(800, 600)
         self.ui.webinspector.setPage(self.ui.webpage)
         self.ui.webinspector.setVisible(False)
 
@@ -405,16 +406,10 @@ class RemoteWindow(QMainWindow):
         qsettings   = QSettings()
         websettings = self.ui.webview.settings()
 
-        if firstTime:
-            self.restoreGeometry(qsettings.value("Geometry", ""))
-
         self.fSavedSettings = {
-            # Main
-            MOD_KEY_MAIN_PROJECT_FOLDER:   qsettings.value(MOD_KEY_MAIN_PROJECT_FOLDER,   MOD_DEFAULT_MAIN_PROJECT_FOLDER,   type=str),
-            MOD_KEY_MAIN_REFRESH_INTERVAL: qsettings.value(MOD_KEY_MAIN_REFRESH_INTERVAL, MOD_DEFAULT_MAIN_REFRESH_INTERVAL, type=int),
             # WebView
-            MOD_KEY_WEBVIEW_INSPECTOR:     qsettings.value(MOD_KEY_WEBVIEW_INSPECTOR,     MOD_DEFAULT_WEBVIEW_INSPECTOR,     type=bool),
-            MOD_KEY_WEBVIEW_VERBOSE:       qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,       MOD_DEFAULT_WEBVIEW_VERBOSE,       type=bool)
+            MOD_KEY_WEBVIEW_INSPECTOR:      qsettings.value(MOD_KEY_WEBVIEW_INSPECTOR,      MOD_DEFAULT_WEBVIEW_INSPECTOR,      type=bool),
+            MOD_KEY_WEBVIEW_SHOW_INSPECTOR: qsettings.value(MOD_KEY_WEBVIEW_SHOW_INSPECTOR, MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR, type=bool)
         }
 
         inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR]
@@ -422,12 +417,18 @@ class RemoteWindow(QMainWindow):
         # QWebSettings::DeveloperExtrasEnabled == 7
         websettings.setAttribute(7, inspectorEnabled)
 
+        if firstTime:
+            self.restoreGeometry(qsettings.value("Geometry", ""))
+
+            if inspectorEnabled and self.fSavedSettings[MOD_KEY_WEBVIEW_SHOW_INSPECTOR]:
+                self.ui.webinspector.show()
+
         self.ui.act_file_inspect.setVisible(inspectorEnabled)
 
         if self.fIdleTimerId != 0:
             self.killTimer(self.fIdleTimerId)
 
-        self.fIdleTimerId = self.startTimer(self.fSavedSettings[MOD_KEY_MAIN_REFRESH_INTERVAL])
+        self.fIdleTimerId = self.startTimer(MOD_DEFAULT_MAIN_REFRESH_INTERVAL)
 
     # --------------------------------------------------------------------------------------------------------
     # Misc

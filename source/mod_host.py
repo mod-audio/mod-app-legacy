@@ -374,6 +374,7 @@ class HostWindow(QMainWindow):
         self.ui.webview.setPage(self.ui.webpage)
 
         self.ui.webinspector = QWebInspector(None)
+        self.ui.webinspector.resize(800, 600)
         self.ui.webinspector.setPage(self.ui.webpage)
         self.ui.webinspector.setVisible(False)
 
@@ -992,12 +993,6 @@ class HostWindow(QMainWindow):
         qsettings   = QSettings()
         websettings = self.ui.webview.settings()
 
-        if firstTime:
-            if qsettings.contains("Geometry"):
-                self.restoreGeometry(qsettings.value("Geometry", ""))
-            else:
-                self.setWindowState(self.windowState() | Qt.WindowMaximized)
-
         self.fSavedSettings = {
             # Main
             MOD_KEY_MAIN_PROJECT_FOLDER:      qsettings.value(MOD_KEY_MAIN_PROJECT_FOLDER,      MOD_DEFAULT_MAIN_PROJECT_FOLDER,      type=str),
@@ -1009,13 +1004,23 @@ class HostWindow(QMainWindow):
             MOD_KEY_HOST_PATH:                qsettings.value(MOD_KEY_HOST_PATH,                MOD_DEFAULT_HOST_PATH,                type=str),
             # WebView
             MOD_KEY_WEBVIEW_INSPECTOR:        qsettings.value(MOD_KEY_WEBVIEW_INSPECTOR,        MOD_DEFAULT_WEBVIEW_INSPECTOR,        type=bool),
-            MOD_KEY_WEBVIEW_VERBOSE:          qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
+            MOD_KEY_WEBVIEW_VERBOSE:          qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool),
+            MOD_KEY_WEBVIEW_SHOW_INSPECTOR:   qsettings.value(MOD_KEY_WEBVIEW_SHOW_INSPECTOR,   MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR,   type=bool)
         }
 
         inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR]
 
         # QWebSettings::DeveloperExtrasEnabled == 7
         websettings.setAttribute(7, inspectorEnabled)
+
+        if firstTime:
+            if qsettings.contains("Geometry"):
+                self.restoreGeometry(qsettings.value("Geometry", ""))
+            else:
+                self.setWindowState(self.windowState() | Qt.WindowMaximized)
+
+            if inspectorEnabled and self.fSavedSettings[MOD_KEY_WEBVIEW_SHOW_INSPECTOR]:
+                self.ui.webinspector.show()
 
         self.ui.act_file_inspect.setVisible(inspectorEnabled)
 

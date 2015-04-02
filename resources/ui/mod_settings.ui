@@ -593,6 +593,13 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QCheckBox" name="cb_webview_show_inspector">
+              <property name="text">
+               <string>Show inspector window on start</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
@@ -713,6 +720,22 @@
     <hint type="destinationlabel">
      <x>283</x>
      <y>120</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_webview_inspector</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cb_webview_show_inspector</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>342</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>342</x>
+     <y>140</y>
     </hint>
    </hints>
   </connection>

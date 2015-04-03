@@ -121,6 +121,7 @@ run_chroot_cmd apt-get install -y libx11-dev libx11-xcb-dev xvfb
 run_chroot_cmd apt-get install -y libcups2-dev libdbus-1-dev
 run_chroot_cmd apt-get install -y libfontconfig1-dev libfreetype6-dev
 run_chroot_cmd apt-get install -y libglib2.0-dev libgtk2.0-dev
+run_chroot_cmd apt-get install -y ruby flex bison gperf
 
 # ------------------------------------------------------------------------------------
 # done

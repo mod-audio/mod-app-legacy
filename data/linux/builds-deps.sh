@@ -6,6 +6,8 @@
 function build_all() {
 
 echo "
+set -e
+
 export HOME=/root
 export LANG=C
 unset LC_TIME
@@ -35,7 +37,7 @@ fi
 
 if [ ! -f pkg-config-0.28/build-done ]; then
 cd pkg-config-0.28
-./configure --enable-indirect-deps --with-internal-glib --with-pc-path=\$PKG_CONFIG_PATH --prefix=\$PREFIX
+./configure --with-internal-glib --with-pc-path=\$PKG_CONFIG_PATH --prefix=\$PREFIX
 make
 make install
 touch build-done
@@ -70,20 +72,72 @@ fi
 
 if [ ! -f qtbase-opensource-src-5.4.1/build-done ]; then
 cd qtbase-opensource-src-5.4.1
+patch -p1 -i /fix-qt5-build.patch
 ./configure -release -shared -opensource -confirm-license -force-pkg-config \
             -prefix \$PREFIX -plugindir \$PREFIX/lib/qt5/plugins -headerdir \$PREFIX/include/qt5 \
-            -qt-harfbuzz -qt-freetype -qt-libjpeg -qt-libpng -qt-pcre -qt-sql-sqlite -qt-zlib -qt-xcb -qt-xkbcommon \
-            -dbus -glib -xcb -opengl desktop -qpa xcb \
             -reduce-relocations -plugin-sql-sqlite \
+            -xcb -opengl desktop -qpa xcb \
+            -qt-harfbuzz -qt-freetype -qt-libjpeg -qt-libpng -qt-pcre -qt-sql-sqlite -qt-zlib -qt-xcb -qt-xkbcommon \
             -no-sse3 -no-ssse3 -no-sse4.1 -no-sse4.2 -no-avx -no-avx2 -no-mips_dsp -no-mips_dspr2 \
-            -no-icu -no-gif -no-nis -no-openssl -no-pch -no-sql-ibase -no-sql-odbc \
+            -no-cups -no-dbus -no-evdev -no-sm -no-iconv -no-glib -no-icu -no-gif -no-nis -no-openssl -no-pch -no-sql-ibase -no-sql-odbc \
             -no-directfb -no-eglfs -no-qml-debug -no-separate-debug-info -no-rpath \
-            -no-compile-examples -nomake examples -nomake tests -make libs -make tools
-#make -j 4
-#make install
-#touch build-done
+            -no-compile-examples -nomake examples -nomake tests -make libs -make tools -v
+make -j 4
+make install
+touch build-done
 cd ..
 fi
+
+# ------------------------------------------------------------------------------------
+# qt5-multimedia
+
+if [ ! -d qtmultimedia-opensource-src-5.4.1 ]; then
+curl -L http://download.qt-project.org/official_releases/qt/5.4/5.4.1/submodules/qtmultimedia-opensource-src-5.4.1.tar.gz -o qtmultimedia-opensource-src-5.4.1.tar.gz
+tar -xf qtmultimedia-opensource-src-5.4.1.tar.gz
+fi
+
+if [ ! -f qtmultimedia-opensource-src-5.4.1/build-done ]; then
+cd qtmultimedia-opensource-src-5.4.1
+qmake
+make -j 4
+sudo make install
+touch build-done
+cd ..
+fi
+
+# ------------------------------------------------------------------------------------
+# qt5-svg
+
+if [ ! -d qtsvg-opensource-src-5.4.1 ]; then
+curl -L http://download.qt-project.org/official_releases/qt/5.4/5.4.1/submodules/qtsvg-opensource-src-5.4.1.tar.gz -o qtsvg-opensource-src-5.4.1.tar.gz
+tar -xf qtsvg-opensource-src-5.4.1.tar.gz
+fi
+
+if [ ! -f qtsvg-opensource-src-5.4.1/build-done ]; then
+cd qtsvg-opensource-src-5.4.1
+qmake
+make -j 2
+sudo make install
+touch build-done
+cd ..
+fi
+
+if [ ! -d qtwebkit-opensource-src-5.4.1 ]; then
+curl -L http://download.qt-project.org/official_releases/qt/5.4/5.4.1/submodules/qtwebkit-opensource-src-5.4.1.tar.gz -o qtwebkit-opensource-src-5.4.1.tar.gz
+tar -xf qtwebkit-opensource-src-5.4.1.tar.gz
+fi
+
+apt-get install ruby flex bison gperf
+#if [ ! -f qtwebkit-opensource-src-5.4.1/build-done ]; then
+cd qtwebkit-opensource-src-5.4.1
+export SQLITE3SRCDIR=/src/qtbase-opensource-src-5.4.1/src/3rdparty/sqlite/
+qmake
+make -j 2
+sudo make install
+touch build-done
+unset SQLITE3SRCDIR
+cd ..
+#fi
 
 # ------------------------------------------------------------------------------------
 # done
@@ -104,6 +158,26 @@ set -e
 if [ -f Makefile ]; then
   cd data/linux
 fi
+
+# ------------------------------------------------------------------------------------
+# patch to fix qt5 build
+
+echo "
+--- qtbase5-static-5.4.1.orig/src/plugins/platforms/xcb/qxcbconnection_xi2.cpp
++++ qtbase5-static-5.4.1/src/plugins/platforms/xcb/qxcbconnection_xi2.cpp
+@@ -175,9 +175,11 @@ void QXcbConnection::xi2SetupDevices()
+             case XIKeyClass:
+                 qCDebug(lcQpaXInputDevices) << \"   it's a keyboard\";
+                 break;
++#ifdef XCB_USE_XINPUT22
+             case XITouchClass:
+                 // will be handled in deviceForId()
+                 break;
++#endif
+             default:
+                 qCDebug(lcQpaXInputDevices) << \"   has class\" << devices[i].classes[c]->type;
+                 break;
+" | sudo tee ./chroot/fix-qt5-build.patch
 
 # ------------------------------------------------------------------------------------
 # build everything

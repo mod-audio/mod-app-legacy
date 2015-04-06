@@ -3,7 +3,7 @@ Manager=KDevGenericManager
 Name=mod-app
 
 [Filters]
-Excludes=*/.*,*/*~,*/*.pyc,*/ui_*.py,*/__pycache__/,chroot,*.a,*.dll,*.dylib,*.exe,*.o
+Excludes=*/.*,*/*~,*/*.pyc,*/ui_*.py,*/__pycache__/,chroot/,*.a,*.dll,*.dylib,*.exe,*.o
 
 [Project]
 VersionControlSupport=kdevgit

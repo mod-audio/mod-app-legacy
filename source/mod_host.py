@@ -45,6 +45,7 @@ setInitialSettings()
 from mod import jack, rebuild_database, webserver
 from mod.lv2 import get_pedalboards
 from mod.session import SESSION
+from mod.settings import INGEN_NUM_AUDIO_INS, INGEN_NUM_AUDIO_OUTS, INGEN_NUM_MIDI_INS, INGEN_NUM_MIDI_OUTS
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -960,21 +961,22 @@ class HostWindow(QMainWindow):
     @pyqtSlot()
     def slot_webviewPostFinished(self):
         tof = "true" if not self.fIsRefreshingPage else "false"
-        audioIns = audioOuts = 2
-        midiIns  = 1
-        midiOuts = 0
-        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s, %i, %i, %i, %i)" % (tof, audioIns, audioOuts, midiIns, midiOuts))
+        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s, %i, %i, %i, %i)" % (tof,
+                                                                                         INGEN_NUM_AUDIO_INS,
+                                                                                         INGEN_NUM_AUDIO_OUTS,
+                                                                                         INGEN_NUM_MIDI_INS,
+                                                                                         INGEN_NUM_MIDI_OUTS))
 
         if not self.fIsRefreshingPage:
             settings = QSettings()
 
             if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool):
-                os.system("jack_connect system:capture_1 mod-app-%s:audio_in_1" % config["port"])
-                os.system("jack_connect system:capture_2 mod-app-%s:audio_in_2" % config["port"])
+                for i in range(1, INGEN_NUM_AUDIO_INS+1):
+                    os.system("jack_connect system:capture_%i mod-app-%s:audio_in_%i" % (i, config["port"], i))
 
             if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
-                os.system("jack_connect mod-app-%s:audio_out_1 system:playback_1" % config["port"])
-                os.system("jack_connect mod-app-%s:audio_out_2 system:playback_2" % config["port"])
+                for i in range(1, INGEN_NUM_AUDIO_OUTS+1):
+                    os.system("jack_connect mod-app-%s:audio_out_%i system:playback_%i" % (config["port"], i, i))
 
         self.fIsRefreshingPage = False
 

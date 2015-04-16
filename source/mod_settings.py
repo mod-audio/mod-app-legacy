@@ -94,6 +94,11 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Host
 
+        self.ui.sb_backend_audio_ins.setValue(settings.value(MOD_KEY_HOST_NUM_AUDIO_INS, MOD_DEFAULT_HOST_NUM_AUDIO_INS, type=int))
+        self.ui.sb_backend_audio_outs.setValue(settings.value(MOD_KEY_HOST_NUM_AUDIO_OUTS, MOD_DEFAULT_HOST_NUM_AUDIO_OUTS, type=int))
+        self.ui.sb_backend_midi_ins.setValue(settings.value(MOD_KEY_HOST_NUM_MIDI_INS, MOD_DEFAULT_HOST_NUM_MIDI_INS, type=int))
+        self.ui.sb_backend_midi_outs.setValue(settings.value(MOD_KEY_HOST_NUM_MIDI_OUTS, MOD_DEFAULT_HOST_NUM_MIDI_OUTS, type=int))
+
         self.ui.cb_host_auto_connect_ins.setChecked(settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool))
         self.ui.cb_host_auto_connect_outs.setChecked(settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool))
 
@@ -137,6 +142,10 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Host
 
+        settings.setValue(MOD_KEY_HOST_NUM_AUDIO_INS,       self.ui.sb_backend_audio_ins.value())
+        settings.setValue(MOD_KEY_HOST_NUM_AUDIO_OUTS,      self.ui.sb_backend_audio_outs.value())
+        settings.setValue(MOD_KEY_HOST_NUM_MIDI_INS,        self.ui.sb_backend_midi_ins.value())
+        settings.setValue(MOD_KEY_HOST_NUM_MIDI_OUTS,       self.ui.sb_backend_midi_outs.value())
         settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_INS,   self.ui.cb_host_auto_connect_ins.isChecked())
         settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_OUTS,  self.ui.cb_host_auto_connect_outs.isChecked())
         settings.setValue(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, self.ui.cb_host_jack_bufsize_change.isChecked())
@@ -166,6 +175,10 @@ class SettingsWindow(QDialog):
         # Host
 
         elif self.ui.lw_page.currentRow() == self.TAB_INDEX_HOST:
+            self.ui.sb_backend_audio_ins.setValue(MOD_DEFAULT_HOST_NUM_AUDIO_INS)
+            self.ui.sb_backend_audio_outs.setValue(MOD_DEFAULT_HOST_NUM_AUDIO_OUTS)
+            self.ui.sb_backend_midi_ins.setValue(MOD_DEFAULT_HOST_NUM_MIDI_INS)
+            self.ui.sb_backend_midi_outs.setValue(MOD_DEFAULT_HOST_NUM_MIDI_OUTS)
             self.ui.cb_host_jack_bufsize_change.setChecked(MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE)
             self.ui.cb_host_jack_bufsize_value.setCurrentIndex(self.ui.cb_host_jack_bufsize_value.findText(str(MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE)))
             self.ui.cb_host_verbose.setChecked(MOD_DEFAULT_HOST_VERBOSE)

@@ -961,11 +961,7 @@ class HostWindow(QMainWindow):
     @pyqtSlot()
     def slot_webviewPostFinished(self):
         tof = "true" if not self.fIsRefreshingPage else "false"
-        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s, %i, %i, %i, %i)" % (tof,
-                                                                                         INGEN_NUM_AUDIO_INS,
-                                                                                         INGEN_NUM_AUDIO_OUTS,
-                                                                                         INGEN_NUM_MIDI_INS,
-                                                                                         INGEN_NUM_MIDI_OUTS))
+        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s)" % (tof))
 
         if not self.fIsRefreshingPage:
             settings = QSettings()

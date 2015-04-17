@@ -134,7 +134,8 @@ class HostSplashScreen(QSplashScreen):
         settings = QSettings()
 
         # read current value
-        self.fNeedsRescan = settings.value("NeedsRescan", True, type=bool)
+        self.fNeedsRescan  = settings.value("NeedsRescan",  True, type=bool)
+        self.fShowGuisOnly = settings.value("ShowGuisOnly", True, type=bool)
 
         # disable for next time
         settings.setValue("NeedsRescan", False)
@@ -147,7 +148,7 @@ class HostSplashScreen(QSplashScreen):
             return
 
         self.show()
-        rebuild_database(True, self.callback)
+        rebuild_database(self.fShowGuisOnly, self.callback)
 
     def callback(self, percent, uri):
         if self.fStopRequested:
@@ -755,10 +756,15 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot(bool)
     def slot_backendRescan(self):
-        QSettings().setValue("NeedsRescan", self.ui.act_backend_rescan.isChecked())
+        settings = QSettings()
 
-        #QMessageBox.information(self, self.tr("information"),
-                                      #self.tr("Rescan is now enabled for the next time you start MOD-App."))
+        showGuisOnly = (QMessageBox.question(self.parent(),
+                                             self.tr("MOD-App Question"),
+                                             self.tr("Show only plugins that have MODGUIs?"),
+                                             QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes) == QMessageBox.Yes)
+
+        settings.setValue("NeedsRescan", self.ui.act_backend_rescan.isChecked())
+        settings.setValue("ShowGuisOnly",showGuisOnly)
 
     @pyqtSlot()
     def slot_backendDump(self):

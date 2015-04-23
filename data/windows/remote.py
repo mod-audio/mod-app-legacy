@@ -14,7 +14,7 @@ from mod_common import config
 # ------------------------------------------------------------------------------------------------------------
 
 options = {
-  #"icon": ".\\resources\\ico\\mod.ico",
+  "icon": ".\\resources\\ico\\mod.ico",
   "packages": ["PyQt5.QtNetwork", "PyQt5.QtPrintSupport", "PyQt5.QtWebKit"],
   "includes": ["re", "sip", "subprocess", "inspect"],
   "build_exe": ".\\data\\windows\\MOD-Remote\\",

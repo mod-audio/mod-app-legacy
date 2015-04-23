@@ -2,6 +2,9 @@
 
 set -e
 
+MINGW=i686-w64-mingw32
+MINGW_PATH=/opt/mingw32
+
 JOBS="-j 2"
 
 if [ ! -f Makefile ]; then
@@ -9,6 +12,17 @@ if [ ! -f Makefile ]; then
 fi
 
 export WIN32=true
+
+export PATH=$MINGW_PATH/bin:$MINGW_PATH/$MINGW/bin:$PATH
+export CC=$MINGW-gcc
+export CXX=$MINGW-g++
+export WINDRES=$MINGW-windres
+
+unset CFLAGS
+unset CXXFLAGS
+unset CPPFLAGS
+unset LDFLAGS
+
 export WINEARCH=win32
 export WINEPREFIX=~/.winepy3_x86
 export PYTHON_EXE="wine C:\\\\Python34\\\\python.exe"
@@ -56,6 +70,22 @@ cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5WebChannel.dll       
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5WebKit.dll            MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5Widgets.dll           MOD-Remote/
 cp $WINEPREFIX/drive_c/Python34/Lib/site-packages/PyQt5/Qt5WebKitWidgets.dll     MOD-Remote/
+
+# Build unzipfx
+make -C unzipfx-remote -f Makefile.win32 clean
+make -C unzipfx-remote -f Makefile.win32
+
+# Create zip of MOD-Remote
+rm -f MOD-Remote.zip
+zip -r -9 MOD-Remote.zip MOD-Remote
+
+# Create static build
+rm -f MOD-Remote.exe
+cat unzipfx-remote/unzipfx2cat.exe MOD-Remote.zip > MOD-Remote.exe
+chmod +x MOD-Remote.exe
+
+# Cleanup
+rm -f MOD-Remote.zip
 
 cd ../..
 

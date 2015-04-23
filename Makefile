@@ -72,13 +72,31 @@ install:
 	# Create directories
 	install -d $(DESTDIR)$(PREFIX)/bin/
 	install -d $(DESTDIR)$(PREFIX)/share/applications/
+	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/16x16/apps/
+	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/
+	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/32x32/apps/
+	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps/
+	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/
+	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/96x96/apps/
+	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/128x128/apps/
+	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/
+	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/
 	install -d $(DESTDIR)$(PREFIX)/share/mime/packages/
 	install -d $(DESTDIR)$(PREFIX)/share/mod-app/
-	install -d $(DESTDIR)$(PREFIX)/share/pixmaps/
 
-	# Install desktop file and pixmap
+	# Install desktop files
 	install -m 755 data/*.desktop          $(DESTDIR)$(PREFIX)/share/applications/
-	install -m 644 resources/48x48/mod.png $(DESTDIR)$(PREFIX)/share/pixmaps/mod-app.png
+
+	# Install icons, 16x16
+	install -m 644 resources/16x16/mod.png    $(DESTDIR)$(PREFIX)/share/icons/hicolor/16x16/apps/
+	install -m 644 resources/24x24/mod.png    $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/
+	install -m 644 resources/32x32/mod.png    $(DESTDIR)$(PREFIX)/share/icons/hicolor/32x32/apps/
+	install -m 644 resources/48x48/mod.png    $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps/
+	install -m 644 resources/64x64/mod.png    $(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/
+	install -m 644 resources/96x96/mod.png    $(DESTDIR)$(PREFIX)/share/icons/hicolor/96x96/apps/
+	install -m 644 resources/128x128/mod.png  $(DESTDIR)$(PREFIX)/share/icons/hicolor/128x128/apps/
+	install -m 644 resources/256x256/mod.png  $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/
+# 	install -m 644 resources/scalable/mod.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/
 
 	# Install mime package
 	install -m 644 data/mod-app.xml $(DESTDIR)$(PREFIX)/share/mime/packages/

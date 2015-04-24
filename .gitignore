@@ -14,4 +14,5 @@ source/modules/mod-ui/
 
 data/macos/MOD-*/
 data/windows/MOD-*/
+data/windows/python/
 resources/raw/

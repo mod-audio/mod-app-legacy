@@ -531,7 +531,7 @@ class HostWindow(QMainWindow):
         if self.fWebFrame is None:
             return
 
-        self.fWebFrame.evaluateJavaScript("desktop.reset()")
+        self.fWebFrame.evaluateJavaScript("desktop.reset(null, false)")
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -555,22 +555,12 @@ class HostWindow(QMainWindow):
         self.setProperWindowTitle()
         self.openPedalboardNow()
 
-    @pyqtSlot()
-    def slot_openPedalboardNow(self):
-        self.openPedalboardNow()
-
     def openPedalboardNow(self):
         if not self.fCurrentPedalboard:
             return qCritical("ERROR: loading project without pedalboard set")
 
-        #def callback(ok):
-            #print("set callback",  ok)
-
-        #SESSION.host.set("", "<http://drobilla.net/ns/ingen#file>", "<%s>" % self.fCurrentPedalboard, callback)
-
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
-        # TODO - implement this
+        # TODO - this is only a workaround while ingen doesn't support this natively
+        self.slot_backendRestart()
 
     def openPedalboardLater(self, filename):
         self.fCurrentPedalboard = QFileInfo(filename).absoluteFilePath()

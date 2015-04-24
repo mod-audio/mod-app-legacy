@@ -324,9 +324,6 @@ class HostWindow(QMainWindow):
         # Current project filename (used via 'File' menu actions)
         self.fCurrentPedalboard = ""
 
-        # TESTING
-        #self.fCurrentPedalboard = os.path.expanduser("~/.lv2/c_ds1_phase_reverb.pedalboard/c_ds1_phase_reverb.ttl")
-
         # first attempt of auto-start backend doesn't show an error
         self.fFirstBackendInit  = True
         self.fFirstBackendInit2 = True
@@ -579,7 +576,6 @@ class HostWindow(QMainWindow):
         self.fCurrentPedalboard = QFileInfo(filename).absoluteFilePath()
         self.updatePresetsMenu()
         self.setProperWindowTitle()
-        QTimer.singleShot(0, self.slot_openPedalboardNow)
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -719,9 +715,8 @@ class HostWindow(QMainWindow):
         #hostArgs = ["-e", "-n", "mod-app-%s" % config["port"]]
         hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", "/tmp/mod-app-%s.sock" % config["port"]]
 
-        #if self.fCurrentPedalboard: # and self.fFirstBackendInit:
-            #hostArgs.append("-l")
-            #hostArgs.append(self.fCurrentPedalboard)
+        if self.fCurrentPedalboard:
+            hostArgs.append(self.fCurrentPedalboard)
 
         self.fProccessBackend.start(hostPath, hostArgs)
 
@@ -780,7 +775,9 @@ class HostWindow(QMainWindow):
         if hostPath.endswith("mod-host"):
             hostPath = MOD_DEFAULT_HOST_PATH
 
-        os.system("%s -c %s -g &" % (hostPath, "unix:///tmp/mod-app-%s.sock" % config["port"]))
+        command = "%s -c %s -g &" % (hostPath, "unix:///tmp/mod-app-%s.sock" % config["port"])
+        print(command)
+        os.system(command)
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -966,8 +963,7 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_webviewPostFinished(self):
-        tof = "true" if not self.fIsRefreshingPage else "false"
-        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s)" % (tof))
+        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp()")
 
         if not self.fIsRefreshingPage:
             settings = QSettings()

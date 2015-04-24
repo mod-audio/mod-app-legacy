@@ -4,8 +4,8 @@ VERSION="0.0.1"
 
 set -e
 
-MINGW=i686-w64-mingw32
-MINGW_PATH=/opt/mingw32
+MINGW=x86_64-w64-mingw32
+MINGW_PATH=/opt/mingw64
 
 JOBS="-j 2"
 
@@ -14,6 +14,7 @@ if [ ! -f Makefile ]; then
 fi
 
 export WIN32=true
+export WIN64=true
 
 export PATH=$MINGW_PATH/bin:$MINGW_PATH/$MINGW/bin:$PATH
 export CC=$MINGW-gcc
@@ -25,8 +26,8 @@ unset CXXFLAGS
 unset CPPFLAGS
 unset LDFLAGS
 
-export WINEARCH=win32
-export WINEPREFIX=~/.winepy3_x86
+export WINEARCH=win64
+export WINEPREFIX=~/.winepy3_x64
 export PYTHON_EXE="wine C:\\\\Python34\\\\python.exe"
 
 export CXFREEZE="$PYTHON_EXE C:\\\\Python34\\\\Scripts\\\\cxfreeze"
@@ -91,15 +92,15 @@ chmod +x MOD-Remote.exe
 rm -f MOD-Remote.zip
 
 # Create release zip
-rm -rf MOD-Remote-win32
-mkdir MOD-Remote-win32
-mkdir MOD-Remote-win32/vcredist
-cp MOD-Remote.exe README.txt MOD-Remote-win32
-cp ~/.cache/winetricks/vcrun2010/vcredist_x86.exe MOD-Remote-win32/vcredist
-zip -r -9 MOD-Remote_"$VERSION"_win32.zip MOD-Remote-win32
+rm -rf MOD-Remote-win64
+mkdir MOD-Remote-win64
+mkdir MOD-Remote-win64/vcredist
+cp MOD-Remote.exe README.txt MOD-Remote-win64
+cp ~/.cache/winetricks/vcrun2010/vcredist_x64.exe MOD-Remote-win64/vcredist
+zip -r -9 MOD-Remote_"$VERSION"_win64.zip MOD-Remote-win64
 
 cd ../..
 
 # Testing:
-echo "export WINEPREFIX=~/.winepy3_x86"
+echo "export WINEPREFIX=~/.winepy3_x64"
 echo "$PYTHON_EXE ./source/mod-remote"

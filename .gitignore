@@ -1,6 +1,7 @@
 *~
 *.exe
 *.pyc
+*.zip
 .DS_Store
 .kdev4/
 build/

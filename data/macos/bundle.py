@@ -24,7 +24,7 @@ options = {
 }
 
 boptions = {
-  #"iconfile": "./resources/ico/mod.icns"
+  "iconfile": "./resources/ico/mod.icns"
 }
 
 setup(name = "MOD-Remote",

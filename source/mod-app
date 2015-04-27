@@ -79,7 +79,7 @@ if __name__ == '__main__':
     app.setApplicationName("MOD-App")
     app.setApplicationVersion(config["version"])
     app.setOrganizationName("MOD")
-    app.setWindowIcon(QIcon(":/48x48/mod.png"))
+    app.setWindowIcon(QIcon(":/scalable/mod.svg"))
 
     if MACOS:
         app.setAttribute(Qt.AA_DontShowIconsInMenus)

@@ -23,6 +23,8 @@
         <file>48x48/network-connect.png</file>
         <file>48x48/mod.png</file>
 
+        <file>scalable/mod.svg</file>
+
         <file>mod-splash.jpg</file>
     </qresource>
 </RCC>

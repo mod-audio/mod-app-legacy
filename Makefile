@@ -96,7 +96,7 @@ install:
 	install -m 644 resources/96x96/mod.png    $(DESTDIR)$(PREFIX)/share/icons/hicolor/96x96/apps/
 	install -m 644 resources/128x128/mod.png  $(DESTDIR)$(PREFIX)/share/icons/hicolor/128x128/apps/
 	install -m 644 resources/256x256/mod.png  $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/
-# 	install -m 644 resources/scalable/mod.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/
+	install -m 644 resources/scalable/mod.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/
 
 	# Install mime package
 	install -m 644 data/mod-app.xml $(DESTDIR)$(PREFIX)/share/mime/packages/
@@ -127,7 +127,8 @@ uninstall:
 	rm -f  $(DESTDIR)$(PREFIX)/share/applications/mod-app.desktop
 	rm -f  $(DESTDIR)$(PREFIX)/share/applications/mod-remote.desktop
 	rm -f  $(DESTDIR)$(PREFIX)/share/mime/packages/mod-app.xml
-	rm -f  $(DESTDIR)$(PREFIX)/share/pixmaps/mod-app.png
+	rm -f  $(DESTDIR)$(PREFIX)/share/icons/hicolor/*/apps/mod.png
+	rm -f  $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/mod.svg
 	rm -rf $(DESTDIR)$(PREFIX)/share/mod-app/
 
 # ----------------------------------------------------------------------------------------------------------------------------

@@ -758,12 +758,17 @@ class HostWindow(QMainWindow):
     def slot_backendRescan(self):
         settings = QSettings()
 
+        needsRescan = self.ui.act_backend_rescan.isChecked()
+        settings.setValue("NeedsRescan", needsRescan)
+
+        if not needsRescan:
+            return
+
         showGuisOnly = (QMessageBox.question(self.parent(),
                                              self.tr("MOD-App Question"),
                                              self.tr("Show only plugins that have MODGUIs?"),
                                              QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes) == QMessageBox.Yes)
 
-        settings.setValue("NeedsRescan", self.ui.act_backend_rescan.isChecked())
         settings.setValue("ShowGuisOnly",showGuisOnly)
 
     @pyqtSlot()

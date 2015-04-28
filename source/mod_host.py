@@ -113,10 +113,15 @@ class HostSplashScreen(QSplashScreen):
     SIGTERM = pyqtSignal()
     SIGUSR1 = pyqtSignal()
 
+    # rescan mode
+    kRescanNull = 0
+    kRescanAll  = 1
+    kRescanMOD  = 2
+
     # --------------------------------------------------------------------------------------------------------
 
-    def __init__(self):
-        QSplashScreen.__init__(self, QPixmap(":/mod-splash.jpg"), Qt.SplashScreen|Qt.WindowStaysOnTopHint)
+    def __init__(self, rescanMode):
+        QSplashScreen.__init__(self, QPixmap(":/mod-splash.jpg"), Qt.SplashScreen) #|Qt.WindowStaysOnTopHint
 
         # ----------------------------------------------------------------------------------------------------
         # Internal stuff
@@ -134,9 +139,18 @@ class HostSplashScreen(QSplashScreen):
 
         settings = QSettings()
 
-        # read current value
-        self.fNeedsRescan  = settings.value("NeedsRescan",  True, type=bool)
-        self.fShowGuisOnly = settings.value("ShowGuisOnly", True, type=bool)
+        if rescanMode == self.kRescanAll:
+            self.fNeedsRescan  = True
+            self.fShowGuisOnly = False
+
+        elif rescanMode == self.kRescanMOD:
+            self.fNeedsRescan  = True
+            self.fShowGuisOnly = True
+
+        elif rescanMode == self.kRescanNull:
+            # read current value
+            self.fNeedsRescan  = settings.value("NeedsRescan",  True, type=bool)
+            self.fShowGuisOnly = settings.value("ShowGuisOnly", True, type=bool)
 
         # disable for next time
         settings.setValue("NeedsRescan", False)

@@ -84,15 +84,30 @@ if __name__ == '__main__':
     if MACOS:
         app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
+    forcedRescanMode = HostSplashScreen.kRescanNull
+    pedalboardToLoad = ""
+
     # --------------------------------------------------------------------------------------------------------
     # Set-up custom signal handling
 
     setUpSignals()
 
     # --------------------------------------------------------------------------------------------------------
+    # Check arguments
+
+    if len(sys.argv) > 1:
+        arg = sys.argv[-1]
+
+        if arg.startswith("--scan-lv2"):
+            forcedRescanMode = HostSplashScreen.kRescanAll if arg == "--scan-lv2-all" else HostSplashScreen.kRescanMOD
+
+        elif os.path.exists(arg):
+            pedalboardToLoad = arg
+
+    # --------------------------------------------------------------------------------------------------------
     # Create Splash screen
 
-    gui = HostSplashScreen()
+    gui = HostSplashScreen(forcedRescanMode)
     gui.rescanIfNeeded()
 
     # --------------------------------------------------------------------------------------------------------
@@ -100,14 +115,8 @@ if __name__ == '__main__':
 
     gui = HostWindow(gui)
 
-    # --------------------------------------------------------------------------------------------------------
-    # Load project file if set
-
-    if len(sys.argv) > 1:
-        arg = sys.argv[-1]
-
-        if os.path.exists(arg):
-            gui.openPedalboardLater(arg)
+    if pedalboardToLoad:
+        gui.openPedalboardLater(pedalboardToLoad)
 
     # --------------------------------------------------------------------------------------------------------
     # Show GUI

@@ -27,6 +27,7 @@ from mod_settings import *
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
 from PyQt5.QtGui import QDesktopServices, QImage, QPainter, QPixmap
 from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QPlainTextEdit, QSplashScreen, QVBoxLayout
+from PyQt5.QtWebKit import qWebKitVersion, QWebSettings
 from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 
 # ------------------------------------------------------------------------------------------------------------
@@ -1003,8 +1004,7 @@ class HostWindow(QMainWindow):
 
         inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR]
 
-        # QWebSettings::DeveloperExtrasEnabled == 7
-        websettings.setAttribute(7, inspectorEnabled)
+        websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, inspectorEnabled)
 
         if firstTime:
             if qsettings.contains("Geometry"):

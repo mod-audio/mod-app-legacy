@@ -27,7 +27,7 @@ from mod_settings import *
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QAction, QApplication, QInputDialog, QLineEdit, QMainWindow, QMessageBox
-from PyQt5.QtWebKit import qWebKitVersion, QWebSettings
+from PyQt5.QtWebKit import QWebSettings
 from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 
 # ------------------------------------------------------------------------------------------------------------

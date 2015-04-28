@@ -25,7 +25,8 @@ from mod_remote import *
 # Imports (Global)
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWebKit import qWebKitMajorVersion
+from PyQt5.QtWidgets import QApplication, QMessageBox
 
 # ------------------------------------------------------------------------------------------------------------
 # Import Signal
@@ -74,6 +75,15 @@ if __name__ == '__main__':
 
     if MACOS:
         app.setAttribute(Qt.AA_DontShowIconsInMenus)
+
+    if qWebKitMajorVersion() < 538:
+        QMessageBox.warning(None,
+                            "MOD-Remote Alert", # app.translate("HostWindow", ), #app.translate("HostWindow",
+                            """
+                              The WebKit included in your distribution's PyQt5 package is too old!<br/>
+                              You might experience graphical issues in MOD-Remote.
+                            """,
+                            QMessageBox.Ok)
 
     # --------------------------------------------------------------------------------------------------------
     # Set-up custom signal handling

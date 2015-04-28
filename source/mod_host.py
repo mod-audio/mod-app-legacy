@@ -48,6 +48,15 @@ from mod.lv2 import get_pedalboards
 from mod.session import SESSION
 from mod.settings import INGEN_NUM_AUDIO_INS, INGEN_NUM_AUDIO_OUTS, INGEN_NUM_MIDI_INS, INGEN_NUM_MIDI_OUTS
 
+def _save_pedalboard_waiter():
+    command = "ingen -c %s -g &" % ("unix:///tmp/mod-app-%s.sock" % config["port"])
+    os.system(command)
+
+    QMessageBox.information(None, "wait-mod", "Use ingen to save pedalboard now,\n"
+                                              "Make sure to call it 'testing'")
+
+SESSION._save_waiter = _save_pedalboard_waiter
+
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
 
@@ -586,6 +595,10 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_pedalboardSave(self, saveAs=False):
+
+        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(true, null)")
+        return
+
         if self.fCurrentPedalboard and not saveAs:
             return self.savePedalboardNow()
 

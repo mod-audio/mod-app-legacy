@@ -1,6 +1,1 @@
-Put custom modules here if wanted
-
-These can be:
-
-mod-ui     (python3 branch)
-mod-common (python3 branch)
+Put mod-ui here if you want a custom non-system-installed version to work with mod-app

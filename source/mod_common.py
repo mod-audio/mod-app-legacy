@@ -67,10 +67,6 @@ if os.path.exists(os.path.join(CWD, "modules", "mod-ui")):
 else:
     usingCustomMODUI = False
 
-if os.path.exists(os.path.join(CWD, "modules", "mod-python")):
-    print("NOTE: Using custom modcommon module")
-    sys.path = [os.path.join(CWD, "modules", "mod-python")] + sys.path
-
 # ------------------------------------------------------------------------------------------------------------
 # Set Platform
 

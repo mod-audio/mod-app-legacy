@@ -68,6 +68,24 @@ def setUpSignals():
     signal(SIGUSR1, signalHandler)
 
 # ------------------------------------------------------------------------------------------------------------
+# mod-ui injection hacks
+
+def _load_pedalboard_restart(bundlepath):
+    gui.openPedalboardLater(bundlepath)
+    QTimer.singleShot(0, gui.openPedalboardNow)
+
+def _save_pedalboard_waiter():
+    #return
+    command = "ingen -c %s -g &" % ("unix:///tmp/mod-app-%s.sock" % config["port"])
+    os.system(command)
+
+    QMessageBox.information(None, "wait-mod", "Use ingen to save pedalboard now,\n"
+                                              "Make sure to call it 'testing'")
+
+SESSION._load_pb_hack = _load_pedalboard_restart
+SESSION._save_waiter = _save_pedalboard_waiter
+
+# ------------------------------------------------------------------------------------------------------------
 # Main
 
 if __name__ == '__main__':

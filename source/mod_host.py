@@ -49,6 +49,7 @@ from mod.session import SESSION
 from mod.settings import INGEN_NUM_AUDIO_INS, INGEN_NUM_AUDIO_OUTS, INGEN_NUM_MIDI_INS, INGEN_NUM_MIDI_OUTS
 
 def _save_pedalboard_waiter():
+    #return
     command = "ingen -c %s -g &" % ("unix:///tmp/mod-app-%s.sock" % config["port"])
     os.system(command)
 
@@ -264,11 +265,11 @@ class OpenPedalboardWindow(QDialog):
 
         self.fSelectedURI = ""
 
-        for name, uri, thumbnail, presets in pedalboards:
+        for pedalboard in pedalboards:
             item = QListWidgetItem(self.ui.listWidget)
-            item.setData(Qt.UserRole, uri)
-            item.setIcon(QIcon(thumbnail.replace("file://","")))
-            item.setText(name)
+            item.setData(Qt.UserRole, pedalboard['uri'])
+            item.setIcon(QIcon(pedalboard['thumbnail'].replace("file://","")))
+            item.setText(pedalboard['name'])
             self.ui.listWidget.addItem(item)
 
         self.ui.listWidget.setCurrentRow(0)
@@ -301,7 +302,7 @@ class SavePedalboardWindow(QDialog):
         self.ui = Ui_PedalboardSave()
         self.ui.setupUi(self)
 
-        self.fExistingNames = list(name for name, uri, thumbnail, presets in pedalboards)
+        self.fExistingNames = list(pedal['name'] for pedal in pedalboards)
         self.fUserData      = ()
 
         self.ui.label_image.setPixmap(QPixmap.fromImage(image))
@@ -1154,12 +1155,12 @@ class HostWindow(QMainWindow):
         if not self.fCurrentPedalboard:
             return
 
-        for name, uri, thumbnail, presets in self.fPedalboards:
-            if self.fCurrentPedalboard not in uri:
+        for pedalboard in self.fPedalboards:
+            if self.fCurrentPedalboard not in pedalboard['uri']:
                 continue
-            for preset in presets:
-                act = self.ui.menu_Presets.addAction(preset["label"])
-                act.setData(preset["uri"])
+            for preset in pedalboard['presets']:
+                act = self.ui.menu_Presets.addAction(preset['label'])
+                act.setData(preset['uri'])
                 act.triggered.connect(self.slot_presetClicked)
                 self.fPresetMenuList.append(act)
 

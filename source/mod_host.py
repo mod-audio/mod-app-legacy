@@ -643,14 +643,12 @@ class HostWindow(QMainWindow):
             return
 
         # FIXME
-        if len(SESSION.instances) == 0:
-            return QMessageBox.information(self, self.tr("information"),
-                                           self.tr("Nothing to share."))
+        #if len(SESSION.instances) == 0:
+            #return QMessageBox.information(self, self.tr("information"),
+                                           #self.tr("Nothing to share."))
 
         # save first, prevent dialog by mod-ui
-        self.slot_pedalboardSave()
-
-        return QMessageBox.information(self, self.tr("information"), "TODO")
+        #self.slot_pedalboardSave()
 
         # TODO: check if pedalboard was changed, show our save-dialog instead of the html one
 

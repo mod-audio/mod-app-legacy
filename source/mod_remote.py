@@ -335,9 +335,15 @@ class RemoteWindow(QMainWindow):
     @pyqtSlot()
     def slot_about(self):
         QMessageBox.about(self, self.tr("About"), self.tr("""
-            <b>MOD Remote</b><br/><br/>
-            Some text will be here.<br/>
-            And some more will be here too, and here and here.
+            <b>MOD Remote</b><br/>
+            <br/>
+            A software to remotely control MOD Devices using desktop computers.<br/>
+            (C) 2015 - The MOD Team<br/>
+            <br/>
+            Publications, products, content or services referenced herein or on the website are the exclusive trademarks or servicemarks of MOD.<br/>
+            Other product and company names mentioned in the site may be the trademarks of their respective owners.<br/>
+            <br/>
+            All software is available under the <a href="https://www.gnu.org/licenses/gpl-2.0.html">GPL license</a>.<br/>
         """))
 
     @pyqtSlot()

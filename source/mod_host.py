@@ -149,7 +149,7 @@ class HostSplashScreen(QSplashScreen):
 
         elif rescanMode == self.kRescanNull:
             # read current value
-            self.fNeedsRescan  = settings.value("NeedsRescan",  True, type=bool)
+            self.fNeedsRescan  = settings.value("NeedsRescan",  True, type=bool) or DATA_DIR_EMPTY
             self.fShowGuisOnly = settings.value("ShowGuisOnly", True, type=bool)
 
         # disable for next time

@@ -114,6 +114,8 @@ os.environ['MOD_SCREENSHOT_JS']         = os.path.join(ROOT, "mod-ui", "screensh
 os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
 
+DATA_DIR_EMPTY = not os.path.exists(DATA_DIR)
+
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys
 

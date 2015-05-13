@@ -216,6 +216,7 @@ class RemoteWindow(QMainWindow):
         self.ui.act_settings_configure.setText(self.tr("Configure MOD-Remote"))
         self.ui.b_start.setIcon(QIcon(":/48x48/network-connect.png"))
         self.ui.b_start.setText(self.tr("Connect..."))
+        self.ui.b_configure.hide()
         self.ui.label_app.setText("MOD Remote v%s" % config["version"])
         self.ui.label_progress.setText("")
 

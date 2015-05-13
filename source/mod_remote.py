@@ -217,7 +217,7 @@ class RemoteWindow(QMainWindow):
         self.ui.b_start.setIcon(QIcon(":/48x48/network-connect.png"))
         self.ui.b_start.setText(self.tr("Connect..."))
         self.ui.label_app.setText("MOD Remote v%s" % config["version"])
-        self.ui.label_progress.hide()
+        self.ui.label_progress.setText("")
 
         # disable file menu
         self.ui.act_file_disconnect.setEnabled(False)
@@ -286,6 +286,7 @@ class RemoteWindow(QMainWindow):
 
         self.ui.w_buttons.setEnabled(False)
         self.ui.webview.load(dialog.getAddress())
+        self.ui.stackedwidget.setCurrentIndex(1)
 
         # allow to disconnect
         self.ui.act_file_disconnect.setEnabled(True)
@@ -301,6 +302,7 @@ class RemoteWindow(QMainWindow):
 
         self.ui.w_buttons.setEnabled(True)
         self.ui.stackedwidget.setCurrentIndex(0)
+        self.ui.label_progress.setText("")
 
         # testing cyan color for disconnected
         self.ui.webview.setHtml("<html><body bgcolor='cyan'></body></html>")
@@ -361,7 +363,6 @@ class RemoteWindow(QMainWindow):
     def slot_webviewLoadStarted(self):
         self.ui.w_buttons.setEnabled(False)
         self.ui.label_progress.setText(self.tr("Loading remote..."))
-        self.ui.label_progress.show()
         print("load started")
 
     @pyqtSlot(int)
@@ -385,7 +386,6 @@ class RemoteWindow(QMainWindow):
 
             # show webpage
             self.ui.label_progress.setText("")
-            self.ui.label_progress.hide()
             self.ui.stackedwidget.setCurrentIndex(1)
 
         else:
@@ -396,7 +396,6 @@ class RemoteWindow(QMainWindow):
 
             # hide webpage
             self.ui.label_progress.setText(self.tr("Loading remote... failed!"))
-            self.ui.label_progress.show()
             self.ui.stackedwidget.setCurrentIndex(0)
 
         print("load finished")

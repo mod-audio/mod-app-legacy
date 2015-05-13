@@ -816,7 +816,7 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_stop.setEnabled(False)
         self.ui.act_backend_restart.setEnabled(False)
         self.ui.w_buttons.setEnabled(True)
-        self.ui.label_progress.setText(self.tr(""))
+        self.ui.label_progress.setText("")
         self.ui.stackedwidget.setCurrentIndex(0)
 
         # stop webserver

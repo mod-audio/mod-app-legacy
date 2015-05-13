@@ -1040,7 +1040,7 @@ class HostWindow(QMainWindow):
                 self.setWindowState(self.windowState() | Qt.WindowMaximized)
 
             if inspectorEnabled and self.fSavedSettings[MOD_KEY_WEBVIEW_SHOW_INSPECTOR]:
-                self.ui.webinspector.show()
+                QTimer.singleShot(1000, self.ui.webinspector.show)
 
         self.ui.act_file_inspect.setVisible(inspectorEnabled)
 

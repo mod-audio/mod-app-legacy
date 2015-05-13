@@ -435,6 +435,15 @@ class HostWindow(QMainWindow):
             #self.ui.menu_Help.hide()
 
         # ----------------------------------------------------------------------------------------------------
+        # Set up GUI (special stuff for Live-MOD ISO)
+
+        if USING_LIVE_ISO:
+            self.ui.menubar.hide()
+            self.ui.b_start.hide()
+            self.ui.b_configure.hide()
+            self.ui.b_about.hide()
+
+        # ----------------------------------------------------------------------------------------------------
         # Load Settings
 
         self.loadSettings(True)
@@ -981,7 +990,7 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_webviewPostFinished(self):
-        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp()")
+        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s)" % ("true" if not USING_LIVE_ISO else "false"))
 
         if not self.fIsRefreshingPage:
             settings = QSettings()

@@ -949,12 +949,13 @@ class HostWindow(QMainWindow):
             self.ui.act_file_inspect.setEnabled(True)
 
             # enable pedalboard menu
-            self.ui.act_pedalboard_new.setEnabled(True)
-            self.ui.act_pedalboard_open.setEnabled(True)
-            self.ui.act_pedalboard_save.setEnabled(True)
-            self.ui.act_pedalboard_save_as.setEnabled(True)
-            self.ui.act_pedalboard_share.setEnabled(True)
-            self.ui.menu_Pedalboard.setEnabled(True)
+            enablePedalboard = not SKIP_INTEGRATION
+            self.ui.act_pedalboard_new.setEnabled(enablePedalboard)
+            self.ui.act_pedalboard_open.setEnabled(enablePedalboard)
+            self.ui.act_pedalboard_save.setEnabled(enablePedalboard)
+            self.ui.act_pedalboard_save_as.setEnabled(enablePedalboard)
+            self.ui.act_pedalboard_share.setEnabled(enablePedalboard)
+            self.ui.menu_Pedalboard.setEnabled(enablePedalboard)
 
             # for js evaulation
             self.fWebFrame = self.ui.webpage.currentFrame()
@@ -990,7 +991,8 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_webviewPostFinished(self):
-        self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s)" % ("true" if not USING_LIVE_ISO else "false"))
+        if not SKIP_INTEGRATION:
+            self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s)" % ("true" if not USING_LIVE_ISO else "false"))
 
         if not self.fIsRefreshingPage:
             settings = QSettings()

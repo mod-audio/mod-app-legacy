@@ -71,11 +71,14 @@ def setUpSignals():
 # mod-ui injection hacks
 
 def _load_pedalboard_restart(bundlepath):
+    if USING_LIVE_ISO: return
+
     gui.openPedalboardLater(bundlepath)
     QTimer.singleShot(0, gui.openPedalboardNow)
 
 def _save_pedalboard_waiter():
-    #return
+    if USING_LIVE_ISO: return
+
     command = "ingen -c %s -g &" % ("unix:///tmp/mod-app-%s.sock" % config["port"])
     os.system(command)
 

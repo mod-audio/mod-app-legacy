@@ -419,7 +419,7 @@ class RemoteWindow(QMainWindow):
             MOD_KEY_WEBVIEW_SHOW_INSPECTOR: qsettings.value(MOD_KEY_WEBVIEW_SHOW_INSPECTOR, MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR, type=bool)
         }
 
-        inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR]
+        inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR] and not USING_LIVE_ISO
 
         websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, inspectorEnabled)
 

@@ -10,7 +10,7 @@ sudo apt-get install ingen phantomjs mod-ui
 sudo apt-get install python3-pyqt5 python3-pyqt5.qtsvg python3-pyqt5.qtwebkit
 ```
 
-If you're not using the KXStudio repositories, you'll need to clone mod-ui inside the sources/modules folder.<br/>
+If you're not using the KXStudio repositories, you'll need to clone mod-ui inside the sources/modules.<br/>
 Then install these dependencies to get almost everything running:
 ```
 sudo apt-get install ingen phantomjs jack-capture sndfile-tools

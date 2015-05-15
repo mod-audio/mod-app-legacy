@@ -115,7 +115,7 @@ os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
 
 DATA_DIR_EMPTY = not os.path.exists(DATA_DIR)
-USING_LIVE_ISO = os.path.exists("/var/mod-live/initial-setup-5")
+USING_LIVE_ISO = os.path.exists("/var/mod-live/using-live-iso")
 SKIP_INTEGRATION = "--skip-integration" in sys.argv
 
 # ------------------------------------------------------------------------------------------------------------

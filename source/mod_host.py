@@ -854,6 +854,11 @@ class HostWindow(QMainWindow):
         errorStr = self.tr("Could not start host backend.\n") + self.getProcessErrorAsString(error)
         qWarning(errorStr)
 
+        # keep restarting until it works
+        if USING_LIVE_ISO:
+            QTimer.singleShot(0, self.slot_backendStart)
+            return
+
         # don't show error if this is the first time starting the host
         if firstBackendInit:
             return

@@ -52,7 +52,7 @@ USING_LIVE_ISO = os.path.exists("/var/mod-live/using-live-iso")
 
 if USING_LIVE_ISO:
     config["addr"] = "http://127.0.0.1:8888"
-    config["port"] = 8888
+    config["port"] = "8888"
 
 # ------------------------------------------------------------------------------------------------------------
 # Set CWD

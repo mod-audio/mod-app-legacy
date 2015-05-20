@@ -46,6 +46,15 @@ import sys
 from PyQt5.QtCore import QDir, QSettings
 
 # ------------------------------------------------------------------------------------------------------------
+# Check if using live ISO
+
+USING_LIVE_ISO = os.path.exists("/var/mod-live/using-live-iso")
+
+if USING_LIVE_ISO:
+    config["addr"] = "http://127.0.0.1:8888"
+    config["port"] = 8888
+
+# ------------------------------------------------------------------------------------------------------------
 # Set CWD
 
 CWD = sys.path[0]
@@ -114,8 +123,7 @@ os.environ['MOD_SCREENSHOT_JS']         = os.path.join(ROOT, "mod-ui", "screensh
 os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
 
-DATA_DIR_EMPTY = not os.path.exists(DATA_DIR)
-USING_LIVE_ISO = os.path.exists("/var/mod-live/using-live-iso")
+DATA_DIR_EMPTY   = not os.path.exists(DATA_DIR)
 SKIP_INTEGRATION = "--skip-integration" in sys.argv
 
 # ------------------------------------------------------------------------------------------------------------

@@ -81,18 +81,21 @@ class HostWebPage(QWebPage):
         QWebPage.__init__(self, parent)
 
     def javaScriptAlert(self, frame, msg):
-         QMessageBox.warning(self.parent(),
-                             self.tr("MOD-App Alert"),
-                             msg,
-                             QMessageBox.Ok)
+        if USING_LIVE_ISO: return
+        QMessageBox.warning(self.parent(),
+                            self.tr("MOD-App Alert"),
+                            msg,
+                            QMessageBox.Ok)
 
     def javaScriptConfirm(self, frame, msg):
+        if USING_LIVE_ISO: return True
         return (QMessageBox.question(self.parent(),
                                      self.tr("MOD-App Confirm"),
                                      msg,
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
     def javaScriptPrompt(self, frame, msg, default):
+        if USING_LIVE_ISO: return True, "live"
         res, ok = QInputDialog.getText(self.parent(),
                                        self.tr("MOD-App Prompt"),
                                        msg,
@@ -100,6 +103,7 @@ class HostWebPage(QWebPage):
         return ok, res
 
     def shouldInterruptJavaScript(self):
+        if USING_LIVE_ISO: return False
         return (QMessageBox.question(self.parent(),
                                      self.tr("MOD-App Problem"),
                                      self.tr("The script on this page appears to have a problem. Do you want to stop the script?"),
@@ -442,6 +446,7 @@ class HostWindow(QMainWindow):
             self.ui.b_start.hide()
             self.ui.b_configure.hide()
             self.ui.b_about.hide()
+            self.ui.stackedwidget.setCurrentIndex(1)
 
         # ----------------------------------------------------------------------------------------------------
         # Load Settings
@@ -504,7 +509,9 @@ class HostWindow(QMainWindow):
 
         self.setProperWindowTitle()
 
-        QTimer.singleShot(0, self.slot_backendStart)
+        if not "--no-autostart" in sys.argv:
+            QTimer.singleShot(0, self.slot_backendStart)
+
         QTimer.singleShot(1, self.fixWebViewSize)
 
     def __del__(self):

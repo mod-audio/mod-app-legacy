@@ -44,10 +44,10 @@ class RemoteWebPage(QWebPage):
         QWebPage.__init__(self, parent)
 
     def javaScriptAlert(self, frame, msg):
-         QMessageBox.warning(self.parent(),
-                             self.tr("MOD-Remote Alert"),
-                             msg,
-                             QMessageBox.Ok)
+        QMessageBox.warning(self.parent(),
+                            self.tr("MOD-Remote Alert"),
+                            msg,
+                            QMessageBox.Ok)
 
     def javaScriptConfirm(self, frame, msg):
         return (QMessageBox.question(self.parent(),

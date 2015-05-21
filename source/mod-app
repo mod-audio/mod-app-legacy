@@ -136,8 +136,9 @@ if __name__ == '__main__':
     # --------------------------------------------------------------------------------------------------------
     # Create Splash screen
 
-    gui = HostSplashScreen(forcedRescanMode)
-    gui.rescanIfNeeded()
+    if not USING_LIVE_ISO:
+        gui = HostSplashScreen(forcedRescanMode)
+        gui.rescanIfNeeded()
 
     # --------------------------------------------------------------------------------------------------------
     # Create GUI

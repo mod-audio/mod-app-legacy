@@ -817,7 +817,8 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_backendStarted(self):
-        self.fSplashScreen.close()
+        if self.fSplashScreen is not None:
+            self.fSplashScreen.close()
         self.ui.act_backend_start.setEnabled(False)
         self.ui.act_backend_stop.setEnabled(True)
         self.ui.act_backend_restart.setEnabled(True)
@@ -842,7 +843,8 @@ class HostWindow(QMainWindow):
     def slot_backendError(self, error):
         firstBackendInit = self.fFirstBackendInit
         self.fFirstBackendInit = False
-        self.fSplashScreen.close()
+        if self.fSplashScreen is not None:
+            self.fSplashScreen.close()
 
         # stop webserver
         self.stopAndWaitForWebServer()

@@ -526,12 +526,9 @@ class HostWindow(QMainWindow):
         if self.fWebFrame is None:
             return
 
-        if USING_LIVE_ISO:
-            self.slot_fileRefreshPost()
-        else:
-            self.ui.label_progress.setText(self.tr("Refreshing UI..."))
-            self.ui.stackedwidget.setCurrentIndex(0)
-            QTimer.singleShot(0, self.slot_fileRefreshPost)
+        self.ui.label_progress.setText(self.tr("Refreshing UI..."))
+        self.ui.stackedwidget.setCurrentIndex(0)
+        QTimer.singleShot(0, self.slot_fileRefreshPost)
 
     @pyqtSlot()
     def slot_fileRefreshPost(self):
@@ -836,9 +833,7 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_restart.setEnabled(False)
         self.ui.w_buttons.setEnabled(True)
         self.ui.label_progress.setText("")
-
-        if not USING_LIVE_ISO:
-            self.ui.stackedwidget.setCurrentIndex(0)
+        self.ui.stackedwidget.setCurrentIndex(0)
 
         # stop webserver
         self.stopAndWaitForWebServer()

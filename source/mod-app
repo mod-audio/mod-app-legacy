@@ -25,7 +25,7 @@ from mod_host import *
 # Imports (Global)
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette
+from PyQt5.QtGui import QColor, QPalette
 from PyQt5.QtWebKit import qWebKitMajorVersion
 from PyQt5.QtWidgets import QApplication, QMessageBox
 

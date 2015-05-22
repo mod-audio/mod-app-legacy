@@ -104,7 +104,7 @@ if __name__ == '__main__':
     if MACOS:
         app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
-    if qWebKitMajorVersion() < 538:
+    if qWebKitMajorVersion() < 538 and not USING_LIVE_ISO:
         QMessageBox.warning(None,
                             "MOD-App Alert", # app.translate("HostWindow", ), #app.translate("HostWindow",
                             """

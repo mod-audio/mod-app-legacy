@@ -48,7 +48,8 @@ from PyQt5.QtCore import QDir, QSettings
 # ------------------------------------------------------------------------------------------------------------
 # Check if using live ISO
 
-USING_LIVE_ISO = os.path.exists("/var/mod-live/using-live-iso")
+USING_LIVE_ISO   = "--using-live-iso"   in sys.argv
+SKIP_INTEGRATION = "--skip-integration" in sys.argv
 
 if USING_LIVE_ISO:
     config["addr"] = "http://127.0.0.1:8888"
@@ -124,7 +125,6 @@ os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
 
 DATA_DIR_EMPTY   = not os.path.exists(DATA_DIR)
-SKIP_INTEGRATION = "--skip-integration" in sys.argv
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys

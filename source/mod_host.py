@@ -550,6 +550,8 @@ class HostWindow(QMainWindow):
         if self.fWebFrame is None:
             return
         isOnline = self.fWebFrame.evaluateJavaScript("$('#mod-cloud').hasClass('logged')")
+        if isOnline is None:
+            return print("isOnline is None")
         self.ui.act_pedalboard_share.setEnabled(isOnline)
 
     @pyqtSlot()

@@ -52,8 +52,8 @@ USING_LIVE_ISO   = "--using-live-iso"   in sys.argv
 SKIP_INTEGRATION = "--skip-integration" in sys.argv
 
 if USING_LIVE_ISO:
-    config["addr"] = "http://127.0.0.1:8888"
-    config["port"] = "8888"
+    config["addr"] = "http://127.0.0.1:17891"
+    config["port"] = "17891"
 
 # ------------------------------------------------------------------------------------------------------------
 # Set CWD
@@ -124,7 +124,7 @@ os.environ['MOD_SCREENSHOT_JS']         = os.path.join(ROOT, "mod-ui", "screensh
 os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
 
-DATA_DIR_EMPTY   = not os.path.exists(DATA_DIR)
+DATA_DIR_EMPTY = not os.path.exists(DATA_DIR)
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys

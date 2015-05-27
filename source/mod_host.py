@@ -344,8 +344,13 @@ class HostWindow(QMainWindow):
         self.fCurrentPedalboard = ""
 
         # first attempt of auto-start backend doesn't show an error
-        self.fFirstBackendInit  = True
-        self.fFirstBackendInit2 = True
+        self.fFirstBackendInit = True
+
+        # need to call session reconnect after connecting the 1st time
+        self.fNeedsSessionReconnect = False
+
+        # when ingen fails to start try again 5 times
+        self.fIngenStartAttemptNumber = 0
 
         # special check for loading progress when only refreshing page
         self.fIsRefreshingPage = False
@@ -446,7 +451,6 @@ class HostWindow(QMainWindow):
             self.ui.b_start.hide()
             self.ui.b_configure.hide()
             self.ui.b_about.hide()
-            self.ui.stackedwidget.setCurrentIndex(1)
 
         # ----------------------------------------------------------------------------------------------------
         # Load Settings
@@ -858,12 +862,13 @@ class HostWindow(QMainWindow):
         qWarning(errorStr)
 
         # keep restarting until it works
-        if USING_LIVE_ISO:
+        self.fIngenStartAttemptNumber += 1
+        if self.fIngenStartAttemptNumber <= 5:
             QTimer.singleShot(0, self.slot_backendStart)
             return
 
-        # don't show error if this is the first time starting the host
-        if firstBackendInit:
+        # don't show error if this is the first time starting the host or using live-iso
+        if firstBackendInit or USING_LIVE_ISO:
             return
 
         # show the error message
@@ -895,11 +900,17 @@ class HostWindow(QMainWindow):
         if self.fProccessBackend.state() == QProcess.NotRunning:
             return
 
-        if not self.fFirstBackendInit2:
+        if not self.fNeedsSessionReconnect:
+            # we'll need it for next time
+            self.fNeedsSessionReconnect = True
+        else:
+            # we need it now
             SESSION.reconnect()
-        self.fFirstBackendInit2 = False
 
         self.fWebServerThread.start()
+
+        # ingen was started ok, reset counter
+        self.fIngenStartAttemptNumber = 0
 
     @pyqtSlot()
     def slot_ingenStartError(self):

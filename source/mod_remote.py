@@ -369,7 +369,6 @@ class RemoteWindow(QMainWindow):
     @pyqtSlot(int)
     def slot_webviewLoadProgress(self, progress):
         self.ui.label_progress.setText(self.tr("Loading remote... %i%%" % progress))
-        print("load progress", progress)
 
     @pyqtSlot(bool)
     def slot_webviewLoadFinished(self, ok):

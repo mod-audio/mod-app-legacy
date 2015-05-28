@@ -207,14 +207,16 @@ class SettingsWindow(QDialog):
 
     @pyqtSlot()
     def slot_getAndSetIngenPath(self):
-        newPath = QFileDialog.getOpenFileName(self, self.tr("Set Path to ingen"), self.ui.le_host_path.text())
-        if not newPath:
-            return
+        path, ok = QFileDialog.getOpenFileName(self, self.tr("Set Path to ingen"), self.ui.le_host_path.text())
 
-        if not os.path.isfile(newPath):
+        if not ok:
+            return
+        if not path:
+            return
+        if not os.path.isfile(path):
             return QMessageBox.critical(self, self.tr("Error"), "Path to ingen must be a valid filename")
 
-        self.ui.le_host_path.setText(newPath)
+        self.ui.le_host_path.setText(path)
 
     # --------------------------------------------------------------------------------------------------------
 

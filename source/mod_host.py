@@ -746,8 +746,15 @@ class HostWindow(QMainWindow):
         if hostPath.endswith("mod-host"):
             hostPath = MOD_DEFAULT_HOST_PATH
 
-        #hostArgs = ["-e", "-n", "mod-app-%s" % config["port"]]
-        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", "/tmp/mod-app-%s.sock" % config["port"]]
+        sockFile = "/tmp/mod-app-%s.sock" % config["port"]
+
+        if os.path.exists(sockFile):
+            try:
+                os.path.remove(sockFile)
+            except:
+                print("Failed to delete old ingen socket file, we'll continue anyway")
+
+        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", sockFile]
 
         if self.fCurrentPedalboard:
             hostArgs.append(self.fCurrentPedalboard)

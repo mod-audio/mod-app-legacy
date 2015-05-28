@@ -750,7 +750,7 @@ class HostWindow(QMainWindow):
 
         if os.path.exists(sockFile):
             try:
-                os.path.remove(sockFile)
+                os.remove(sockFile)
             except:
                 print("Failed to delete old ingen socket file, we'll continue anyway")
 

@@ -44,7 +44,7 @@ from ui_mod_pedalboard_save import Ui_PedalboardSave
 setInitialSettings()
 
 from mod import jack, rebuild_database, webserver
-from mod.lv2 import get_pedalboards
+from mod.lv2 import get_pedalboards, get_pedalboard_info
 from mod.session import SESSION
 from mod.settings import INGEN_NUM_AUDIO_INS, INGEN_NUM_AUDIO_OUTS, INGEN_NUM_MIDI_INS, INGEN_NUM_MIDI_OUTS
 
@@ -288,41 +288,6 @@ class OpenPedalboardWindow(QDialog):
         self.close()
 
 # ------------------------------------------------------------------------------------------------------------
-# Save Pedalboard Window
-
-class SavePedalboardWindow(QDialog):
-    def __init__(self, parent, pedalboards, image):
-        QDialog.__init__(self)
-        self.ui = Ui_PedalboardSave()
-        self.ui.setupUi(self)
-
-        self.fExistingNames = list(pedal['name'] for pedal in pedalboards)
-        self.fUserData      = ()
-
-        self.ui.label_image.setPixmap(QPixmap.fromImage(image))
-        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-
-        self.accepted.connect(self.slot_setUserData)
-        self.ui.le_name.textChanged.connect(self.slot_nameChanged)
-
-    def getUserData(self):
-        return self.fUserData
-
-    @pyqtSlot(str)
-    def slot_nameChanged(self, name):
-        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(name and name not in self.fExistingNames)
-
-    @pyqtSlot()
-    def slot_setUserData(self):
-        name   = self.ui.le_name.text()
-        author = self.ui.le_author.text()
-        self.fUserData = (name, author)
-
-    def done(self, r):
-        QDialog.done(self, r)
-        self.close()
-
-# ------------------------------------------------------------------------------------------------------------
 # Host Window
 
 class HostWindow(QMainWindow):
@@ -336,12 +301,15 @@ class HostWindow(QMainWindow):
         QMainWindow.__init__(self)
         self.ui = Ui_HostWindow()
         self.ui.setupUi(self)
+        
+        SESSION._app_save_callback = self._app_save_callback
 
         # ----------------------------------------------------------------------------------------------------
         # Internal stuff
 
-        # Current project filename (used via 'File' menu actions)
-        self.fCurrentPedalboard = ""
+        # Current mod-ui bundle and title
+        self.fCurrentBundle = ""
+        self.fCurrentTitle  = ""
 
         # first attempt of auto-start backend doesn't show an error
         self.fFirstBackendInit = True
@@ -522,6 +490,12 @@ class HostWindow(QMainWindow):
         self.stopAndWaitForWebServer()
         self.stopAndWaitForBackend()
 
+    def _app_save_callback(self, ok, bundlepath, title):
+        self.fCurrentBundle = bundlepath
+        self.fCurrentTitle  = title
+        self.updatePresetsMenu()
+        self.setProperWindowTitle()
+
     # --------------------------------------------------------------------------------------------------------
     # Files (menu actions)
 
@@ -560,7 +534,8 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_pedalboardNew(self):
-        self.fCurrentPedalboard = ""
+        self.fCurrentBundle = ""
+        self.fCurrentTitle  = ""
         self.updatePresetsMenu()
         self.setProperWindowTitle()
 
@@ -586,20 +561,32 @@ class HostWindow(QMainWindow):
         if not pedalboard:
             return QMessageBox.information(self, self.tr("information"), "Invalid pedalboard selected")
 
-        self.fCurrentPedalboard = pedalboard
+        try:
+            self.fCurrentBundle = pedalboard
+            self.fCurrentTitle  = get_pedalboard_info(self.fCurrentBundle)['name']
+        except:
+            self.fCurrentBundle = ""
+            self.fCurrentTitle  = ""
+
         self.updatePresetsMenu()
         self.setProperWindowTitle()
         self.openPedalboardNow()
 
     def openPedalboardNow(self):
-        if not self.fCurrentPedalboard:
+        if not self.fCurrentBundle:
             return qCritical("ERROR: loading project without pedalboard set")
 
         # TODO - this is only a workaround while ingen doesn't support this natively
         self.slot_backendRestart()
 
     def openPedalboardLater(self, filename):
-        self.fCurrentPedalboard = QFileInfo(filename).absoluteFilePath()
+        try:
+            self.fCurrentBundle = QFileInfo(filename).absoluteFilePath()
+            self.fCurrentTitle  = get_pedalboard_info(self.fCurrentBundle)['name']
+        except:
+            self.fCurrentBundle = ""
+            self.fCurrentTitle  = ""
+
         self.updatePresetsMenu()
         self.setProperWindowTitle()
 
@@ -607,54 +594,18 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_pedalboardSave(self, saveAs=False):
-
-        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(true, null)")
-        return
-
-        if self.fCurrentPedalboard and not saveAs:
-            return self.savePedalboardNow()
-
-        # render web frame to image
-        image = QImage(self.ui.webpage.viewportSize(), QImage.Format_ARGB32_Premultiplied)
-        image.fill(Qt.transparent)
-
-        painter = QPainter(image)
-        self.fWebFrame.render(painter)
-        painter.end()
-        del painter
-
-        dialog = SavePedalboardWindow(self, self.fPedalboards, image.scaled(500, 500, Qt.KeepAspectRatio))
-
-        if not dialog.exec_():
+        if self.fWebFrame is None:
             return
 
-        name, author = dialog.getUserData()
+        # FIXME REMOVEME
+        if saveAs == False and not self.fCurrentBundle:
+            saveAs = True
 
-        if not name:
-            return QMessageBox.information(self, self.tr("information"),
-                                           self.tr("Pedalboard name is required but not given, not saving."))
-
-        # TODO - make proper pedalboard uri
-        pedalboard = os.path.expanduser("~/.lv2/%s/%s.ttl" % (name, name))
-
-        if self.fCurrentPedalboard != pedalboard:
-            self.fCurrentPedalboard = pedalboard
-            self.updatePresetsMenu()
-            self.setProperWindowTitle()
-
-        self.savePedalboardNow()
+        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(%s, null)" % "true" if saveAs else "false")
 
     @pyqtSlot()
     def slot_pedalboardSaveAs(self):
         self.slot_pedalboardSave(True)
-
-    def savePedalboardNow(self):
-        if not self.fCurrentPedalboard:
-            return qCritical("ERROR: saving project without pedalboard set")
-
-        return QMessageBox.information(self, self.tr("information"), "TODO")
-
-        # TODO - implement this
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -662,16 +613,6 @@ class HostWindow(QMainWindow):
     def slot_pedalboardShare(self):
         if self.fWebFrame is None:
             return
-
-        # FIXME
-        #if len(SESSION.instances) == 0:
-            #return QMessageBox.information(self, self.tr("information"),
-                                           #self.tr("Nothing to share."))
-
-        # save first, prevent dialog by mod-ui
-        #self.slot_pedalboardSave()
-
-        # TODO: check if pedalboard was changed, show our save-dialog instead of the html one
 
         self.fWebFrame.evaluateJavaScript("desktop.shareCurrentPedalboard()")
 
@@ -756,9 +697,9 @@ class HostWindow(QMainWindow):
 
         hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", sockFile]
 
-        if self.fCurrentPedalboard:
-            hostArgs.append(self.fCurrentPedalboard)
-            SESSION.pedalboard = self.fCurrentPedalboard
+        if self.fCurrentBundle:
+            hostArgs.append(self.fCurrentBundle)
+            SESSION.pedalboard = self.fCurrentBundle
 
         self.fProccessBackend.start(hostPath, hostArgs)
 
@@ -1179,8 +1120,8 @@ class HostWindow(QMainWindow):
     def setProperWindowTitle(self):
         title = "MOD Application"
 
-        if self.fCurrentPedalboard:
-            title += " - %s" % self.fCurrentPedalboard
+        if self.fCurrentTitle:
+            title += " - %s" % self.fCurrentTitle
 
         self.setWindowTitle(title)
 
@@ -1190,11 +1131,11 @@ class HostWindow(QMainWindow):
 
         self.fPresetMenuList = []
 
-        if not self.fCurrentPedalboard:
+        if not self.fCurrentBundle:
             return
 
         for pedalboard in self.fPedalboards:
-            if self.fCurrentPedalboard not in pedalboard['uri']:
+            if self.fCurrentBundle not in pedalboard['uri']:
                 continue
             for preset in pedalboard['presets']:
                 act = self.ui.menu_Presets.addAction(preset['label'])

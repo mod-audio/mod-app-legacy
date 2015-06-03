@@ -7,14 +7,16 @@ natively integrated in the OS (no external web browser needed).<br/>
 If you're using the KXStudio repositories, run this command to install all dependencies:<br/>
 ```
 sudo apt-get install ingen phantomjs mod-ui
-sudo apt-get install python3-pyqt5 python3-pyqt5.qtsvg python3-pyqt5.qtwebkit
+sudo apt-get install python3-pyqt5 pyqt5-dev-tools
+sudo apt-get install python3-pyqt5.qtsvg python3-pyqt5.qtwebkit pyqt5-dev-tools
 ```
 
 If you're not using the KXStudio repositories, you'll need to clone mod-ui inside the sources/modules.<br/>
 Then install these dependencies to get almost everything running:
 ```
 sudo apt-get install ingen phantomjs jack-capture sndfile-tools
-sudo apt-get install python3-pyqt5 python3-pyqt5.qtsvg python3-pyqt5.qtwebkit
+sudo apt-get install python3-pyqt5 pyqt5-dev-tools
+sudo apt-get install python3-pyqt5.qtsvg python3-pyqt5.qtwebkit pyqt5-dev-tools
 sudo apt-get install python3-rdflib python3-bson python3-pil python3-pystache
 sudo apt-get install python3-pymongo python3-serial python3-tornado python3-whoosh
 ```

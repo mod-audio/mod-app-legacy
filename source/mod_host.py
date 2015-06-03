@@ -758,6 +758,7 @@ class HostWindow(QMainWindow):
 
         if self.fCurrentPedalboard:
             hostArgs.append(self.fCurrentPedalboard)
+            SESSION.pedalboard = self.fCurrentPedalboard
 
         self.fProccessBackend.start(hostPath, hostArgs)
 

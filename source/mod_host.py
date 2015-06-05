@@ -597,11 +597,7 @@ class HostWindow(QMainWindow):
         if self.fWebFrame is None:
             return
 
-        # FIXME REMOVEME
-        if saveAs == False and not self.fCurrentBundle:
-            saveAs = True
-
-        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(%s, null)" % "true" if saveAs else "false")
+        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(%s)" % ("true" if saveAs else "false"))
 
     @pyqtSlot()
     def slot_pedalboardSaveAs(self):

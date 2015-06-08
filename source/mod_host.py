@@ -44,7 +44,8 @@ from ui_mod_pedalboard_save import Ui_PedalboardSave
 setInitialSettings()
 
 from mod import jack, rebuild_database, webserver
-from mod.lv2 import get_pedalboards, get_pedalboard_info
+from mod.lilvlib import get_pedalboard_info
+from mod.lv2 import get_pedalboards
 from mod.session import SESSION
 from mod.settings import INGEN_NUM_AUDIO_INS, INGEN_NUM_AUDIO_OUTS, INGEN_NUM_MIDI_INS, INGEN_NUM_MIDI_OUTS
 
@@ -301,7 +302,7 @@ class HostWindow(QMainWindow):
         QMainWindow.__init__(self)
         self.ui = Ui_HostWindow()
         self.ui.setupUi(self)
-        
+
         SESSION._app_save_callback = self._app_save_callback
 
         # ----------------------------------------------------------------------------------------------------

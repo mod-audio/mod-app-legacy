@@ -69,15 +69,6 @@ def setUpSignals():
     signal(SIGUSR1, signalHandler)
 
 # ------------------------------------------------------------------------------------------------------------
-# mod-ui injection hacks
-
-def _load_pedalboard_restart(bundlepath):
-    gui.openPedalboardLater(bundlepath)
-    QTimer.singleShot(0, gui.openPedalboardNow)
-
-SESSION._load_pb_hack = _load_pedalboard_restart
-
-# ------------------------------------------------------------------------------------------------------------
 # Main
 
 if __name__ == '__main__':

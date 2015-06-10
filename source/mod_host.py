@@ -44,7 +44,7 @@ from ui_mod_pedalboard_save import Ui_PedalboardSave
 setInitialSettings()
 
 from mod import jack, rebuild_database, webserver
-from mod.lilvlib import get_pedalboard_info
+from mod.lilvlib import get_bundle_dirname, get_pedalboard_info
 from mod.lv2 import get_pedalboards
 from mod.session import SESSION
 from mod.settings import INGEN_NUM_AUDIO_INS, INGEN_NUM_AUDIO_OUTS, INGEN_NUM_MIDI_INS, INGEN_NUM_MIDI_OUTS
@@ -303,8 +303,6 @@ class HostWindow(QMainWindow):
         self.ui = Ui_HostWindow()
         self.ui.setupUi(self)
 
-        SESSION._app_save_callback = self._app_save_callback
-
         # ----------------------------------------------------------------------------------------------------
         # Internal stuff
 
@@ -477,6 +475,8 @@ class HostWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Final setup
 
+        SESSION._pedal_changed_callback = self._pedal_changed_callback
+
         # TESTING, remove next line later
         self.updatePresetsMenu()
 
@@ -491,9 +491,9 @@ class HostWindow(QMainWindow):
         self.stopAndWaitForWebServer()
         self.stopAndWaitForBackend()
 
-    def _app_save_callback(self, ok, bundlepath, title):
+    def _pedal_changed_callback(self, ok, bundlepath, title):
         self.fCurrentBundle = bundlepath
-        self.fCurrentTitle  = title
+        self.fCurrentTitle = title if title is not None else ""
         self.updatePresetsMenu()
         self.setProperWindowTitle()
 
@@ -535,15 +535,10 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_pedalboardNew(self):
-        self.fCurrentBundle = ""
-        self.fCurrentTitle  = ""
-        self.updatePresetsMenu()
-        self.setProperWindowTitle()
-
         if self.fWebFrame is None:
             return
 
-        self.fWebFrame.evaluateJavaScript("desktop.reset(null, false)")
+        self.fWebFrame.evaluateJavaScript("desktop.reset()")
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -557,28 +552,20 @@ class HostWindow(QMainWindow):
         if not dialog.exec_():
             return
 
-        pedalboard = dialog.getSelectedURI().replace("file://","")
+        pedalboard = dialog.getSelectedURI()
 
         if not pedalboard:
             return QMessageBox.information(self, self.tr("information"), "Invalid pedalboard selected")
 
         try:
-            self.fCurrentBundle = pedalboard
-            self.fCurrentTitle  = get_pedalboard_info(self.fCurrentBundle)['name']
+            bundle = get_bundle_dirname(pedalboard)
         except:
-            self.fCurrentBundle = ""
-            self.fCurrentTitle  = ""
+            return
 
-        self.updatePresetsMenu()
-        self.setProperWindowTitle()
-        self.openPedalboardNow()
+        if self.fWebFrame is None:
+            return
 
-    def openPedalboardNow(self):
-        if not self.fCurrentBundle:
-            return qCritical("ERROR: loading project without pedalboard set")
-
-        # TODO - this is only a workaround while ingen doesn't support this natively
-        self.slot_backendRestart()
+        self.fWebFrame.evaluateJavaScript("desktop.loadPedalboard(\"%s\")" % bundle)
 
     def openPedalboardLater(self, filename):
         try:

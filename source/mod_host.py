@@ -306,9 +306,12 @@ class HostWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Internal stuff
 
-        # Current mod-ui bundle and title
-        self.fCurrentBundle = ""
+        # Current mod-ui title
+        #self.fCurrentBundle = ""
         self.fCurrentTitle  = ""
+
+        # Next bundle to load (done by startup arguments)
+        self.fNextBundle = ""
 
         # first attempt of auto-start backend doesn't show an error
         self.fFirstBackendInit = True
@@ -477,9 +480,6 @@ class HostWindow(QMainWindow):
 
         SESSION._pedal_changed_callback = self._pedal_changed_callback
 
-        # TESTING, remove next line later
-        self.updatePresetsMenu()
-
         self.setProperWindowTitle()
 
         if not "--no-autostart" in sys.argv:
@@ -492,9 +492,9 @@ class HostWindow(QMainWindow):
         self.stopAndWaitForBackend()
 
     def _pedal_changed_callback(self, ok, bundlepath, title):
-        self.fCurrentBundle = bundlepath
+        #self.fCurrentBundle = bundlepath
         self.fCurrentTitle = title if title is not None else ""
-        self.updatePresetsMenu()
+        #self.updatePresetsMenu()
         self.setProperWindowTitle()
 
     # --------------------------------------------------------------------------------------------------------
@@ -569,14 +569,11 @@ class HostWindow(QMainWindow):
 
     def openPedalboardLater(self, filename):
         try:
-            self.fCurrentBundle = QFileInfo(filename).absoluteFilePath()
-            self.fCurrentTitle  = get_pedalboard_info(self.fCurrentBundle)['name']
+            self.fNextBundle   = QFileInfo(filename).absoluteFilePath()
+            self.fCurrentTitle = get_pedalboard_info(self.fNextBundle)['name']
         except:
-            self.fCurrentBundle = ""
-            self.fCurrentTitle  = ""
-
-        self.updatePresetsMenu()
-        self.setProperWindowTitle()
+            self.fNextBundle   = ""
+            self.fCurrentTitle = ""
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -680,10 +677,6 @@ class HostWindow(QMainWindow):
                 print("Failed to delete old ingen socket file, we'll continue anyway")
 
         hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", sockFile]
-
-        if self.fCurrentBundle:
-            hostArgs.append(self.fCurrentBundle)
-            SESSION.pedalboard = self.fCurrentBundle
 
         self.fProccessBackend.start(hostPath, hostArgs)
 
@@ -952,6 +945,11 @@ class HostWindow(QMainWindow):
         if not SKIP_INTEGRATION:
             self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s)" % ("true" if not USING_LIVE_ISO else "false"))
 
+        if self.fNextBundle:
+            bundle = self.fNextBundle
+            self.fNextBundle = ""
+            self.fWebFrame.evaluateJavaScript("desktop.loadPedalboard(\"%s\")" % bundle)
+
         if not self.fIsRefreshingPage:
             settings = QSettings()
 
@@ -1109,23 +1107,23 @@ class HostWindow(QMainWindow):
 
         self.setWindowTitle(title)
 
-    def updatePresetsMenu(self):
-        for action in self.fPresetMenuList:
-            self.ui.menu_Presets.removeAction(action)
+    #def updatePresetsMenu(self):
+        #for action in self.fPresetMenuList:
+            #self.ui.menu_Presets.removeAction(action)
 
-        self.fPresetMenuList = []
+        #self.fPresetMenuList = []
 
-        if not self.fCurrentBundle:
-            return
+        #if not self.fCurrentBundle:
+            #return
 
-        for pedalboard in self.fPedalboards:
-            if self.fCurrentBundle not in pedalboard['uri']:
-                continue
-            for preset in pedalboard['presets']:
-                act = self.ui.menu_Presets.addAction(preset['label'])
-                act.setData(preset['uri'])
-                act.triggered.connect(self.slot_presetClicked)
-                self.fPresetMenuList.append(act)
+        #for pedalboard in self.fPedalboards:
+            #if self.fCurrentBundle not in pedalboard['uri']:
+                #continue
+            #for preset in pedalboard['presets']:
+                #act = self.ui.menu_Presets.addAction(preset['label'])
+                #act.setData(preset['uri'])
+                #act.triggered.connect(self.slot_presetClicked)
+                #self.fPresetMenuList.append(act)
 
 # ------------------------------------------------------------------------------------------------------------
 

@@ -878,7 +878,7 @@ class HostWindow(QMainWindow):
         settings = QSettings()
 
         settings.setValue("Geometry", self.saveGeometry())
-        settings.setValue("ShowOnlyModGuis", self.ui.act_backend_modgui.isChecked())
+        settings.setValue(MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS, self.ui.act_backend_modgui.isChecked())
 
     def loadSettings(self, firstTime):
         qsettings   = QSettings()

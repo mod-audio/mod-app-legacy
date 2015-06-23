@@ -630,7 +630,7 @@ class HostWindow(QMainWindow):
         webserver.MODGUIS_ONLY = self.ui.act_backend_modgui.isChecked()
         os.environ["MOD_GUIS_ONLY"] = "1" if webserver.MODGUIS_ONLY else "0"
         webserver.refresh_world()
-        QTimer.singleShot(0, self.slot_fileRefresh())
+        QTimer.singleShot(0, self.slot_fileRefresh)
 
     @pyqtSlot()
     def slot_backendDump(self):

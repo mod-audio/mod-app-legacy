@@ -311,7 +311,7 @@
     <addaction name="act_backend_stop"/>
     <addaction name="separator"/>
     <addaction name="act_backend_restart"/>
-    <addaction name="act_backend_rescan"/>
+    <addaction name="act_backend_modgui"/>
     <addaction name="separator"/>
     <addaction name="act_backend_dump"/>
     <addaction name="act_backend_alternate_ui"/>
@@ -473,12 +473,12 @@
     <string>&amp;Disconnect</string>
    </property>
   </action>
-  <action name="act_backend_rescan">
+  <action name="act_backend_modgui">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Rescan plugins on next startup</string>
+    <string>Show only plugins with modgui</string>
    </property>
   </action>
   <action name="act_backend_information">

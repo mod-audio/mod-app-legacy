@@ -26,7 +26,7 @@ from mod_settings import *
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
 from PyQt5.QtGui import QDesktopServices, QImage, QPainter, QPixmap
-from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QPlainTextEdit, QSplashScreen, QVBoxLayout
+from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QPlainTextEdit, QVBoxLayout
 from PyQt5.QtWebKit import QWebSettings
 from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 
@@ -43,11 +43,13 @@ from ui_mod_pedalboard_save import Ui_PedalboardSave
 # need to set initial settings before importing MOD stuff
 setInitialSettings()
 
-from mod import jack, rebuild_database, webserver
+from mod import jack, webserver
 from mod.lilvlib import get_bundle_dirname, get_pedalboard_info
 from mod.lv2 import get_pedalboards
 from mod.session import SESSION
 from mod.settings import INGEN_NUM_AUDIO_INS, INGEN_NUM_AUDIO_OUTS, INGEN_NUM_MIDI_INS, INGEN_NUM_MIDI_OUTS
+
+from mod import webserver
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -109,89 +111,6 @@ class HostWebPage(QWebPage):
                                      self.tr("MOD-App Problem"),
                                      self.tr("The script on this page appears to have a problem. Do you want to stop the script?"),
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
-
-# ------------------------------------------------------------------------------------------------------------
-# Host Splash Screen (used for LV2 scanning)
-
-class HostSplashScreen(QSplashScreen):
-    # signals
-    SIGTERM = pyqtSignal()
-    SIGUSR1 = pyqtSignal()
-
-    # rescan mode
-    kRescanNull = 0
-    kRescanAll  = 1
-    kRescanMOD  = 2
-
-    # --------------------------------------------------------------------------------------------------------
-
-    def __init__(self, rescanMode):
-        QSplashScreen.__init__(self, QPixmap(":/mod-splash.jpg"), Qt.SplashScreen) #|Qt.WindowStaysOnTopHint
-
-        # ----------------------------------------------------------------------------------------------------
-        # Internal stuff
-
-        self.fApp           = QApplication.instance()
-        self.fStopRequested = False
-
-        # ----------------------------------------------------------------------------------------------------
-        # Connect actions to functions
-
-        self.SIGTERM.connect(self.slot_handleSIGTERM)
-
-        # ----------------------------------------------------------------------------------------------------
-        # Rescan if needed
-
-        settings = QSettings()
-
-        if rescanMode == self.kRescanAll:
-            self.fNeedsRescan  = True
-            self.fShowGuisOnly = False
-
-        elif rescanMode == self.kRescanMOD:
-            self.fNeedsRescan  = True
-            self.fShowGuisOnly = True
-
-        elif rescanMode == self.kRescanNull:
-            # read current value
-            self.fNeedsRescan  = settings.value("NeedsRescan",  True, type=bool) or DATA_DIR_EMPTY
-            self.fShowGuisOnly = settings.value("ShowGuisOnly", True, type=bool)
-
-        # disable for next time
-        settings.setValue("NeedsRescan", False)
-
-    # --------------------------------------------------------------------------------------------------------
-    # Callback
-
-    def rescanIfNeeded(self):
-        if not self.fNeedsRescan:
-            return
-
-        self.show()
-        rebuild_database(self.fShowGuisOnly, self.callback)
-
-    def callback(self, percent, uri):
-        if self.fStopRequested:
-            return True
-
-        msg = "Scanning plugins: %.1f%%" % percent
-        if uri:
-            msg += " [ %s ]" % uri
-
-        self.showMessage(msg, Qt.AlignLeft, Qt.white)
-        self.fApp.processEvents()
-
-        return self.fStopRequested
-
-    # --------------------------------------------------------------------------------------------------------
-    # Misc
-
-    @pyqtSlot()
-    def slot_handleSIGTERM(self):
-        print("Got SIGTERM -> Stop discovering now")
-        self.fStopRequested = True
-        self.close()
-        self.fApp.quit()
 
 # ------------------------------------------------------------------------------------------------------------
 # Dump Window
@@ -298,7 +217,7 @@ class HostWindow(QMainWindow):
 
     # --------------------------------------------------------------------------------------------------------
 
-    def __init__(self, splashScreen):
+    def __init__(self):
         QMainWindow.__init__(self)
         self.ui = Ui_HostWindow()
         self.ui.setupUi(self)
@@ -339,9 +258,6 @@ class HostWindow(QMainWindow):
 
         # List of current-pedalboard presets
         self.fPresetMenuList = []
-
-        # Splash screen, as passed in the constructor
-        self.fSplashScreen = splashScreen
 
         # Dump window used for debug
         self.fDumpWindow = None
@@ -450,7 +366,7 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_start.triggered.connect(self.slot_backendStart)
         self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
         self.ui.act_backend_restart.triggered.connect(self.slot_backendRestart)
-        self.ui.act_backend_rescan.triggered.connect(self.slot_backendRescan)
+        self.ui.act_backend_modgui.triggered.connect(self.slot_backendShowGuis)
         self.ui.act_backend_dump.triggered.connect(self.slot_backendDump)
         self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
 
@@ -710,21 +626,11 @@ class HostWindow(QMainWindow):
         self.slot_backendStart()
 
     @pyqtSlot(bool)
-    def slot_backendRescan(self):
-        settings = QSettings()
-
-        needsRescan = self.ui.act_backend_rescan.isChecked()
-        settings.setValue("NeedsRescan", needsRescan)
-
-        if not needsRescan:
-            return
-
-        showGuisOnly = (QMessageBox.question(self.parent(),
-                                             self.tr("MOD-App Question"),
-                                             self.tr("Show only plugins that have MODGUIs?"),
-                                             QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes) == QMessageBox.Yes)
-
-        settings.setValue("ShowGuisOnly",showGuisOnly)
+    def slot_backendShowGuis(self):
+        webserver.MODGUIS_ONLY = self.ui.act_backend_modgui.isChecked()
+        os.environ["MOD_GUIS_ONLY"] = "1" if webserver.MODGUIS_ONLY else "0"
+        webserver.refresh_world()
+        QTimer.singleShot(0, self.slot_fileRefresh())
 
     @pyqtSlot()
     def slot_backendDump(self):
@@ -748,8 +654,6 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_backendStarted(self):
-        if self.fSplashScreen is not None:
-            self.fSplashScreen.close()
         self.ui.act_backend_start.setEnabled(False)
         self.ui.act_backend_stop.setEnabled(True)
         self.ui.act_backend_restart.setEnabled(True)
@@ -774,8 +678,6 @@ class HostWindow(QMainWindow):
     def slot_backendError(self, error):
         firstBackendInit = self.fFirstBackendInit
         self.fFirstBackendInit = False
-        if self.fSplashScreen is not None:
-            self.fSplashScreen.close()
 
         # stop webserver
         self.stopAndWaitForWebServer()
@@ -976,6 +878,7 @@ class HostWindow(QMainWindow):
         settings = QSettings()
 
         settings.setValue("Geometry", self.saveGeometry())
+        settings.setValue("ShowOnlyModGuis", self.ui.act_backend_modgui.isChecked())
 
     def loadSettings(self, firstTime):
         qsettings   = QSettings()
@@ -983,6 +886,7 @@ class HostWindow(QMainWindow):
 
         self.fSavedSettings = {
             # Main
+            MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS:  qsettings.value(MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS,  MOD_DEFAULT_MAIN_SHOW_ONLY_MOD_GUIS,  type=bool),
             MOD_KEY_MAIN_PROJECT_FOLDER:      qsettings.value(MOD_KEY_MAIN_PROJECT_FOLDER,      MOD_DEFAULT_MAIN_PROJECT_FOLDER,      type=str),
             MOD_KEY_MAIN_REFRESH_INTERVAL:    qsettings.value(MOD_KEY_MAIN_REFRESH_INTERVAL,    MOD_DEFAULT_MAIN_REFRESH_INTERVAL,    type=int),
             # Host
@@ -1009,6 +913,8 @@ class HostWindow(QMainWindow):
             if inspectorEnabled and self.fSavedSettings[MOD_KEY_WEBVIEW_SHOW_INSPECTOR]:
                 QTimer.singleShot(1000, self.ui.webinspector.show)
 
+
+        self.ui.act_backend_modgui.setChecked(self.fSavedSettings[MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS])
         self.ui.act_file_inspect.setVisible(inspectorEnabled)
 
         if self.fIdleTimerId != 0:

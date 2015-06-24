@@ -61,7 +61,7 @@ def get_info_from_lv2_bundle(bundle):
     NS_lv2core       = NS('http://lv2plug.in/ns/lv2core#')
     NS_lv2core_proto = NS_lv2core.prototype
 
-    NS_modgui       = NS('http://portalmod.com/ns/modgui#')
+    NS_modgui       = NS('http://moddevices.com/ns/modgui#')
     NS_modgui_thumb = NS_modgui.thumbnail
 
     NS_ingen           = NS('http://drobilla.net/ns/ingen#')

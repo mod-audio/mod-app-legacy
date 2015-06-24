@@ -550,11 +550,11 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_showProject(self):
-        QDesktopServices.openUrl(QUrl("https://github.com/portalmod/mod-app"))
+        QDesktopServices.openUrl(QUrl("https://github.com/moddevices/mod-app"))
 
     @pyqtSlot()
     def slot_showWebsite(self):
-        QDesktopServices.openUrl(QUrl("http://portalmod.com/"))
+        QDesktopServices.openUrl(QUrl("http://moddevices.com/"))
 
     # --------------------------------------------------------------------------------------------------------
     # Backend (menu actions)

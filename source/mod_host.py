@@ -45,11 +45,10 @@ setInitialSettings()
 
 from mod import jack, webserver
 from mod.lilvlib import get_bundle_dirname, get_pedalboard_info
-from mod.lv2 import get_pedalboards
 from mod.session import SESSION
 from mod.settings import INGEN_NUM_AUDIO_INS, INGEN_NUM_AUDIO_OUTS, INGEN_NUM_MIDI_INS, INGEN_NUM_MIDI_OUTS
 
-from mod import webserver
+from mod import lv2, webserver
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -254,7 +253,7 @@ class HostWindow(QMainWindow):
         self.fSavedSettings = {}
 
         # List of pedalboards
-        self.fPedalboards = get_pedalboards()
+        self.fPedalboards = lv2.get_pedalboards()
 
         # List of current-pedalboard presets
         self.fPresetMenuList = []
@@ -627,9 +626,9 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot(bool)
     def slot_backendShowGuis(self):
-        webserver.MODGUIS_ONLY = self.ui.act_backend_modgui.isChecked()
-        os.environ["MOD_GUIS_ONLY"] = "1" if webserver.MODGUIS_ONLY else "0"
-        webserver.refresh_world()
+        lv2.MODGUIS_ONLY = self.ui.act_backend_modgui.isChecked()
+        os.environ["MOD_GUIS_ONLY"] = "1" if lv2.MODGUIS_ONLY else "0"
+        lv2.refresh()
         QTimer.singleShot(0, self.slot_fileRefresh)
 
     @pyqtSlot()

@@ -309,9 +309,10 @@
     <addaction name="act_backend_information"/>
     <addaction name="act_backend_start"/>
     <addaction name="act_backend_stop"/>
-    <addaction name="separator"/>
     <addaction name="act_backend_restart"/>
-    <addaction name="act_backend_modgui"/>
+    <addaction name="separator"/>
+    <addaction name="act_backend_hide_modgui"/>
+    <addaction name="act_backend_hide_cloud"/>
     <addaction name="separator"/>
     <addaction name="act_backend_dump"/>
     <addaction name="act_backend_alternate_ui"/>
@@ -473,12 +474,12 @@
     <string>&amp;Disconnect</string>
    </property>
   </action>
-  <action name="act_backend_modgui">
+  <action name="act_backend_hide_modgui">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show only plugins with modgui</string>
+    <string>Hide plugins without modgui</string>
    </property>
   </action>
   <action name="act_backend_information">
@@ -540,6 +541,14 @@
   <action name="act_backend_dump">
    <property name="text">
     <string>Open Dump Window</string>
+   </property>
+  </action>
+  <action name="act_backend_hide_cloud">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide plugins not available in the cloud</string>
    </property>
   </action>
  </widget>

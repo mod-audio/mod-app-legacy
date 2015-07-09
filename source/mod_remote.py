@@ -186,8 +186,10 @@ class RemoteWindow(QMainWindow):
         self.ui.act_backend_stop.setVisible(False)
         self.ui.act_backend_restart.setEnabled(False)
         self.ui.act_backend_restart.setVisible(False)
-        self.ui.act_backend_modgui.setEnabled(False)
-        self.ui.act_backend_modgui.setVisible(False)
+        self.ui.act_backend_hide_modgui.setEnabled(False)
+        self.ui.act_backend_hide_modgui.setVisible(False)
+        self.ui.act_backend_hide_cloud.setEnabled(False)
+        self.ui.act_backend_hide_cloud.setVisible(False)
         self.ui.menu_Backend.menuAction().setEnabled(False)
         self.ui.menu_Backend.menuAction().setVisible(False)
 

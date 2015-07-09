@@ -130,7 +130,7 @@ DATA_DIR_EMPTY = not os.path.exists(DATA_DIR)
 # Settings keys
 
 # Main
-MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS  = "Main/ShowOnlyModGuis"   # bool
+MOD_KEY_MAIN_MODGUI_SHOW_MODE    = "Main/ModGuiShowMode"    # int
 MOD_KEY_MAIN_PROJECT_FOLDER      = "Main/ProjectFolder"     # str
 MOD_KEY_MAIN_REFRESH_INTERVAL    = "Main/RefreshInterval"   # int
 
@@ -155,7 +155,7 @@ MOD_KEY_WEBVIEW_SHOW_INSPECTOR   = "WebView/ShowInspector"  # bool
 # Settings defaults
 
 # Main
-MOD_DEFAULT_MAIN_SHOW_ONLY_MOD_GUIS  = 30
+MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE    = 1
 MOD_DEFAULT_MAIN_REFRESH_INTERVAL    = 30
 MOD_DEFAULT_MAIN_PROJECT_FOLDER      = QDir.toNativeSeparators(QDir.homePath())
 
@@ -182,14 +182,14 @@ MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR   = False
 def setInitialSettings():
     qsettings = QSettings("MOD", "MOD-App")
 
-    showOnlyModGuis = qsettings.value(MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS, MOD_DEFAULT_MAIN_SHOW_ONLY_MOD_GUIS, type=bool)
+    modguiShowMode  = qsettings.value(MOD_KEY_MAIN_MODGUI_SHOW_MODE,    MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE,    type=int)
     changeBufSize   = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool)
-    wantedBufSize   = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE, MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE, type=int)
-    webviewVerbose  = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE, MOD_DEFAULT_WEBVIEW_VERBOSE, type=bool)
+    wantedBufSize   = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE,  MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE,  type=int)
+    webviewVerbose  = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
 
+    os.environ['MOD_GUI_SHOW_MODE']        = str(modguiShowMode)
     os.environ['MOD_DEFAULT_JACK_BUFSIZE'] = str(wantedBufSize) if changeBufSize   else "0"
     os.environ['MOD_LOG']                  = "1"                if webviewVerbose  else "0"
-    os.environ['MOD_GUIS_ONLY']            = "1"                if showOnlyModGuis else "0"
 
     os.environ['MOD_INGEN_NUM_AUDIO_INS']  = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_INS,  MOD_DEFAULT_HOST_NUM_AUDIO_INS,  type=int))
     os.environ['MOD_INGEN_NUM_AUDIO_OUTS'] = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_OUTS, MOD_DEFAULT_HOST_NUM_AUDIO_OUTS, type=int))
@@ -200,9 +200,9 @@ def setInitialSettings():
     jack.DEV_HOST = 0 if wantedBufSize else 1
 
     from mod import settings
+    settings.MODGUI_SHOW_MODE     = modguiShowMode
     settings.DEFAULT_JACK_BUFSIZE = wantedBufSize if changeBufSize else  0
     settings.LOG                  = webviewVerbose
-    settings.MODGUIS_ONLY         = showOnlyModGuis
 
     # cleanup
     del qsettings, changeBufSize, wantedBufSize, webviewVerbose

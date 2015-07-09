@@ -365,7 +365,8 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_start.triggered.connect(self.slot_backendStart)
         self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
         self.ui.act_backend_restart.triggered.connect(self.slot_backendRestart)
-        self.ui.act_backend_modgui.triggered.connect(self.slot_backendShowGuis)
+        self.ui.act_backend_hide_modgui.triggered.connect(self.slot_backendHideGuis)
+        self.ui.act_backend_hide_cloud.triggered.connect(self.slot_backendHideCloud)
         self.ui.act_backend_dump.triggered.connect(self.slot_backendDump)
         self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
 
@@ -625,9 +626,28 @@ class HostWindow(QMainWindow):
         self.slot_backendStart()
 
     @pyqtSlot(bool)
-    def slot_backendShowGuis(self):
-        lv2.MODGUIS_ONLY = self.ui.act_backend_modgui.isChecked()
-        os.environ["MOD_GUIS_ONLY"] = "1" if lv2.MODGUIS_ONLY else "0"
+    def slot_backendHideGuis(self, triggered):
+        if triggered:
+            lv2.MODGUI_SHOW_MODE = 1
+            self.ui.act_backend_hide_cloud.setChecked(False)
+        else:
+            lv2.MODGUI_SHOW_MODE = 0
+            self.ui.act_backend_hide_modgui.setChecked(False)
+
+        os.environ["MOD_GUIS_ONLY"] = str(lv2.MODGUI_SHOW_MODE)
+        lv2.refresh()
+        QTimer.singleShot(0, self.slot_fileRefresh)
+
+    @pyqtSlot(bool)
+    def slot_backendHideCloud(self, triggered):
+        if triggered:
+            lv2.MODGUI_SHOW_MODE = 2
+            self.ui.act_backend_hide_modgui.setChecked(False)
+        else:
+            lv2.MODGUI_SHOW_MODE = 0
+            self.ui.act_backend_hide_cloud.setChecked(False)
+
+        os.environ["MOD_GUIS_ONLY"] = str(lv2.MODGUI_SHOW_MODE)
         lv2.refresh()
         QTimer.singleShot(0, self.slot_fileRefresh)
 
@@ -877,7 +897,14 @@ class HostWindow(QMainWindow):
         settings = QSettings()
 
         settings.setValue("Geometry", self.saveGeometry())
-        settings.setValue(MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS, self.ui.act_backend_modgui.isChecked())
+
+        if self.ui.act_backend_hide_modgui.isChecked():
+            MODGUI_SHOW_MODE = 1
+        elif self.ui.act_backend_hide_cloud.isChecked():
+            MODGUI_SHOW_MODE = 2
+        else:
+            MODGUI_SHOW_MODE = 0
+        settings.setValue(MOD_KEY_MAIN_MODGUI_SHOW_MODE, MODGUI_SHOW_MODE)
 
     def loadSettings(self, firstTime):
         qsettings   = QSettings()
@@ -885,7 +912,7 @@ class HostWindow(QMainWindow):
 
         self.fSavedSettings = {
             # Main
-            MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS:  qsettings.value(MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS,  MOD_DEFAULT_MAIN_SHOW_ONLY_MOD_GUIS,  type=bool),
+            MOD_KEY_MAIN_MODGUI_SHOW_MODE:    qsettings.value(MOD_KEY_MAIN_MODGUI_SHOW_MODE,    MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE,    type=int),
             MOD_KEY_MAIN_PROJECT_FOLDER:      qsettings.value(MOD_KEY_MAIN_PROJECT_FOLDER,      MOD_DEFAULT_MAIN_PROJECT_FOLDER,      type=str),
             MOD_KEY_MAIN_REFRESH_INTERVAL:    qsettings.value(MOD_KEY_MAIN_REFRESH_INTERVAL,    MOD_DEFAULT_MAIN_REFRESH_INTERVAL,    type=int),
             # Host
@@ -912,8 +939,16 @@ class HostWindow(QMainWindow):
             if inspectorEnabled and self.fSavedSettings[MOD_KEY_WEBVIEW_SHOW_INSPECTOR]:
                 QTimer.singleShot(1000, self.ui.webinspector.show)
 
+        if self.fSavedSettings[MOD_KEY_MAIN_MODGUI_SHOW_MODE] == 1:
+            self.ui.act_backend_hide_modgui.setChecked(True)
+            self.ui.act_backend_hide_cloud.setChecked(False)
+        elif self.fSavedSettings[MOD_KEY_MAIN_MODGUI_SHOW_MODE] == 2:
+            self.ui.act_backend_hide_modgui.setChecked(False)
+            self.ui.act_backend_hide_cloud.setChecked(True)
+        else:
+            self.ui.act_backend_hide_modgui.setChecked(False)
+            self.ui.act_backend_hide_cloud.setChecked(False)
 
-        self.ui.act_backend_modgui.setChecked(self.fSavedSettings[MOD_KEY_MAIN_SHOW_ONLY_MOD_GUIS])
         self.ui.act_file_inspect.setVisible(inspectorEnabled)
 
         if self.fIdleTimerId != 0:

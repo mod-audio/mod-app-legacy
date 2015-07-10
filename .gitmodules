@@ -1,0 +1,3 @@
+[submodule "source/modules/mod-ui"]
+	path = source/modules/mod-ui
+	url = git://github.com/portalmod/mod-ui

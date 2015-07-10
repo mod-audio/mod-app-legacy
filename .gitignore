@@ -10,9 +10,6 @@ source/mod_config.py
 source/resources_rc.py
 source/ui_*.py
 
-source/modules/mod-python/
-source/modules/mod-ui/
-
 data/macos/MOD-*/
 data/windows/MOD-*/
 data/windows/python/

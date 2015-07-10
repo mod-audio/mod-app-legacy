@@ -139,6 +139,8 @@ MOD_KEY_HOST_NUM_AUDIO_INS       = "Host/NumAudioIns"       # int
 MOD_KEY_HOST_NUM_AUDIO_OUTS      = "Host/NumAudioOuts"      # int
 MOD_KEY_HOST_NUM_MIDI_INS        = "Host/NumMidiIns"        # int
 MOD_KEY_HOST_NUM_MIDI_OUTS       = "Host/NumMidiOuts"       # int
+MOD_KEY_HOST_NUM_CV_INS          = "Host/NumCvIns"          # int
+MOD_KEY_HOST_NUM_CV_OUTS         = "Host/NumCvOuts"         # int
 MOD_KEY_HOST_AUTO_CONNNECT_INS   = "Host/AutoConnectIns"    # bool
 MOD_KEY_HOST_AUTO_CONNNECT_OUTS  = "Host/AutoConnectOuts"   # bool
 MOD_KEY_HOST_JACK_BUFSIZE_CHANGE = "Host/JackBufSizeChange" # bool
@@ -164,6 +166,8 @@ MOD_DEFAULT_HOST_NUM_AUDIO_INS       = 2
 MOD_DEFAULT_HOST_NUM_AUDIO_OUTS      = 2
 MOD_DEFAULT_HOST_NUM_MIDI_INS        = 1
 MOD_DEFAULT_HOST_NUM_MIDI_OUTS       = 1
+MOD_DEFAULT_HOST_NUM_CV_INS          = 0
+MOD_DEFAULT_HOST_NUM_CV_OUTS         = 0
 MOD_DEFAULT_HOST_AUTO_CONNNECT_INS   = True
 MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS  = True
 MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE = False
@@ -195,6 +199,8 @@ def setInitialSettings():
     os.environ['MOD_INGEN_NUM_AUDIO_OUTS'] = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_OUTS, MOD_DEFAULT_HOST_NUM_AUDIO_OUTS, type=int))
     os.environ['MOD_INGEN_NUM_MIDI_INS']   = str(qsettings.value(MOD_KEY_HOST_NUM_MIDI_INS,   MOD_DEFAULT_HOST_NUM_MIDI_INS,   type=int))
     os.environ['MOD_INGEN_NUM_MIDI_OUTS']  = str(qsettings.value(MOD_KEY_HOST_NUM_MIDI_OUTS,  MOD_DEFAULT_HOST_NUM_MIDI_OUTS,  type=int))
+    os.environ['MOD_INGEN_NUM_CV_INS']     = str(qsettings.value(MOD_KEY_HOST_NUM_CV_INS,     MOD_DEFAULT_HOST_NUM_CV_INS,     type=int))
+    os.environ['MOD_INGEN_NUM_CV_OUTS']    = str(qsettings.value(MOD_KEY_HOST_NUM_CV_OUTS,    MOD_DEFAULT_HOST_NUM_CV_OUTS,    type=int))
 
     from mod import jack
     jack.DEV_HOST = 0 if wantedBufSize else 1

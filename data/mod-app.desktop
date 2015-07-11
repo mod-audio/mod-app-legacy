@@ -1,9 +1,9 @@
 [Desktop Entry]
 Name=MOD-App
-GenericName=MOD Desktop Application
+GenericName=MOD Application
 Comment=Desktop application for the MOD host and UI server
 Exec=mod-app %u
-Icon=mod-app
+Icon=mod
 Terminal=false
 Type=Application
 Categories=AudioVideo;AudioEditing;Qt;

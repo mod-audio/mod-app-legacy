@@ -394,7 +394,9 @@ class HostWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Final setup
 
+        SESSION._client_name = "mod-app-%s" % config["port"]
         SESSION._pedal_changed_callback = self._pedal_changed_callback
+
 
         self.setProperWindowTitle()
 
@@ -569,7 +571,7 @@ class HostWindow(QMainWindow):
         </tr><tr>
         <td> JACK client name: <td></td> %s </td>
         </tr></table>
-        """ % (config["port"], "unix:///tmp/mod-app-%s.sock" % config["port"], "mod-app-%s" % config["port"])
+        """ % (config["port"], "unix:///tmp/mod-app-%s.sock" % config["port"], SESSION._client_name)
         QMessageBox.information(self, self.tr("information"), table)
 
     @pyqtSlot()
@@ -592,7 +594,7 @@ class HostWindow(QMainWindow):
             except:
                 print("Failed to delete old ingen socket file, we'll continue anyway")
 
-        hostArgs = ["-e", "-n", "mod-app-%s" % config["port"], "-S", sockFile]
+        hostArgs = ["-e", "-n", SESSION._client_name, "-S", sockFile]
 
         self.fProccessBackend.start(hostPath, hostArgs)
 

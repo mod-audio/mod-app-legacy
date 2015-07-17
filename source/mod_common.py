@@ -184,33 +184,42 @@ MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR   = False
 # Set initial settings
 
 def setInitialSettings():
-    qsettings = QSettings("MOD", "MOD-App")
+    if USING_LIVE_ISO:
+        modguiShowMode = 2 # FIXME
+        changeBufSize  = False
+        wantedBufSize  = 0
+        webviewVerbose = False
 
-    modguiShowMode  = qsettings.value(MOD_KEY_MAIN_MODGUI_SHOW_MODE,    MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE,    type=int)
-    changeBufSize   = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool)
-    wantedBufSize   = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE,  MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE,  type=int)
-    webviewVerbose  = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
+    else:
+        qsettings = QSettings("MOD", "MOD-App")
+
+        modguiShowMode  = qsettings.value(MOD_KEY_MAIN_MODGUI_SHOW_MODE,    MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE,    type=int)
+        changeBufSize   = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool)
+        wantedBufSize   = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE,  MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE,  type=int)
+        webviewVerbose  = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
+
+        os.environ['MOD_INGEN_NUM_AUDIO_INS']  = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_INS,  MOD_DEFAULT_HOST_NUM_AUDIO_INS,  type=int))
+        os.environ['MOD_INGEN_NUM_AUDIO_OUTS'] = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_OUTS, MOD_DEFAULT_HOST_NUM_AUDIO_OUTS, type=int))
+        os.environ['MOD_INGEN_NUM_MIDI_INS']   = str(qsettings.value(MOD_KEY_HOST_NUM_MIDI_INS,   MOD_DEFAULT_HOST_NUM_MIDI_INS,   type=int))
+        os.environ['MOD_INGEN_NUM_MIDI_OUTS']  = str(qsettings.value(MOD_KEY_HOST_NUM_MIDI_OUTS,  MOD_DEFAULT_HOST_NUM_MIDI_OUTS,  type=int))
+        os.environ['MOD_INGEN_NUM_CV_INS']     = str(qsettings.value(MOD_KEY_HOST_NUM_CV_INS,     MOD_DEFAULT_HOST_NUM_CV_INS,     type=int))
+        os.environ['MOD_INGEN_NUM_CV_OUTS']    = str(qsettings.value(MOD_KEY_HOST_NUM_CV_OUTS,    MOD_DEFAULT_HOST_NUM_CV_OUTS,    type=int))
+
+        del qsettings
 
     os.environ['MOD_GUI_SHOW_MODE']        = str(modguiShowMode)
-    os.environ['MOD_DEFAULT_JACK_BUFSIZE'] = str(wantedBufSize) if changeBufSize   else "0"
-    os.environ['MOD_LOG']                  = "1"                if webviewVerbose  else "0"
-
-    os.environ['MOD_INGEN_NUM_AUDIO_INS']  = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_INS,  MOD_DEFAULT_HOST_NUM_AUDIO_INS,  type=int))
-    os.environ['MOD_INGEN_NUM_AUDIO_OUTS'] = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_OUTS, MOD_DEFAULT_HOST_NUM_AUDIO_OUTS, type=int))
-    os.environ['MOD_INGEN_NUM_MIDI_INS']   = str(qsettings.value(MOD_KEY_HOST_NUM_MIDI_INS,   MOD_DEFAULT_HOST_NUM_MIDI_INS,   type=int))
-    os.environ['MOD_INGEN_NUM_MIDI_OUTS']  = str(qsettings.value(MOD_KEY_HOST_NUM_MIDI_OUTS,  MOD_DEFAULT_HOST_NUM_MIDI_OUTS,  type=int))
-    os.environ['MOD_INGEN_NUM_CV_INS']     = str(qsettings.value(MOD_KEY_HOST_NUM_CV_INS,     MOD_DEFAULT_HOST_NUM_CV_INS,     type=int))
-    os.environ['MOD_INGEN_NUM_CV_OUTS']    = str(qsettings.value(MOD_KEY_HOST_NUM_CV_OUTS,    MOD_DEFAULT_HOST_NUM_CV_OUTS,    type=int))
+    os.environ['MOD_DEFAULT_JACK_BUFSIZE'] = str(wantedBufSize) if changeBufSize  else "0"
+    os.environ['MOD_LOG']                  = "1"                if webviewVerbose else "0"
 
     from mod import jack
     jack.DEV_HOST = 0 if wantedBufSize else 1
 
     from mod import settings
     settings.MODGUI_SHOW_MODE     = modguiShowMode
-    settings.DEFAULT_JACK_BUFSIZE = wantedBufSize if changeBufSize else  0
+    settings.DEFAULT_JACK_BUFSIZE = wantedBufSize if changeBufSize else 0
     settings.LOG                  = webviewVerbose
 
     # cleanup
-    del qsettings, changeBufSize, wantedBufSize, webviewVerbose
+    del changeBufSize, wantedBufSize, webviewVerbose
 
 # ------------------------------------------------------------------------------------------------------------

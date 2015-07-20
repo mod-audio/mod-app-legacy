@@ -261,6 +261,9 @@ class HostWindow(QMainWindow):
         # Dump window used for debug
         self.fDumpWindow = None
 
+        # MIDI Devices selected on Live-ISO
+        self.fLiveMidiDevs = None
+
         # Process that runs the backend
         self.fProccessBackend = QProcess(self)
         self.fProccessBackend.setProcessChannelMode(QProcess.MergedChannels)
@@ -878,11 +881,24 @@ class HostWindow(QMainWindow):
 
             if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool):
                 for i in range(1, INGEN_NUM_AUDIO_INS+1):
-                    os.system("jack_connect system:capture_%i mod-app-%s:audio_in_%i" % (i, config["port"], i))
+                    os.system("jack_connect 'system:capture_%i' '%s:audio_in_%i'" % (i, SESSION._client_name, i))
 
             if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
                 for i in range(1, INGEN_NUM_AUDIO_OUTS+1):
-                    os.system("jack_connect mod-app-%s:audio_out_%i system:playback_%i" % (config["port"], i, i))
+                    os.system("jack_connect '%s:audio_out_%i' 'system:playback_%i'" % (SESSION._client_name, i, i))
+
+            if USING_LIVE_ISO:
+                if self.fLiveMidiDevs is None:
+                    self.fLiveMidiDevs = []
+
+                    for argv in sys.argv:
+                        if argv.startswith("--with-midi-input=\""):
+                            self.fLiveMidiDevs.append(argv.replace("--with-midi-input=\"","",1)[:-1].replace("'","\\'"))
+
+                i=1
+                for dev in self.fLiveMidiDevs:
+                    os.system("jack_connect 'alsa_midi:%s' '%s:midi_in_%i'" % (dev, SESSION._client_name, i))
+                    i += 1
 
         self.fIsRefreshingPage = False
 

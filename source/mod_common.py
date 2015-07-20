@@ -48,8 +48,8 @@ from PyQt5.QtCore import QDir, QSettings
 # ------------------------------------------------------------------------------------------------------------
 # Check if using live ISO
 
-USING_LIVE_ISO   = "--using-live-iso"   in sys.argv
-SKIP_INTEGRATION = "--skip-integration" in sys.argv
+USING_LIVE_ISO   = bool("--using-live-iso"   in sys.argv)
+SKIP_INTEGRATION = bool("--skip-integration" in sys.argv)
 
 if USING_LIVE_ISO:
     config["addr"] = "http://127.0.0.1:17891"
@@ -185,7 +185,7 @@ MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR   = False
 
 def setInitialSettings():
     if USING_LIVE_ISO:
-        modguiShowMode = 2 # FIXME
+        modguiShowMode = 0
         changeBufSize  = False
         wantedBufSize  = 0
         webviewVerbose = False

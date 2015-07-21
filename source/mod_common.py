@@ -32,7 +32,7 @@ config = {
     # Port used for the webserver
     "port": _PORT,
     # MOD-App version
-    "version": "0.0.0"
+    "version": "0.0.1"
 }
 
 del _PORT

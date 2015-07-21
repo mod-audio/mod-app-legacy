@@ -262,7 +262,8 @@ class HostWindow(QMainWindow):
         self.fDumpWindow = None
 
         # MIDI Devices selected on Live-ISO
-        self.fLiveMidiDevs = None
+        self.fLiveMidiIns  = None
+        self.fLiveMidiOuts = None
 
         # Process that runs the backend
         self.fProccessBackend = QProcess(self)
@@ -888,16 +889,24 @@ class HostWindow(QMainWindow):
                     os.system("jack_connect '%s:audio_out_%i' 'system:playback_%i'" % (SESSION._client_name, i, i))
 
             if USING_LIVE_ISO:
-                if self.fLiveMidiDevs is None:
-                    self.fLiveMidiDevs = []
+                if self.fLiveMidiIns is None:
+                    self.fLiveMidiIns  = []
+                    self.fLiveMidiOuts = []
 
                     for argv in sys.argv:
                         if argv.startswith("--with-midi-input=\""):
-                            self.fLiveMidiDevs.append(argv.replace("--with-midi-input=\"","",1)[:-1].replace("'","\\'"))
+                            self.fLiveMidiIns.append(argv.replace("--with-midi-input=\"","",1)[:-1].replace("'","\\'"))
+                        elif argv.startswith("--with-midi-output=\""):
+                            self.fLiveMidiOuts.append(argv.replace("--with-midi-output=\"","",1)[:-1].replace("'","\\'"))
 
                 i=1
-                for dev in self.fLiveMidiDevs:
+                for dev in self.fLiveMidiIns:
                     os.system("jack_connect 'alsa_midi:%s' '%s:midi_in_%i'" % (dev, SESSION._client_name, i))
+                    i += 1
+
+                i=1
+                for dev in self.fLiveMidiOuts:
+                    os.system("jack_connect '%s:midi_out_%i'  'alsa_midi:%s'" % (SESSION._client_name, i, dev))
                     i += 1
 
         self.fIsRefreshingPage = False

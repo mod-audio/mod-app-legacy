@@ -185,7 +185,7 @@ MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR   = False
 
 def setInitialSettings():
     if USING_LIVE_ISO:
-        modguiShowMode = 0
+        modguiShowMode = 1
         changeBufSize  = False
         wantedBufSize  = 0
         webviewVerbose = False

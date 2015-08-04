@@ -882,11 +882,11 @@ class HostWindow(QMainWindow):
 
             if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool):
                 for i in range(1, INGEN_NUM_AUDIO_INS+1):
-                    os.system("jack_connect 'system:capture_%i' '%s:audio_in_%i'" % (i, SESSION._client_name, i))
+                    os.system("jack_connect 'system:capture_%i' '%s:audio_port_%i_in'" % (i, SESSION._client_name, i))
 
             if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
                 for i in range(1, INGEN_NUM_AUDIO_OUTS+1):
-                    os.system("jack_connect '%s:audio_out_%i' 'system:playback_%i'" % (SESSION._client_name, i, i))
+                    os.system("jack_connect '%s:audio_port_%i_out' 'system:playback_%i'" % (SESSION._client_name, i, i))
 
             if USING_LIVE_ISO:
                 if self.fLiveMidiIns is None:

@@ -143,8 +143,6 @@ MOD_KEY_HOST_NUM_CV_INS          = "Host/NumCvIns"          # int
 MOD_KEY_HOST_NUM_CV_OUTS         = "Host/NumCvOuts"         # int
 MOD_KEY_HOST_AUTO_CONNNECT_INS   = "Host/AutoConnectIns"    # bool
 MOD_KEY_HOST_AUTO_CONNNECT_OUTS  = "Host/AutoConnectOuts"   # bool
-MOD_KEY_HOST_JACK_BUFSIZE_CHANGE = "Host/JackBufSizeChange" # bool
-MOD_KEY_HOST_JACK_BUFSIZE_VALUE  = "Host/JackBufSizeValue"  # int
 MOD_KEY_HOST_VERBOSE             = "Host/Verbose"           # bool
 MOD_KEY_HOST_PATH                = "Host/Path"              # str
 
@@ -170,8 +168,6 @@ MOD_DEFAULT_HOST_NUM_CV_INS          = 0
 MOD_DEFAULT_HOST_NUM_CV_OUTS         = 0
 MOD_DEFAULT_HOST_AUTO_CONNNECT_INS   = True
 MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS  = True
-MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE = False
-MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE  = 128
 MOD_DEFAULT_HOST_VERBOSE             = False
 MOD_DEFAULT_HOST_PATH                = "/usr/bin/ingen"
 
@@ -186,16 +182,12 @@ MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR   = False
 def setInitialSettings():
     if USING_LIVE_ISO:
         modguiShowMode = 1
-        changeBufSize  = False
-        wantedBufSize  = 0
         webviewVerbose = False
 
     else:
         qsettings = QSettings("MOD", "MOD-App")
 
         modguiShowMode  = qsettings.value(MOD_KEY_MAIN_MODGUI_SHOW_MODE,    MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE,    type=int)
-        changeBufSize   = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool)
-        wantedBufSize   = qsettings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE,  MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE,  type=int)
         webviewVerbose  = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
 
         os.environ['MOD_INGEN_NUM_AUDIO_INS']  = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_INS,  MOD_DEFAULT_HOST_NUM_AUDIO_INS,  type=int))
@@ -207,19 +199,14 @@ def setInitialSettings():
 
         del qsettings
 
-    os.environ['MOD_GUI_SHOW_MODE']        = str(modguiShowMode)
-    os.environ['MOD_DEFAULT_JACK_BUFSIZE'] = str(wantedBufSize) if changeBufSize  else "0"
-    os.environ['MOD_LOG']                  = "1"                if webviewVerbose else "0"
-
-    from mod import jack
-    jack.DEV_HOST = 0 if wantedBufSize else 1
+    os.environ['MOD_GUI_SHOW_MODE'] = str(modguiShowMode)
+    os.environ['MOD_LOG']           = "1" if webviewVerbose else "0"
 
     from mod import settings
-    settings.MODGUI_SHOW_MODE     = modguiShowMode
-    settings.DEFAULT_JACK_BUFSIZE = wantedBufSize if changeBufSize else 0
-    settings.LOG                  = webviewVerbose
+    settings.MODGUI_SHOW_MODE = modguiShowMode
+    settings.LOG              = webviewVerbose
 
     # cleanup
-    del changeBufSize, wantedBufSize, webviewVerbose
+    del modguiShowMode, webviewVerbose
 
 # ------------------------------------------------------------------------------------------------------------

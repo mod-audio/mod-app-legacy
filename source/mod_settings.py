@@ -52,7 +52,6 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI
 
-        self.ui.cb_host_jack_bufsize_value.lineEdit().setInputMask("9999")
         self.ui.lw_page.setFixedWidth(48 + 6*4 + QFontMetrics(self.ui.lw_page.font()).width("  WebView  "))
 
         if not isApp:
@@ -104,22 +103,12 @@ class SettingsWindow(QDialog):
         self.ui.cb_host_auto_connect_ins.setChecked(settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool))
         self.ui.cb_host_auto_connect_outs.setChecked(settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool))
 
-        self.ui.cb_host_jack_bufsize_change.setChecked(settings.value(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE, type=bool))
         self.ui.cb_host_verbose.setChecked(settings.value(MOD_KEY_HOST_VERBOSE, MOD_DEFAULT_HOST_VERBOSE, type=bool))
 
         hostPath = settings.value(MOD_KEY_HOST_PATH, MOD_DEFAULT_HOST_PATH, type=str)
         if hostPath.endswith("mod-host"):
             hostPath = MOD_DEFAULT_HOST_PATH
         self.ui.le_host_path.setText(hostPath)
-
-        availableBufSizes = [int(self.ui.cb_host_jack_bufsize_value.itemText(i)) for i in range(self.ui.cb_host_jack_bufsize_value.count())]
-        currentBufSize    = settings.value(MOD_KEY_HOST_JACK_BUFSIZE_VALUE, MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE, type=int)
-
-        if currentBufSize in availableBufSizes:
-            self.ui.cb_host_jack_bufsize_value.setCurrentIndex(self.ui.cb_host_jack_bufsize_value.findText(str(currentBufSize)))
-        else:
-            self.ui.cb_host_jack_bufsize_value.addItem(str(currentBufSize))
-            self.ui.cb_host_jack_bufsize_value.setCurrentIndex(len(availableBufSizes))
 
         # ----------------------------------------------------------------------------------------------------
         # WebView
@@ -144,18 +133,16 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Host
 
-        settings.setValue(MOD_KEY_HOST_NUM_AUDIO_INS,       self.ui.sb_backend_audio_ins.value())
-        settings.setValue(MOD_KEY_HOST_NUM_AUDIO_OUTS,      self.ui.sb_backend_audio_outs.value())
-        settings.setValue(MOD_KEY_HOST_NUM_MIDI_INS,        self.ui.sb_backend_midi_ins.value())
-        settings.setValue(MOD_KEY_HOST_NUM_MIDI_OUTS,       self.ui.sb_backend_midi_outs.value())
-        settings.setValue(MOD_KEY_HOST_NUM_CV_INS,          self.ui.sb_backend_cv_ins.value())
-        settings.setValue(MOD_KEY_HOST_NUM_CV_OUTS,         self.ui.sb_backend_cv_outs.value())
-        settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_INS,   self.ui.cb_host_auto_connect_ins.isChecked())
-        settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_OUTS,  self.ui.cb_host_auto_connect_outs.isChecked())
-        settings.setValue(MOD_KEY_HOST_JACK_BUFSIZE_CHANGE, self.ui.cb_host_jack_bufsize_change.isChecked())
-        settings.setValue(MOD_KEY_HOST_JACK_BUFSIZE_VALUE,  int(self.ui.cb_host_jack_bufsize_value.currentText()))
-        settings.setValue(MOD_KEY_HOST_VERBOSE,             self.ui.cb_host_verbose.isChecked())
-        settings.setValue(MOD_KEY_HOST_PATH,                self.ui.le_host_path.text())
+        settings.setValue(MOD_KEY_HOST_NUM_AUDIO_INS,      self.ui.sb_backend_audio_ins.value())
+        settings.setValue(MOD_KEY_HOST_NUM_AUDIO_OUTS,     self.ui.sb_backend_audio_outs.value())
+        settings.setValue(MOD_KEY_HOST_NUM_MIDI_INS,       self.ui.sb_backend_midi_ins.value())
+        settings.setValue(MOD_KEY_HOST_NUM_MIDI_OUTS,      self.ui.sb_backend_midi_outs.value())
+        settings.setValue(MOD_KEY_HOST_NUM_CV_INS,         self.ui.sb_backend_cv_ins.value())
+        settings.setValue(MOD_KEY_HOST_NUM_CV_OUTS,        self.ui.sb_backend_cv_outs.value())
+        settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_INS,  self.ui.cb_host_auto_connect_ins.isChecked())
+        settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, self.ui.cb_host_auto_connect_outs.isChecked())
+        settings.setValue(MOD_KEY_HOST_VERBOSE,            self.ui.cb_host_verbose.isChecked())
+        settings.setValue(MOD_KEY_HOST_PATH,               self.ui.le_host_path.text())
 
         # ----------------------------------------------------------------------------------------------------
         # WebView
@@ -185,8 +172,6 @@ class SettingsWindow(QDialog):
             self.ui.sb_backend_midi_outs.setValue(MOD_DEFAULT_HOST_NUM_MIDI_OUTS)
             self.ui.sb_backend_cv_ins.setValue(MOD_DEFAULT_HOST_NUM_CV_INS)
             self.ui.sb_backend_cv_outs.setValue(MOD_DEFAULT_HOST_NUM_CV_OUTS)
-            self.ui.cb_host_jack_bufsize_change.setChecked(MOD_DEFAULT_HOST_JACK_BUFSIZE_CHANGE)
-            self.ui.cb_host_jack_bufsize_value.setCurrentIndex(self.ui.cb_host_jack_bufsize_value.findText(str(MOD_DEFAULT_HOST_JACK_BUFSIZE_VALUE)))
             self.ui.cb_host_verbose.setChecked(MOD_DEFAULT_HOST_VERBOSE)
             self.ui.le_host_path.setText(MOD_DEFAULT_HOST_PATH)
 

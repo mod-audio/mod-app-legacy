@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>593</width>
-    <height>507</height>
+    <height>533</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -151,7 +151,7 @@
         <number>0</number>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="page_main">
         <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -639,125 +639,14 @@
             <bool>false</bool>
            </property>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="1" column="0" colspan="5">
+            <item row="1" column="0" colspan="2">
              <widget class="QCheckBox" name="cb_host_auto_connect_outs">
               <property name="text">
                <string>Automatically connect to system input ports</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="1" colspan="2">
-             <widget class="QLabel" name="label_host_jack_bufsize_value">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Prefered buffer size:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="3">
-             <widget class="QComboBox" name="cb_host_jack_bufsize_value">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="editable">
-               <bool>true</bool>
-              </property>
-              <item>
-               <property name="text">
-                <string>8</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>16</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>32</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>64</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>128</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>256</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>512</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>1024</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>2048</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>4096</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>8192</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="4" column="4">
-             <spacer name="horizontalSpacer_9">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="3" column="0" colspan="5">
-             <widget class="QCheckBox" name="cb_host_jack_bufsize_change">
-              <property name="text">
-               <string>Allow to automatically change JACK buffer-size (needs restart)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <spacer name="horizontalSpacer_11">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="2" column="0" colspan="5">
+            <item row="2" column="0" colspan="2">
              <widget class="QCheckBox" name="cb_host_auto_connect_ins">
               <property name="text">
                <string>Automatically connect to system output ports</string>
@@ -979,38 +868,6 @@
     <hint type="destinationlabel">
      <x>170</x>
      <y>27</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>cb_host_jack_bufsize_change</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>cb_host_jack_bufsize_value</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>321</x>
-     <y>94</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>370</x>
-     <y>120</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>cb_host_jack_bufsize_change</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>label_host_jack_bufsize_value</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>321</x>
-     <y>94</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>283</x>
-     <y>120</y>
     </hint>
    </hints>
   </connection>

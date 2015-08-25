@@ -43,7 +43,10 @@ del _PORT
 import os
 import sys
 
-from PyQt5.QtCore import QDir, QSettings
+if False:
+    from PyQt4.QtCore import QDir, QSettings
+else:
+    from PyQt5.QtCore import QDir, QSettings
 
 # ------------------------------------------------------------------------------------------------------------
 # Check if using live ISO
@@ -68,16 +71,6 @@ if os.path.isfile(CWD):
     CWD = os.path.dirname(CWD)
 
 # ------------------------------------------------------------------------------------------------------------
-# Use custom modules if available
-
-if os.path.exists(os.path.join(CWD, "modules", "mod-ui")):
-    print("NOTE: Using custom mod-ui module")
-    sys.path = [os.path.join(CWD, "modules", "mod-ui")] + sys.path
-    usingCustomMODUI = True
-else:
-    usingCustomMODUI = False
-
-# ------------------------------------------------------------------------------------------------------------
 # Set Platform
 
 if sys.platform == "darwin":
@@ -98,9 +91,19 @@ else:
     WINDOWS = False
 
 # ------------------------------------------------------------------------------------------------------------
+# Use custom modules if available
+
+if os.path.exists(os.path.join(CWD, "modules", "mod-ui")):
+    print("NOTE: Using custom mod-ui module")
+    sys.path = [os.path.join(CWD, "modules", "mod-ui")] + sys.path
+    USING_CUSTOM_MOD_UI = True
+else:
+    USING_CUSTOM_MOD_UI = False
+
+# ------------------------------------------------------------------------------------------------------------
 # Set up environment for the webserver
 
-if usingCustomMODUI:
+if USING_CUSTOM_MOD_UI:
     ROOT = os.path.join(CWD, "modules", "mod-ui")
 else:
     ROOT = "/usr/share/mod"
@@ -123,8 +126,6 @@ os.environ['MOD_PHANTOM_BINARY']        = "/usr/bin/phantomjs"
 os.environ['MOD_SCREENSHOT_JS']         = os.path.join(ROOT, "screenshot.js")
 os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
-
-DATA_DIR_EMPTY = not os.path.exists(DATA_DIR)
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys
@@ -155,26 +156,26 @@ MOD_KEY_WEBVIEW_SHOW_INSPECTOR   = "WebView/ShowInspector"  # bool
 # Settings defaults
 
 # Main
-MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE    = 1
-MOD_DEFAULT_MAIN_REFRESH_INTERVAL    = 30
-MOD_DEFAULT_MAIN_PROJECT_FOLDER      = QDir.toNativeSeparators(QDir.homePath())
+MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE   = 1
+MOD_DEFAULT_MAIN_REFRESH_INTERVAL   = 30
+MOD_DEFAULT_MAIN_PROJECT_FOLDER     = QDir.toNativeSeparators(QDir.homePath())
 
 # Host
-MOD_DEFAULT_HOST_NUM_AUDIO_INS       = 2
-MOD_DEFAULT_HOST_NUM_AUDIO_OUTS      = 2
-MOD_DEFAULT_HOST_NUM_MIDI_INS        = 1
-MOD_DEFAULT_HOST_NUM_MIDI_OUTS       = 1
-MOD_DEFAULT_HOST_NUM_CV_INS          = 0
-MOD_DEFAULT_HOST_NUM_CV_OUTS         = 0
-MOD_DEFAULT_HOST_AUTO_CONNNECT_INS   = True
-MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS  = True
-MOD_DEFAULT_HOST_VERBOSE             = False
-MOD_DEFAULT_HOST_PATH                = "/usr/bin/ingen"
+MOD_DEFAULT_HOST_NUM_AUDIO_INS      = 2
+MOD_DEFAULT_HOST_NUM_AUDIO_OUTS     = 2
+MOD_DEFAULT_HOST_NUM_MIDI_INS       = 1
+MOD_DEFAULT_HOST_NUM_MIDI_OUTS      = 1
+MOD_DEFAULT_HOST_NUM_CV_INS         = 0
+MOD_DEFAULT_HOST_NUM_CV_OUTS        = 0
+MOD_DEFAULT_HOST_AUTO_CONNNECT_INS  = True
+MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS = True
+MOD_DEFAULT_HOST_VERBOSE            = False
+MOD_DEFAULT_HOST_PATH               = "/usr/bin/ingen"
 
 # WebView
-MOD_DEFAULT_WEBVIEW_INSPECTOR        = False
-MOD_DEFAULT_WEBVIEW_VERBOSE          = False
-MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR   = False
+MOD_DEFAULT_WEBVIEW_INSPECTOR       = False
+MOD_DEFAULT_WEBVIEW_VERBOSE         = False
+MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR  = False
 
 # ------------------------------------------------------------------------------------------------------------
 # Set initial settings

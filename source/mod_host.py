@@ -24,11 +24,20 @@ from mod_settings import *
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
-from PyQt5.QtGui import QDesktopServices, QImage, QPainter, QPixmap
-from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow, QMessageBox, QPlainTextEdit, QVBoxLayout
-from PyQt5.QtWebKit import QWebSettings
-from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
+if False:
+    from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
+    from PyQt4.QtGui import QDesktopServices, QImage, QPainter, QPixmap
+    from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem
+    from PyQt4.QtGui import QMainWindow, QMessageBox, QPlainTextEdit, QVBoxLayout
+    from PyQt4.QtWebKit import QWebSettings
+    from PyQt4.QtWebKit import QWebInspector, QWebPage, QWebView
+else:
+    from PyQt5.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
+    from PyQt5.QtGui import QDesktopServices, QImage, QPainter, QPixmap
+    from PyQt5.QtWidgets import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem
+    from PyQt5.QtWidgets import QMainWindow, QMessageBox, QPlainTextEdit, QVBoxLayout
+    from PyQt5.QtWebKit import QWebSettings
+    from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)

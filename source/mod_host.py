@@ -607,7 +607,7 @@ class HostWindow(QMainWindow):
             except:
                 print("Failed to delete old ingen socket file, we'll continue anyway")
 
-        hostArgs = ["-e", "-n", SESSION._client_name, "-S", sockFile]
+        hostArgs = ["-e", "-f", "-n", SESSION._client_name, "-S", sockFile]
 
         self.fProccessBackend.start(hostPath, hostArgs)
 

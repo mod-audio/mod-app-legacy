@@ -407,11 +407,8 @@ class HostWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Final setup
 
-        SESSION._client_name = "mod-app-%s" % config["port"]
-        SESSION._pedal_changed_callback = self._pedal_changed_callback
-
-
         self.setProperWindowTitle()
+        SESSION.setupApp("mod-app-%s" % config["port"], self._pedal_changed_callback)
 
         if not "--no-autostart" in sys.argv:
             QTimer.singleShot(0, self.slot_backendStart)
@@ -584,7 +581,7 @@ class HostWindow(QMainWindow):
         </tr><tr>
         <td> JACK client name: <td></td> %s </td>
         </tr></table>
-        """ % (config["port"], "unix:///tmp/mod-app-%s.sock" % config["port"], SESSION._client_name)
+        """ % (config["port"], "unix:///tmp/mod-app-%s.sock" % config["port"], SESSION.backend_client_name)
         QMessageBox.information(self, self.tr("information"), table)
 
     @pyqtSlot()
@@ -607,7 +604,7 @@ class HostWindow(QMainWindow):
             except:
                 print("Failed to delete old ingen socket file, we'll continue anyway")
 
-        hostArgs = ["-e", "-f", "-n", SESSION._client_name, "-S", sockFile]
+        hostArgs = ["-e", "-f", "-n", SESSION.backend_client_name, "-S", sockFile]
 
         self.fProccessBackend.start(hostPath, hostArgs)
 
@@ -767,7 +764,7 @@ class HostWindow(QMainWindow):
             self.fNeedsSessionReconnect = True
         else:
             # we need it now
-            SESSION.reconnect()
+            SESSION.reconnectApp()
 
         self.fWebServerThread.start()
 
@@ -891,11 +888,11 @@ class HostWindow(QMainWindow):
 
             if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool):
                 for i in range(1, INGEN_NUM_AUDIO_INS+1):
-                    os.system("jack_connect 'system:capture_%i' '%s:audio_port_%i_in'" % (i, SESSION._client_name, i))
+                    os.system("jack_connect 'system:capture_%i' '%s:audio_port_%i_in'" % (i, SESSION.backend_client_name, i))
 
             if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
                 for i in range(1, INGEN_NUM_AUDIO_OUTS+1):
-                    os.system("jack_connect '%s:audio_port_%i_out' 'system:playback_%i'" % (SESSION._client_name, i, i))
+                    os.system("jack_connect '%s:audio_port_%i_out' 'system:playback_%i'" % (SESSION.backend_client_name, i, i))
 
             if USING_LIVE_ISO:
                 if self.fLiveMidiIns is None:
@@ -910,12 +907,12 @@ class HostWindow(QMainWindow):
 
                 i=1
                 for dev in self.fLiveMidiIns:
-                    os.system("jack_connect 'alsa_midi:%s' '%s:midi_in_%i'" % (dev, SESSION._client_name, i))
+                    os.system("jack_connect 'alsa_midi:%s' '%s:midi_in_%i'" % (dev, SESSION.backend_client_name, i))
                     i += 1
 
                 i=1
                 for dev in self.fLiveMidiOuts:
-                    os.system("jack_connect '%s:midi_out_%i'  'alsa_midi:%s'" % (SESSION._client_name, i, dev))
+                    os.system("jack_connect '%s:midi_out_%i'  'alsa_midi:%s'" % (SESSION.backend_client_name, i, dev))
                     i += 1
 
         self.fIsRefreshingPage = False

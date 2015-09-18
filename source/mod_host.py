@@ -262,7 +262,7 @@ class HostWindow(QMainWindow):
         self.fSavedSettings = {}
 
         # List of pedalboards
-        self.fPedalboards = lv2.get_pedalboards()
+        self.fPedalboards = lv2.get_pedalboards(False)
 
         # List of current-pedalboard presets
         self.fPresetMenuList = []
@@ -421,7 +421,7 @@ class HostWindow(QMainWindow):
 
     def _pedal_changed_callback(self, ok, bundlepath, title):
         #self.fCurrentBundle = bundlepath
-        self.fCurrentTitle = title if title is not None else ""
+        self.fCurrentTitle = title or ""
         #self.updatePresetsMenu()
         self.setProperWindowTitle()
 

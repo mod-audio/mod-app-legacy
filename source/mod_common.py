@@ -125,6 +125,7 @@ os.environ['MOD_DEFAULT_JACK_BUFSIZE']  = "0"
 os.environ['MOD_PHANTOM_BINARY']        = "/usr/bin/phantomjs"
 os.environ['MOD_SCREENSHOT_JS']         = os.path.join(ROOT, "screenshot.js")
 os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
+os.environ['MOD_INGEN_AUTOCONNECT']     = "0"
 os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
 
 # ------------------------------------------------------------------------------------------------------------

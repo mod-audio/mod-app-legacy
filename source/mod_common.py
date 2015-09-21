@@ -112,7 +112,6 @@ DATA_DIR = os.path.expanduser("~/.local/share/mod-data/")
 
 os.environ['MOD_DEV_HOST'] = "0"
 os.environ['MOD_DEV_HMI']  = "1"
-os.environ['MOD_DESKTOP']  = "1"
 os.environ['MOD_LOG']      = "0"
 
 os.environ['MOD_DATA_DIR']           = DATA_DIR
@@ -127,6 +126,11 @@ os.environ['MOD_SCREENSHOT_JS']         = os.path.join(ROOT, "screenshot.js")
 os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 os.environ['MOD_INGEN_AUTOCONNECT']     = "0"
 os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
+
+if not SKIP_INTEGRATION:
+    os.environ['MOD_APP'] = "1"
+    if os.environ.get('MOD_DESKTOP', None) is None:
+        os.environ['MOD_DESKTOP'] = "1"
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys

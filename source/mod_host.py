@@ -875,9 +875,6 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_webviewPostFinished(self):
-        if not SKIP_INTEGRATION:
-            self.fWebFrame.evaluateJavaScript("desktop.prepareForApp(%s)" % ("true" if not USING_LIVE_ISO else "false"))
-
         if self.fNextBundle:
             bundle = self.fNextBundle
             self.fNextBundle = ""

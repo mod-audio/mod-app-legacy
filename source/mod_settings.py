@@ -98,20 +98,10 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Host
 
-        self.ui.sb_backend_audio_ins.setValue(settings.value(MOD_KEY_HOST_NUM_AUDIO_INS, MOD_DEFAULT_HOST_NUM_AUDIO_INS, type=int))
-        self.ui.sb_backend_audio_outs.setValue(settings.value(MOD_KEY_HOST_NUM_AUDIO_OUTS, MOD_DEFAULT_HOST_NUM_AUDIO_OUTS, type=int))
-        self.ui.sb_backend_midi_ins.setValue(settings.value(MOD_KEY_HOST_NUM_MIDI_INS, MOD_DEFAULT_HOST_NUM_MIDI_INS, type=int))
-        self.ui.sb_backend_midi_outs.setValue(settings.value(MOD_KEY_HOST_NUM_MIDI_OUTS, MOD_DEFAULT_HOST_NUM_MIDI_OUTS, type=int))
-        self.ui.sb_backend_cv_ins.setValue(settings.value(MOD_KEY_HOST_NUM_CV_INS, MOD_DEFAULT_HOST_NUM_CV_INS, type=int))
-        self.ui.sb_backend_cv_outs.setValue(settings.value(MOD_KEY_HOST_NUM_CV_OUTS, MOD_DEFAULT_HOST_NUM_CV_OUTS, type=int))
-
-        self.ui.cb_host_auto_connect_ins.setChecked(settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool))
-        self.ui.cb_host_auto_connect_outs.setChecked(settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool))
-
         self.ui.cb_host_verbose.setChecked(settings.value(MOD_KEY_HOST_VERBOSE, MOD_DEFAULT_HOST_VERBOSE, type=bool))
 
         hostPath = settings.value(MOD_KEY_HOST_PATH, MOD_DEFAULT_HOST_PATH, type=str)
-        if hostPath.endswith("mod-host"):
+        if hostPath.endswith("ingen"):
             hostPath = MOD_DEFAULT_HOST_PATH
         self.ui.le_host_path.setText(hostPath)
 
@@ -138,22 +128,14 @@ class SettingsWindow(QDialog):
         # ----------------------------------------------------------------------------------------------------
         # Host
 
-        settings.setValue(MOD_KEY_HOST_NUM_AUDIO_INS,      self.ui.sb_backend_audio_ins.value())
-        settings.setValue(MOD_KEY_HOST_NUM_AUDIO_OUTS,     self.ui.sb_backend_audio_outs.value())
-        settings.setValue(MOD_KEY_HOST_NUM_MIDI_INS,       self.ui.sb_backend_midi_ins.value())
-        settings.setValue(MOD_KEY_HOST_NUM_MIDI_OUTS,      self.ui.sb_backend_midi_outs.value())
-        settings.setValue(MOD_KEY_HOST_NUM_CV_INS,         self.ui.sb_backend_cv_ins.value())
-        settings.setValue(MOD_KEY_HOST_NUM_CV_OUTS,        self.ui.sb_backend_cv_outs.value())
-        settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_INS,  self.ui.cb_host_auto_connect_ins.isChecked())
-        settings.setValue(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, self.ui.cb_host_auto_connect_outs.isChecked())
-        settings.setValue(MOD_KEY_HOST_VERBOSE,            self.ui.cb_host_verbose.isChecked())
-        settings.setValue(MOD_KEY_HOST_PATH,               self.ui.le_host_path.text())
+        settings.setValue(MOD_KEY_HOST_VERBOSE, self.ui.cb_host_verbose.isChecked())
+        settings.setValue(MOD_KEY_HOST_PATH,    self.ui.le_host_path.text())
 
         # ----------------------------------------------------------------------------------------------------
         # WebView
 
-        settings.setValue(MOD_KEY_WEBVIEW_INSPECTOR, self.ui.cb_webview_inspector.isChecked())
-        settings.setValue(MOD_KEY_WEBVIEW_VERBOSE,   self.ui.cb_webview_verbose.isChecked())
+        settings.setValue(MOD_KEY_WEBVIEW_INSPECTOR,      self.ui.cb_webview_inspector.isChecked())
+        settings.setValue(MOD_KEY_WEBVIEW_VERBOSE,        self.ui.cb_webview_verbose.isChecked())
         settings.setValue(MOD_KEY_WEBVIEW_SHOW_INSPECTOR, self.ui.cb_webview_show_inspector.isChecked())
 
     # --------------------------------------------------------------------------------------------------------

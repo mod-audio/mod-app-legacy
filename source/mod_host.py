@@ -55,7 +55,6 @@ setInitialSettings()
 from mod import webserver
 from mod.lilvlib import get_bundle_dirname, get_pedalboard_info
 from mod.session import SESSION
-from mod.settings import INGEN_NUM_AUDIO_INS, INGEN_NUM_AUDIO_OUTS, INGEN_NUM_MIDI_INS, INGEN_NUM_MIDI_OUTS
 
 from mod import lv2, webserver
 
@@ -246,12 +245,6 @@ class HostWindow(QMainWindow):
         # need to call session reconnect after connecting the 1st time
         self.fNeedsSessionReconnect = False
 
-        # when ingen fails to start try again 5 times
-        self.fIngenStartAttemptNumber = 0
-
-        # special check for loading progress when only refreshing page
-        self.fIsRefreshingPage = False
-
         # Qt idle timer
         self.fIdleTimerId = 0
 
@@ -262,17 +255,13 @@ class HostWindow(QMainWindow):
         self.fSavedSettings = {}
 
         # List of pedalboards
-        self.fPedalboards = lv2.get_pedalboards(False)
+        self.fPedalboards = lv2.get_all_pedalboards(False)
 
         # List of current-pedalboard presets
         self.fPresetMenuList = []
 
         # Dump window used for debug
         self.fDumpWindow = None
-
-        # MIDI Devices selected on Live-ISO
-        self.fLiveMidiIns  = None
-        self.fLiveMidiOuts = None
 
         # Process that runs the backend
         self.fProccessBackend = QProcess(self)
@@ -378,8 +367,6 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_start.triggered.connect(self.slot_backendStart)
         self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
         self.ui.act_backend_restart.triggered.connect(self.slot_backendRestart)
-        self.ui.act_backend_hide_modgui.triggered.connect(self.slot_backendHideGuis)
-        self.ui.act_backend_hide_cloud.triggered.connect(self.slot_backendHideCloud)
         self.ui.act_backend_dump.triggered.connect(self.slot_backendDump)
         self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
 
@@ -408,7 +395,7 @@ class HostWindow(QMainWindow):
         # Final setup
 
         self.setProperWindowTitle()
-        SESSION.setupApp("mod-app-%s" % config["port"], self._pedal_changed_callback)
+        SESSION.setupApp(self._pedal_changed_callback)
 
         if not "--no-autostart" in sys.argv:
             QTimer.singleShot(0, self.slot_backendStart)
@@ -439,7 +426,6 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_fileRefreshPost(self):
-        self.fIsRefreshingPage = True
         self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
         self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
         self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
@@ -575,13 +561,11 @@ class HostWindow(QMainWindow):
     def slot_backendInformation(self):
         table = """
         <table><tr>
-        <td> MOD-UI port:      <td></td> %s </td>
+        <td> MOD-UI port:     <td></td> %s </td>
         </tr><tr>
-        <td> Ingen address:    <td></td> %s </td>
-        </tr><tr>
-        <td> JACK client name: <td></td> %s </td>
+        <td> Backend address: <td></td> %s </td>
         </tr></table>
-        """ % (config["port"], "unix:///tmp/mod-app-%s.sock" % config["port"], SESSION.backend_client_name)
+        """ % (config["port"], "unix:///tmp/mod-app-%s.sock" % config["port"])
         QMessageBox.information(self, self.tr("information"), table)
 
     @pyqtSlot()
@@ -604,7 +588,7 @@ class HostWindow(QMainWindow):
             except:
                 print("Failed to delete old ingen socket file, we'll continue anyway")
 
-        hostArgs = ["-e", "-f", "-n", SESSION.backend_client_name, "-S", sockFile]
+        hostArgs = ["-n"]
 
         self.fProccessBackend.start(hostPath, hostArgs)
 
@@ -637,32 +621,6 @@ class HostWindow(QMainWindow):
         #QApplication.instance().processEvents()
         self.slot_backendStart()
 
-    @pyqtSlot(bool)
-    def slot_backendHideGuis(self, triggered):
-        if triggered:
-            lv2.MODGUI_SHOW_MODE = 1
-            self.ui.act_backend_hide_cloud.setChecked(False)
-        else:
-            lv2.MODGUI_SHOW_MODE = 0
-            self.ui.act_backend_hide_modgui.setChecked(False)
-
-        os.environ["MOD_GUIS_ONLY"] = str(lv2.MODGUI_SHOW_MODE)
-        lv2.refresh()
-        QTimer.singleShot(0, self.slot_fileRefresh)
-
-    @pyqtSlot(bool)
-    def slot_backendHideCloud(self, triggered):
-        if triggered:
-            lv2.MODGUI_SHOW_MODE = 2
-            self.ui.act_backend_hide_modgui.setChecked(False)
-        else:
-            lv2.MODGUI_SHOW_MODE = 0
-            self.ui.act_backend_hide_cloud.setChecked(False)
-
-        os.environ["MOD_GUIS_ONLY"] = str(lv2.MODGUI_SHOW_MODE)
-        lv2.refresh()
-        QTimer.singleShot(0, self.slot_fileRefresh)
-
     @pyqtSlot()
     def slot_backendDump(self):
         if self.fDumpWindow is None:
@@ -690,6 +648,7 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_restart.setEnabled(True)
         self.ui.w_buttons.setEnabled(False)
         self.ui.label_progress.setText(self.tr("Loading backend..."))
+        QTimer.singleShot(0, self.slot_ingenStarted)
 
     @pyqtSlot(int, QProcess.ExitStatus)
     def slot_backendFinished(self, exitCode, exitStatus):
@@ -720,12 +679,6 @@ class HostWindow(QMainWindow):
         errorStr = self.tr("Could not start host backend.\n") + self.getProcessErrorAsString(error)
         qWarning(errorStr)
 
-        # keep restarting until it works
-        self.fIngenStartAttemptNumber += 1
-        if self.fIngenStartAttemptNumber <= 5:
-            QTimer.singleShot(0, self.slot_backendStart)
-            return
-
         # don't show error if this is the first time starting the host or using live-iso
         if firstBackendInit or USING_LIVE_ISO:
             return
@@ -744,15 +697,15 @@ class HostWindow(QMainWindow):
                 continue
 
             if self.fSavedSettings[MOD_KEY_HOST_VERBOSE]:
-                print("INGEN:", line)
+                print("BACKEND:", line)
 
-            if "Listening on socket " in line:
-                QTimer.singleShot(1000, self.slot_ingenStarted)
-            #if "Activated Jack client " in line:
-                #QTimer.singleShot(1000, self.fWebServerThread.start)
-            elif "Failed to create UNIX socket" in line or "Could not activate Jack client" in line:
-                # need to wait for ingen to create sockets so it can delete them on termination
-                QTimer.singleShot(1000, self.slot_ingenStartError)
+            #if "Listening on socket " in line:
+                #QTimer.singleShot(1000, self.slot_ingenStarted)
+            ##if "Activated Jack client " in line:
+                ##QTimer.singleShot(1000, self.fWebServerThread.start)
+            #elif "Failed to create UNIX socket" in line or "Could not activate Jack client" in line:
+                ## need to wait for ingen to create sockets so it can delete them on termination
+                #QTimer.singleShot(1000, self.slot_ingenStartError)
 
     @pyqtSlot()
     def slot_ingenStarted(self):
@@ -767,9 +720,6 @@ class HostWindow(QMainWindow):
             SESSION.reconnectApp()
 
         self.fWebServerThread.start()
-
-        # ingen was started ok, reset counter
-        self.fIngenStartAttemptNumber = 0
 
     @pyqtSlot()
     def slot_ingenStartError(self):
@@ -850,7 +800,6 @@ class HostWindow(QMainWindow):
         else:
             # message
             self.ui.label_progress.setText(self.tr("Loading UI... failed!"))
-            self.fIsRefreshingPage = False
 
             # disable file menu
             self.ui.act_file_refresh.setEnabled(False)
@@ -880,40 +829,6 @@ class HostWindow(QMainWindow):
             self.fNextBundle = ""
             self.fWebFrame.evaluateJavaScript("desktop.loadPedalboard(\"%s\")" % bundle)
 
-        if not self.fIsRefreshingPage:
-            settings = QSettings()
-
-            if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_INS, MOD_DEFAULT_HOST_AUTO_CONNNECT_INS, type=bool):
-                for i in range(1, INGEN_NUM_AUDIO_INS+1):
-                    os.system("jack_connect 'system:capture_%i' '%s:audio_port_%i_in'" % (i, SESSION.backend_client_name, i))
-
-            if settings.value(MOD_KEY_HOST_AUTO_CONNNECT_OUTS, MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS, type=bool):
-                for i in range(1, INGEN_NUM_AUDIO_OUTS+1):
-                    os.system("jack_connect '%s:audio_port_%i_out' 'system:playback_%i'" % (SESSION.backend_client_name, i, i))
-
-            if USING_LIVE_ISO:
-                if self.fLiveMidiIns is None:
-                    self.fLiveMidiIns  = []
-                    self.fLiveMidiOuts = []
-
-                    for argv in sys.argv:
-                        if argv.startswith("--with-midi-input=\""):
-                            self.fLiveMidiIns.append(argv.replace("--with-midi-input=\"","",1)[:-1].replace("'","\\'"))
-                        elif argv.startswith("--with-midi-output=\""):
-                            self.fLiveMidiOuts.append(argv.replace("--with-midi-output=\"","",1)[:-1].replace("'","\\'"))
-
-                i=1
-                for dev in self.fLiveMidiIns:
-                    os.system("jack_connect 'alsa_midi:%s' '%s:midi_in_%i'" % (dev, SESSION.backend_client_name, i))
-                    i += 1
-
-                i=1
-                for dev in self.fLiveMidiOuts:
-                    os.system("jack_connect '%s:midi_out_%i'  'alsa_midi:%s'" % (SESSION.backend_client_name, i, dev))
-                    i += 1
-
-        self.fIsRefreshingPage = False
-
         QTimer.singleShot(0, self.slot_webviewPostFinished2)
 
     @pyqtSlot()
@@ -925,16 +840,7 @@ class HostWindow(QMainWindow):
 
     def saveSettings(self):
         settings = QSettings()
-
         settings.setValue("Geometry", self.saveGeometry())
-
-        if self.ui.act_backend_hide_modgui.isChecked():
-            MODGUI_SHOW_MODE = 1
-        elif self.ui.act_backend_hide_cloud.isChecked():
-            MODGUI_SHOW_MODE = 2
-        else:
-            MODGUI_SHOW_MODE = 0
-        settings.setValue(MOD_KEY_MAIN_MODGUI_SHOW_MODE, MODGUI_SHOW_MODE)
 
     def loadSettings(self, firstTime):
         qsettings   = QSettings()
@@ -942,16 +848,15 @@ class HostWindow(QMainWindow):
 
         self.fSavedSettings = {
             # Main
-            MOD_KEY_MAIN_MODGUI_SHOW_MODE:    qsettings.value(MOD_KEY_MAIN_MODGUI_SHOW_MODE,    MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE,    type=int),
-            MOD_KEY_MAIN_PROJECT_FOLDER:      qsettings.value(MOD_KEY_MAIN_PROJECT_FOLDER,      MOD_DEFAULT_MAIN_PROJECT_FOLDER,      type=str),
-            MOD_KEY_MAIN_REFRESH_INTERVAL:    qsettings.value(MOD_KEY_MAIN_REFRESH_INTERVAL,    MOD_DEFAULT_MAIN_REFRESH_INTERVAL,    type=int),
+            MOD_KEY_MAIN_PROJECT_FOLDER:    qsettings.value(MOD_KEY_MAIN_PROJECT_FOLDER,    MOD_DEFAULT_MAIN_PROJECT_FOLDER,    type=str),
+            MOD_KEY_MAIN_REFRESH_INTERVAL:  qsettings.value(MOD_KEY_MAIN_REFRESH_INTERVAL,  MOD_DEFAULT_MAIN_REFRESH_INTERVAL,  type=int),
             # Host
-            MOD_KEY_HOST_VERBOSE:             qsettings.value(MOD_KEY_HOST_VERBOSE,             MOD_DEFAULT_HOST_VERBOSE,             type=bool),
-            MOD_KEY_HOST_PATH:                qsettings.value(MOD_KEY_HOST_PATH,                MOD_DEFAULT_HOST_PATH,                type=str),
+            MOD_KEY_HOST_VERBOSE:           qsettings.value(MOD_KEY_HOST_VERBOSE,           MOD_DEFAULT_HOST_VERBOSE,           type=bool),
+            MOD_KEY_HOST_PATH:              qsettings.value(MOD_KEY_HOST_PATH,              MOD_DEFAULT_HOST_PATH,              type=str),
             # WebView
-            MOD_KEY_WEBVIEW_INSPECTOR:        qsettings.value(MOD_KEY_WEBVIEW_INSPECTOR,        MOD_DEFAULT_WEBVIEW_INSPECTOR,        type=bool),
-            MOD_KEY_WEBVIEW_VERBOSE:          qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool),
-            MOD_KEY_WEBVIEW_SHOW_INSPECTOR:   qsettings.value(MOD_KEY_WEBVIEW_SHOW_INSPECTOR,   MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR,   type=bool)
+            MOD_KEY_WEBVIEW_INSPECTOR:      qsettings.value(MOD_KEY_WEBVIEW_INSPECTOR,      MOD_DEFAULT_WEBVIEW_INSPECTOR,      type=bool),
+            MOD_KEY_WEBVIEW_VERBOSE:        qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,        MOD_DEFAULT_WEBVIEW_VERBOSE,        type=bool),
+            MOD_KEY_WEBVIEW_SHOW_INSPECTOR: qsettings.value(MOD_KEY_WEBVIEW_SHOW_INSPECTOR, MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR, type=bool)
         }
 
         inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR] and not USING_LIVE_ISO
@@ -966,16 +871,6 @@ class HostWindow(QMainWindow):
 
             if inspectorEnabled and self.fSavedSettings[MOD_KEY_WEBVIEW_SHOW_INSPECTOR]:
                 QTimer.singleShot(1000, self.ui.webinspector.show)
-
-        if self.fSavedSettings[MOD_KEY_MAIN_MODGUI_SHOW_MODE] == 1:
-            self.ui.act_backend_hide_modgui.setChecked(True)
-            self.ui.act_backend_hide_cloud.setChecked(False)
-        elif self.fSavedSettings[MOD_KEY_MAIN_MODGUI_SHOW_MODE] == 2:
-            self.ui.act_backend_hide_modgui.setChecked(False)
-            self.ui.act_backend_hide_cloud.setChecked(True)
-        else:
-            self.ui.act_backend_hide_modgui.setChecked(False)
-            self.ui.act_backend_hide_cloud.setChecked(False)
 
         self.ui.act_file_inspect.setVisible(inspectorEnabled)
 

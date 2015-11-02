@@ -124,8 +124,6 @@ os.environ['MOD_DEFAULT_JACK_BUFSIZE']  = "0"
 os.environ['MOD_PHANTOM_BINARY']        = "/usr/bin/phantomjs"
 os.environ['MOD_SCREENSHOT_JS']         = os.path.join(ROOT, "screenshot.js")
 os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
-os.environ['MOD_INGEN_AUTOCONNECT']     = "0"
-os.environ['MOD_INGEN_SOCKET_URI']      = "unix:///tmp/mod-app-%s.sock" % config["port"]
 
 if not SKIP_INTEGRATION:
     os.environ['MOD_APP'] = "1"
@@ -136,32 +134,22 @@ if not SKIP_INTEGRATION:
 # Settings keys
 
 # Main
-MOD_KEY_MAIN_MODGUI_SHOW_MODE    = "Main/ModGuiShowMode"    # int
-MOD_KEY_MAIN_PROJECT_FOLDER      = "Main/ProjectFolder"     # str
-MOD_KEY_MAIN_REFRESH_INTERVAL    = "Main/RefreshInterval"   # int
+MOD_KEY_MAIN_PROJECT_FOLDER      = "Main/ProjectFolder"    # str
+MOD_KEY_MAIN_REFRESH_INTERVAL    = "Main/RefreshInterval"  # int
 
 # Host
-MOD_KEY_HOST_NUM_AUDIO_INS       = "Host/NumAudioIns"       # int
-MOD_KEY_HOST_NUM_AUDIO_OUTS      = "Host/NumAudioOuts"      # int
-MOD_KEY_HOST_NUM_MIDI_INS        = "Host/NumMidiIns"        # int
-MOD_KEY_HOST_NUM_MIDI_OUTS       = "Host/NumMidiOuts"       # int
-MOD_KEY_HOST_NUM_CV_INS          = "Host/NumCvIns"          # int
-MOD_KEY_HOST_NUM_CV_OUTS         = "Host/NumCvOuts"         # int
-MOD_KEY_HOST_AUTO_CONNNECT_INS   = "Host/AutoConnectIns"    # bool
-MOD_KEY_HOST_AUTO_CONNNECT_OUTS  = "Host/AutoConnectOuts"   # bool
-MOD_KEY_HOST_VERBOSE             = "Host/Verbose"           # bool
-MOD_KEY_HOST_PATH                = "Host/Path"              # str
+MOD_KEY_HOST_VERBOSE             = "Host/Verbose"          # bool
+MOD_KEY_HOST_PATH                = "Host/Path2"            # str
 
 # WebView
-MOD_KEY_WEBVIEW_INSPECTOR        = "WebView/Inspector"      # bool
-MOD_KEY_WEBVIEW_VERBOSE          = "WebView/Verbose"        # bool
-MOD_KEY_WEBVIEW_SHOW_INSPECTOR   = "WebView/ShowInspector"  # bool
+MOD_KEY_WEBVIEW_INSPECTOR        = "WebView/Inspector"     # bool
+MOD_KEY_WEBVIEW_VERBOSE          = "WebView/Verbose"       # bool
+MOD_KEY_WEBVIEW_SHOW_INSPECTOR   = "WebView/ShowInspector" # bool
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings defaults
 
 # Main
-MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE   = 1
 MOD_DEFAULT_MAIN_REFRESH_INTERVAL   = 30
 MOD_DEFAULT_MAIN_PROJECT_FOLDER     = QDir.toNativeSeparators(QDir.homePath())
 
@@ -175,7 +163,7 @@ MOD_DEFAULT_HOST_NUM_CV_OUTS        = 0
 MOD_DEFAULT_HOST_AUTO_CONNNECT_INS  = True
 MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS = True
 MOD_DEFAULT_HOST_VERBOSE            = False
-MOD_DEFAULT_HOST_PATH               = "/usr/bin/ingen"
+MOD_DEFAULT_HOST_PATH               = "/usr/bin/mod-host"
 
 # WebView
 MOD_DEFAULT_WEBVIEW_INSPECTOR       = False
@@ -187,32 +175,19 @@ MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR  = False
 
 def setInitialSettings():
     if USING_LIVE_ISO:
-        modguiShowMode = 1
         webviewVerbose = False
 
     else:
         qsettings = QSettings("MOD", "MOD-App")
-
-        modguiShowMode  = qsettings.value(MOD_KEY_MAIN_MODGUI_SHOW_MODE,    MOD_DEFAULT_MAIN_MODGUI_SHOW_MODE,    type=int)
-        webviewVerbose  = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
-
-        os.environ['MOD_INGEN_NUM_AUDIO_INS']  = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_INS,  MOD_DEFAULT_HOST_NUM_AUDIO_INS,  type=int))
-        os.environ['MOD_INGEN_NUM_AUDIO_OUTS'] = str(qsettings.value(MOD_KEY_HOST_NUM_AUDIO_OUTS, MOD_DEFAULT_HOST_NUM_AUDIO_OUTS, type=int))
-        os.environ['MOD_INGEN_NUM_MIDI_INS']   = str(qsettings.value(MOD_KEY_HOST_NUM_MIDI_INS,   MOD_DEFAULT_HOST_NUM_MIDI_INS,   type=int))
-        os.environ['MOD_INGEN_NUM_MIDI_OUTS']  = str(qsettings.value(MOD_KEY_HOST_NUM_MIDI_OUTS,  MOD_DEFAULT_HOST_NUM_MIDI_OUTS,  type=int))
-        os.environ['MOD_INGEN_NUM_CV_INS']     = str(qsettings.value(MOD_KEY_HOST_NUM_CV_INS,     MOD_DEFAULT_HOST_NUM_CV_INS,     type=int))
-        os.environ['MOD_INGEN_NUM_CV_OUTS']    = str(qsettings.value(MOD_KEY_HOST_NUM_CV_OUTS,    MOD_DEFAULT_HOST_NUM_CV_OUTS,    type=int))
-
+        webviewVerbose = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
         del qsettings
 
-    os.environ['MOD_GUI_SHOW_MODE'] = str(modguiShowMode)
-    os.environ['MOD_LOG']           = "1" if webviewVerbose else "0"
+    os.environ['MOD_LOG'] = "1" if webviewVerbose else "0"
 
     from mod import settings
-    settings.MODGUI_SHOW_MODE = modguiShowMode
-    settings.LOG              = webviewVerbose
+    settings.LOG = webviewVerbose
 
     # cleanup
-    del modguiShowMode, webviewVerbose
+    del webviewVerbose
 
 # ------------------------------------------------------------------------------------------------------------

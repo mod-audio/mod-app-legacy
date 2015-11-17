@@ -53,10 +53,10 @@ from ui_mod_pedalboard_save import Ui_PedalboardSave
 setInitialSettings()
 
 from mod import webserver
-from mod.lilvlib import get_bundle_dirname, get_pedalboard_info
 from mod.session import SESSION
+from mod.utils import get_bundle_dirname, get_all_pedalboards, get_pedalboard_info
 
-from mod import lv2, webserver
+from mod import webserver
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -189,8 +189,8 @@ class OpenPedalboardWindow(QDialog):
         for pedalboard in pedalboards:
             item = QListWidgetItem(self.ui.listWidget)
             item.setData(Qt.UserRole, pedalboard['uri'])
-            item.setIcon(QIcon(pedalboard['thumbnail'].replace("file://","")))
-            item.setText(pedalboard['name'])
+            item.setIcon(QIcon(os.path.join(pedalboard['bundle'], "thumbnail.png")))
+            item.setText(pedalboard['title'])
             self.ui.listWidget.addItem(item)
 
         self.ui.listWidget.setCurrentRow(0)
@@ -255,7 +255,7 @@ class HostWindow(QMainWindow):
         self.fSavedSettings = {}
 
         # List of pedalboards
-        self.fPedalboards = lv2.get_all_pedalboards(False)
+        self.fPedalboards = get_all_pedalboards(False)
 
         # List of current-pedalboard presets
         self.fPresetMenuList = []

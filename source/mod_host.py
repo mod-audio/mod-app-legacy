@@ -580,14 +580,6 @@ class HostWindow(QMainWindow):
         if hostPath.endswith("mod-host"):
             hostPath = MOD_DEFAULT_HOST_PATH
 
-        sockFile = "/tmp/mod-app-%s.sock" % config["port"]
-
-        if os.path.exists(sockFile):
-            try:
-                os.remove(sockFile)
-            except:
-                print("Failed to delete old ingen socket file, we'll continue anyway")
-
         hostArgs = ["-n"]
 
         self.fProccessBackend.start(hostPath, hostArgs)

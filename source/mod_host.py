@@ -255,7 +255,7 @@ class HostWindow(QMainWindow):
         self.fSavedSettings = {}
 
         # List of pedalboards
-        self.fPedalboards = get_all_pedalboards(False)
+        self.fPedalboards = get_all_pedalboards()
 
         # List of current-pedalboard presets
         self.fPresetMenuList = []

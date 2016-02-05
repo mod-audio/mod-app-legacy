@@ -577,7 +577,7 @@ class HostWindow(QMainWindow):
         print("slot_backendStart in progress...")
 
         hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
-        if hostPath.endswith("mod-host"):
+        if hostPath.endswith("ingen"):
             hostPath = MOD_DEFAULT_HOST_PATH
 
         hostArgs = ["-n"]
@@ -640,7 +640,6 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_restart.setEnabled(True)
         self.ui.w_buttons.setEnabled(False)
         self.ui.label_progress.setText(self.tr("Loading backend..."))
-        QTimer.singleShot(0, self.slot_ingenStarted)
 
     @pyqtSlot(int, QProcess.ExitStatus)
     def slot_backendFinished(self, exitCode, exitStatus):
@@ -691,16 +690,18 @@ class HostWindow(QMainWindow):
             if self.fSavedSettings[MOD_KEY_HOST_VERBOSE]:
                 print("BACKEND:", line)
 
-            #if "Listening on socket " in line:
+            if line == "mod-host ready!":
+                QTimer.singleShot(0, self.slot_backendStartPhase2)
+            #elif "Listening on socket " in line:
                 #QTimer.singleShot(1000, self.slot_ingenStarted)
-            ##if "Activated Jack client " in line:
+            ##elif "Activated Jack client " in line:
                 ##QTimer.singleShot(1000, self.fWebServerThread.start)
             #elif "Failed to create UNIX socket" in line or "Could not activate Jack client" in line:
                 ## need to wait for ingen to create sockets so it can delete them on termination
                 #QTimer.singleShot(1000, self.slot_ingenStartError)
 
     @pyqtSlot()
-    def slot_ingenStarted(self):
+    def slot_backendStartPhase2(self):
         if self.fProccessBackend.state() == QProcess.NotRunning:
             return
 
@@ -714,7 +715,7 @@ class HostWindow(QMainWindow):
         self.fWebServerThread.start()
 
     @pyqtSlot()
-    def slot_ingenStartError(self):
+    def slot_backendStartError(self):
         self.stopAndWaitForBackend()
         self.slot_backendError(-2)
 

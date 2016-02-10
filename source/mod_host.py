@@ -120,62 +120,6 @@ class HostWebPage(QWebPage):
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
 # ------------------------------------------------------------------------------------------------------------
-# Dump Window
-
-import socket
-
-class DumpWindow(QDialog):
-    def __init__(self, parent, uri):
-        QDialog.__init__(self, parent)
-
-        if uri.startswith('unix://'):
-            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            self.sock.connect(uri[len('unix://'):])
-        elif uri.startswith('tcp://'):
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            parsed = re.split('[:/]', uri[len('tcp://'):])
-            addr = (parsed[0], int(parsed[1]))
-            self.sock.connect(addr)
-        else:
-            raise Exception('Unsupported server URI `%s' % uri)
-
-        self.sock.setblocking(False)
-
-        self.fLayout = QVBoxLayout(self)
-        self.setLayout(self.fLayout)
-
-        self.fTextArea = QPlainTextEdit(self)
-        self.fLayout.addWidget(self.fTextArea)
-
-        self.resize(500, 600)
-        self.setWindowTitle(self.tr("Dump Window"))
-
-        self.fTimerId = self.startTimer(100)
-        self.fTmpData = b""
-
-    def __del__(self):
-        self.sock.close()
-
-    def timerEvent(self, event):
-        if event.timerId() == self.fTimerId:
-            self.dump()
-
-        QDialog.timerEvent(self, event)
-
-    def dump(self):
-        while True:
-            try:
-                c = self.sock.recv(1)
-            except:
-                break
-
-            if c == b"\n":
-                self.fTextArea.appendPlainText(str(self.fTmpData, encoding="utf-8", errors="ignore"))
-                self.fTmpData = b""
-            else:
-                self.fTmpData += c
-
-# ------------------------------------------------------------------------------------------------------------
 # Open Pedalboard Window
 
 class OpenPedalboardWindow(QDialog):
@@ -259,9 +203,6 @@ class HostWindow(QMainWindow):
 
         # List of current-pedalboard presets
         self.fPresetMenuList = []
-
-        # Dump window used for debug
-        self.fDumpWindow = None
 
         # Process that runs the backend
         self.fProccessBackend = QProcess(self)
@@ -367,8 +308,6 @@ class HostWindow(QMainWindow):
         self.ui.act_backend_start.triggered.connect(self.slot_backendStart)
         self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
         self.ui.act_backend_restart.triggered.connect(self.slot_backendRestart)
-        self.ui.act_backend_dump.triggered.connect(self.slot_backendDump)
-        self.ui.act_backend_alternate_ui.triggered.connect(self.slot_backendAlternateUI)
 
         self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
         self.ui.act_pedalboard_open.triggered.connect(self.slot_pedalboardOpen)
@@ -612,24 +551,6 @@ class HostWindow(QMainWindow):
         self.slot_backendStop()
         #QApplication.instance().processEvents()
         self.slot_backendStart()
-
-    @pyqtSlot()
-    def slot_backendDump(self):
-        if self.fDumpWindow is None:
-            uri = "unix:///tmp/mod-app-%s.sock" % config["port"]
-            self.fDumpWindow = DumpWindow(self, uri)
-
-        self.fDumpWindow.show()
-
-    @pyqtSlot()
-    def slot_backendAlternateUI(self):
-        hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
-        if hostPath.endswith("mod-host"):
-            hostPath = MOD_DEFAULT_HOST_PATH
-
-        command = "%s -c %s -g &" % (hostPath, "unix:///tmp/mod-app-%s.sock" % config["port"])
-        print(command)
-        os.system(command)
 
     # --------------------------------------------------------------------------------------------------------
 
@@ -980,12 +901,3 @@ class HostWindow(QMainWindow):
                 #act.setData(preset['uri'])
                 #act.triggered.connect(self.slot_presetClicked)
                 #self.fPresetMenuList.append(act)
-
-# ------------------------------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    #gui = SavePedalboardWindow(None, get_pedalboards())
-    gui = DumpWindow(None, "unix:///tmp/ingen.sock")
-    gui.show()
-    sys.exit(app.exec_())

@@ -310,12 +310,6 @@
     <addaction name="act_backend_start"/>
     <addaction name="act_backend_stop"/>
     <addaction name="act_backend_restart"/>
-    <addaction name="separator"/>
-    <addaction name="act_backend_hide_modgui"/>
-    <addaction name="act_backend_hide_cloud"/>
-    <addaction name="separator"/>
-    <addaction name="act_backend_dump"/>
-    <addaction name="act_backend_alternate_ui"/>
    </widget>
    <widget class="QMenu" name="menu_Pedalboard">
     <property name="title">

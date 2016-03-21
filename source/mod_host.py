@@ -74,7 +74,7 @@ class WebServerThread(QThread):
     def run(self):
         if not self.prepareWasCalled:
             self.prepareWasCalled = True
-            webserver.prepare()
+            webserver.prepare(True)
 
         self.running.emit()
         webserver.start()

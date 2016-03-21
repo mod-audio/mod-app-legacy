@@ -127,8 +127,6 @@ os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 
 if not SKIP_INTEGRATION:
     os.environ['MOD_APP'] = "1"
-    if os.environ.get('MOD_DESKTOP', None) is None:
-        os.environ['MOD_DESKTOP'] = "1"
 
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys

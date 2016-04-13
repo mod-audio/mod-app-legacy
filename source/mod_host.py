@@ -252,7 +252,6 @@ class HostWindow(QMainWindow):
         self.ui.act_presets_new.setEnabled(False)
         self.ui.act_presets_save.setEnabled(False)
         self.ui.act_presets_save_as.setEnabled(False)
-        self.ui.menu_Pedalboard.setEnabled(False)
         self.ui.menu_Presets.setEnabled(False)
 
         # initial stopped state
@@ -261,6 +260,10 @@ class HostWindow(QMainWindow):
         # Qt needs this so it properly creates & resizes the webview
         self.ui.stackedwidget.setCurrentIndex(1)
         self.ui.stackedwidget.setCurrentIndex(0)
+
+        # FIXME
+        self.ui.act_backend_stop.setVisible(False)
+        self.ui.act_backend_restart.setVisible(False)
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI (special stuff for Mac OS)
@@ -697,14 +700,14 @@ class HostWindow(QMainWindow):
             self.ui.act_file_refresh.setEnabled(True)
             self.ui.act_file_inspect.setEnabled(True)
 
-            # enable pedalboard menu
+            # enable pedalboard menu, FIXME
             enablePedalboard = not SKIP_INTEGRATION
-            self.ui.act_pedalboard_new.setEnabled(enablePedalboard)
-            self.ui.act_pedalboard_open.setEnabled(enablePedalboard)
-            self.ui.act_pedalboard_save.setEnabled(enablePedalboard)
-            self.ui.act_pedalboard_save_as.setEnabled(enablePedalboard)
-            self.ui.act_pedalboard_share.setEnabled(enablePedalboard)
-            self.ui.menu_Pedalboard.setEnabled(enablePedalboard)
+            #self.ui.act_pedalboard_new.setEnabled(enablePedalboard)
+            #self.ui.act_pedalboard_open.setEnabled(enablePedalboard)
+            #self.ui.act_pedalboard_save.setEnabled(enablePedalboard)
+            #self.ui.act_pedalboard_save_as.setEnabled(enablePedalboard)
+            #self.ui.act_pedalboard_share.setEnabled(enablePedalboard)
+            #self.ui.menu_Pedalboard.setEnabled(enablePedalboard)
 
             # for js evaulation
             self.fWebFrame = self.ui.webpage.currentFrame()

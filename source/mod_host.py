@@ -252,6 +252,7 @@ class HostWindow(QMainWindow):
         self.ui.act_presets_new.setEnabled(False)
         self.ui.act_presets_save.setEnabled(False)
         self.ui.act_presets_save_as.setEnabled(False)
+        self.ui.menu_Pedalboard.setEnabled(False)
         self.ui.menu_Presets.setEnabled(False)
 
         # initial stopped state

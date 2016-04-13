@@ -477,7 +477,7 @@ class HostWindow(QMainWindow):
             <b>MOD Desktop Application</b><br/>
             <br/>
             A software to have the complete MOD environment running in your desktop.<br/>
-            (C) 2015 - The MOD Team<br/>
+            (C) 2015-2016 - The MOD Team<br/>
             <br/>
             Publications, products, content or services referenced herein or on the website are the exclusive trademarks or servicemarks of MOD.<br/>
             Other product and company names mentioned in the site may be the trademarks of their respective owners.<br/>

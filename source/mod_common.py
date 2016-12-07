@@ -22,6 +22,7 @@
 from random import random
 
 _PORT = str(8998 + int(random()*9000))
+using_Qt4 = True
 
 # ------------------------------------------------------------------------------------------------------------
 # Mod-App Configuration
@@ -43,7 +44,7 @@ del _PORT
 import os
 import sys
 
-if False:
+if using_Qt4:
     from PyQt4.QtCore import QDir, QSettings
 else:
     from PyQt5.QtCore import QDir, QSettings
@@ -177,7 +178,7 @@ def setInitialSettings():
 
     else:
         qsettings = QSettings("MOD", "MOD-App")
-        webviewVerbose = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE,          MOD_DEFAULT_WEBVIEW_VERBOSE,          type=bool)
+        webviewVerbose = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE, MOD_DEFAULT_WEBVIEW_VERBOSE, type=bool)
         del qsettings
 
     os.environ['MOD_LOG'] = "1" if webviewVerbose else "0"

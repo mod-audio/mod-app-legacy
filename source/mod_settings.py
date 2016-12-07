@@ -24,7 +24,7 @@ from mod_common import *
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
 
-if False:
+if using_Qt4:
     from PyQt4.QtCore import pyqtSlot
     from PyQt4.QtGui import QFontMetrics, QIcon
     from PyQt4.QtGui import QDialog, QDialogButtonBox, QFileDialog, QMessageBox

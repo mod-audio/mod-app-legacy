@@ -24,7 +24,7 @@ from mod_settings import *
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
 
-if False:
+if using_Qt4:
     from PyQt4.QtCore import pyqtSignal, pyqtSlot, qCritical, qWarning, Qt, QFileInfo, QProcess, QSettings, QSize, QThread, QTimer, QUrl
     from PyQt4.QtGui import QDesktopServices, QImage, QPainter, QPixmap
     from PyQt4.QtGui import QAction, QApplication, QDialog, QFileDialog, QInputDialog, QLineEdit, QListWidgetItem
@@ -262,8 +262,8 @@ class HostWindow(QMainWindow):
         self.ui.stackedwidget.setCurrentIndex(0)
 
         # FIXME
-        self.ui.act_backend_stop.setVisible(False)
-        self.ui.act_backend_restart.setVisible(False)
+        #self.ui.act_backend_stop.setVisible(False)
+        #self.ui.act_backend_restart.setVisible(False)
 
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI (special stuff for Mac OS)
@@ -699,15 +699,6 @@ class HostWindow(QMainWindow):
             # enable file menu
             self.ui.act_file_refresh.setEnabled(True)
             self.ui.act_file_inspect.setEnabled(True)
-
-            # enable pedalboard menu, FIXME
-            enablePedalboard = not SKIP_INTEGRATION
-            #self.ui.act_pedalboard_new.setEnabled(enablePedalboard)
-            #self.ui.act_pedalboard_open.setEnabled(enablePedalboard)
-            #self.ui.act_pedalboard_save.setEnabled(enablePedalboard)
-            #self.ui.act_pedalboard_save_as.setEnabled(enablePedalboard)
-            #self.ui.act_pedalboard_share.setEnabled(enablePedalboard)
-            #self.ui.menu_Pedalboard.setEnabled(enablePedalboard)
 
             # for js evaulation
             self.fWebFrame = self.ui.webpage.currentFrame()

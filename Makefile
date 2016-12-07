@@ -12,7 +12,14 @@ DESTDIR :=
 # ----------------------------------------------------------------------------------------------------------------------------
 # Set PyQt tools
 
+PYUIC4 ?= /usr/bin/pyuic4
 PYUIC5 ?= /usr/bin/pyuic5
+
+ifneq (,$(wildcard $(PYUIC4)))
+HAVE_PYQT4=true
+else
+HAVE_PYQT4=false
+endif
 
 ifneq (,$(wildcard $(PYUIC5)))
 HAVE_PYQT5=true
@@ -20,12 +27,19 @@ else
 HAVE_PYQT5=false
 endif
 
+ifneq ($(HAVE_PYQT4),true)
 ifneq ($(HAVE_PYQT5),true)
 $(error PyQt5 is not available, please install it)
 endif
+endif
 
+ifeq ($(HAVE_PYQT4),true)
+PYUIC ?= pyuic4 -w
+PYRCC ?= pyrcc4 -py3
+else
 PYUIC ?= pyuic5
 PYRCC ?= pyrcc5
+endif
 
 # ----------------------------------------------------------------------------------------------------------------------------
 

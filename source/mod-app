@@ -24,10 +24,15 @@ from mod_host import *
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor, QPalette
-from PyQt5.QtWebKit import qWebKitMajorVersion
-from PyQt5.QtWidgets import QApplication, QMessageBox
+if using_Qt4:
+    from PyQt4.QtCore import Qt
+    from PyQt4.QtGui import QApplication, QColor, QMessageBox, QPalette
+    from PyQt4.QtWebKit import qWebKitMajorVersion
+else:
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtGui import QColor, QPalette
+    from PyQt5.QtWebKit import qWebKitMajorVersion
+    from PyQt5.QtWidgets import QApplication, QMessageBox
 
 # ------------------------------------------------------------------------------------------------------------
 # Import Signal
@@ -147,7 +152,7 @@ if __name__ == '__main__':
         palette.setColor(QPalette.Inactive, QPalette.LinkVisited, QColor(230, 100, 230))
         app.setPalette(palette)
 
-    elif qWebKitMajorVersion() < 538:
+    elif using_Qt4 or qWebKitMajorVersion() < 538:
         QMessageBox.warning(None,
                             "MOD-App Alert", # app.translate("HostWindow", ), #app.translate("HostWindow",
                             """

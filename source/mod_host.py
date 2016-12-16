@@ -519,11 +519,18 @@ class HostWindow(QMainWindow):
 
         print("slot_backendStart in progress...")
 
-        hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
-        if hostPath.endswith("ingen"):
-            hostPath = MOD_DEFAULT_HOST_PATH
+        if os.getenv("MOD_LIVE_ISO") is not None:
+            os.system("jack_load mod-monitor")
 
-        hostArgs = ["-n"]
+            hostPath = "jack_load"
+            hostArgs = ["-w", "-a", "mod-host"]
+
+        else:
+            hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
+            if hostPath.endswith("ingen"):
+                hostPath = MOD_DEFAULT_HOST_PATH
+
+            hostArgs = ["-n"]
 
         self.fProccessBackend.start(hostPath, hostArgs)
 

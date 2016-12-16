@@ -519,7 +519,7 @@ class HostWindow(QMainWindow):
 
         print("slot_backendStart in progress...")
 
-        if os.getenv("MOD_LIVE_ISO") is not None:
+        if USING_LIVE_ISO:
             os.system("jack_load mod-monitor")
 
             hostPath = "jack_load"
@@ -622,7 +622,7 @@ class HostWindow(QMainWindow):
             if self.fSavedSettings[MOD_KEY_HOST_VERBOSE]:
                 print("BACKEND:", line)
 
-            if line == "mod-host ready!":
+            if line == "mod-host ready!" or line == "mod-host is running.":
                 QTimer.singleShot(0, self.slot_backendStartPhase2)
             #elif "Listening on socket " in line:
                 #QTimer.singleShot(1000, self.slot_ingenStarted)

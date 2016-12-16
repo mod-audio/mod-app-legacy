@@ -520,6 +520,7 @@ class HostWindow(QMainWindow):
         print("slot_backendStart in progress...")
 
         if USING_LIVE_ISO:
+            os.system("jack_wait -w")
             os.system("jack_load mod-monitor")
 
             hostPath = "jack_load"

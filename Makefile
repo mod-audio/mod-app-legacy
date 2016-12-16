@@ -27,18 +27,18 @@ else
 HAVE_PYQT5=false
 endif
 
-ifneq ($(HAVE_PYQT4),true)
+# ifneq ($(HAVE_PYQT4),true)
 ifneq ($(HAVE_PYQT5),true)
 $(error PyQt5 is not available, please install it)
 endif
-endif
+# endif
 
-ifeq ($(HAVE_PYQT4),true)
-PYUIC ?= pyuic4 -w
-PYRCC ?= pyrcc4 -py3
-else
+ifeq ($(HAVE_PYQT5),true)
 PYUIC ?= pyuic5
 PYRCC ?= pyrcc5
+else
+PYUIC ?= pyuic4 -w
+PYRCC ?= pyrcc4 -py3
 endif
 
 # ----------------------------------------------------------------------------------------------------------------------------

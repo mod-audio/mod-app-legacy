@@ -22,7 +22,7 @@
 from random import random
 
 _PORT = str(8998 + int(random()*9000))
-using_Qt4 = True
+using_Qt4 = False
 
 # ------------------------------------------------------------------------------------------------------------
 # Mod-App Configuration
@@ -181,7 +181,8 @@ def setInitialSettings():
         webviewVerbose = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE, MOD_DEFAULT_WEBVIEW_VERBOSE, type=bool)
         del qsettings
 
-    os.environ['MOD_LOG'] = "1" if webviewVerbose else "0"
+    os.environ['MOD_LIVE_ISO'] = "1" if USING_LIVE_ISO else "0"
+    os.environ['MOD_LOG']      = "1" if webviewVerbose else "0"
 
     from mod import settings
     settings.LOG = webviewVerbose

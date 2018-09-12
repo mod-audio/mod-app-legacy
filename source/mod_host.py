@@ -54,7 +54,7 @@ setInitialSettings()
 
 from mod import webserver
 from mod.session import SESSION
-from mod.utils import get_bundle_dirname, get_all_pedalboards, get_pedalboard_info
+from modtools.utils import get_bundle_dirname, get_all_pedalboards, get_pedalboard_info
 
 from mod import webserver
 

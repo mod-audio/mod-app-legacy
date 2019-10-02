@@ -39,6 +39,8 @@ else:
     from PyQt5.QtWebKit import QWebSettings
     from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
 
+from tornado.ioloop import IOLoop
+
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
 
@@ -54,9 +56,7 @@ setInitialSettings()
 
 from mod import webserver
 from mod.session import SESSION
-from mod.utils import get_bundle_dirname, get_all_pedalboards, get_pedalboard_info
-
-from mod import webserver
+from modtools.utils import get_bundle_dirname, get_all_pedalboards, get_pedalboard_info
 
 # ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
@@ -70,13 +70,20 @@ class WebServerThread(QThread):
 
     def __init__(self, parent=None):
         QThread.__init__(self, parent)
+        self.ioinstance = IOLoop.instance()
+
+    def checkReady(self):
+        if not SESSION.host.profile_applied:
+            self.ioinstance.call_later(0.25, self.checkReady)
+            return
+        self.running.emit()
 
     def run(self):
         if not self.prepareWasCalled:
             self.prepareWasCalled = True
             webserver.prepare(True)
 
-        self.running.emit()
+        self.checkReady()
         webserver.start()
 
     def stopWait(self):
@@ -365,14 +372,7 @@ class HostWindow(QMainWindow):
 
         self.ui.label_progress.setText(self.tr("Refreshing UI..."))
         self.ui.stackedwidget.setCurrentIndex(0)
-        QTimer.singleShot(0, self.slot_fileRefreshPost)
-
-    @pyqtSlot()
-    def slot_fileRefreshPost(self):
-        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
-        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
-        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
-        self.ui.webview.reload()
+        QTimer.singleShot(0, self.ui.webview.reload)
 
     @pyqtSlot()
     def slot_fileInspect(self):
@@ -505,10 +505,8 @@ class HostWindow(QMainWindow):
         table = """
         <table><tr>
         <td> MOD-UI port:     <td></td> %s </td>
-        </tr><tr>
-        <td> Backend address: <td></td> %s </td>
         </tr></table>
-        """ % (config["port"], "unix:///tmp/mod-app-%s.sock" % config["port"])
+        """ % (config["port"],)
         QMessageBox.information(self, self.tr("information"), table)
 
     @pyqtSlot()
@@ -531,12 +529,16 @@ class HostWindow(QMainWindow):
             if hostPath.endswith("ingen"):
                 hostPath = MOD_DEFAULT_HOST_PATH
 
-            hostArgs = ["-n"]
+            hostArgs = ["-p", "5555", "-f", "5556"]
+            if self.fSavedSettings[MOD_KEY_HOST_VERBOSE]:
+                hostArgs.append("-v")
+            else:
+                hostArgs.append("-n")
 
         self.fProccessBackend.start(hostPath, hostArgs)
 
     @pyqtSlot()
-    def slot_backendStop(self, forced = False):
+    def slot_backendStop(self):
         #if self.fPluginCount > 0:
             #if not forced:
                 #ask = QMessageBox.question(self, self.tr("Warning"), self.tr("There are still some plugins loaded, you need to remove them to stop the engine.\n"
@@ -559,9 +561,7 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_backendRestart(self):
-        #self.ui.stackedwidget.setCurrentIndex(0)
         self.slot_backendStop()
-        #QApplication.instance().processEvents()
         self.slot_backendStart()
 
     # --------------------------------------------------------------------------------------------------------
@@ -657,22 +657,19 @@ class HostWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_webServerRunning(self):
-        try:
-            self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
-            self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
-            self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
-        except:
-            pass
+        self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
+        self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
+        self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
 
-        print("webserver running")
+        print("webserver running with URL:", config["addr"])
         self.ui.webview.load(QUrl(config["addr"]))
 
     @pyqtSlot()
     def slot_webServerFinished(self):
         try:
-            self.ui.webview.loadStarted.connect(self.slot_webviewLoadStarted)
-            self.ui.webview.loadProgress.connect(self.slot_webviewLoadProgress)
-            self.ui.webview.loadFinished.connect(self.slot_webviewLoadFinished)
+            self.ui.webview.loadStarted.disconnect(self.slot_webviewLoadStarted)
+            self.ui.webview.loadProgress.disconnect(self.slot_webviewLoadProgress)
+            self.ui.webview.loadFinished.disconnect(self.slot_webviewLoadFinished)
         except:
             pass
 
@@ -818,7 +815,7 @@ class HostWindow(QMainWindow):
             self.fIdleTimerId = 0
 
         self.saveSettings()
-        self.slot_backendStop(True)
+        self.slot_backendStop()
 
         QMainWindow.closeEvent(self, event)
 

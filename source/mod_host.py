@@ -59,6 +59,15 @@ from mod.session import SESSION
 from modtools.utils import get_bundle_dirname, get_all_pedalboards, get_pedalboard_info
 
 # ------------------------------------------------------------------------------------------------------------
+# Imports (asyncio)
+
+try:
+    from asyncio import new_event_loop, set_event_loop
+    haveAsyncIO = True
+except:
+    haveAsyncIO = False
+
+# ------------------------------------------------------------------------------------------------------------
 # WebServer Thread
 
 class WebServerThread(QThread):
@@ -70,15 +79,21 @@ class WebServerThread(QThread):
 
     def __init__(self, parent=None):
         QThread.__init__(self, parent)
-        self.ioinstance = IOLoop.instance()
+        self.eventLoop = None
 
     def checkReady(self):
-        if not SESSION.host.profile_applied:
-            self.ioinstance.call_later(0.25, self.checkReady)
+        if not SESSION.host.connected:
+            IOLoop.instance().call_later(0.25, self.checkReady)
             return
         self.running.emit()
 
     def run(self):
+        if haveAsyncIO:
+            self.eventLoop = new_event_loop()
+            set_event_loop(self.eventLoop)
+
+        SESSION.host.init_host()
+
         if not self.prepareWasCalled:
             self.prepareWasCalled = True
             webserver.prepare(True)
@@ -88,6 +103,8 @@ class WebServerThread(QThread):
 
     def stopWait(self):
         webserver.stop()
+        if self.eventLoop is not None:
+            self.eventLoop.call_soon_threadsafe(self.eventLoop.stop)
         return self.wait(5000)
 
 # ------------------------------------------------------------------------------------------------------------
@@ -859,6 +876,8 @@ class HostWindow(QMainWindow):
         self.ui.webpage.setViewportSize(size)
 
     def stopAndWaitForBackend(self):
+        SESSION.host.close_jack()
+
         if self.fProccessBackend.state() == QProcess.NotRunning:
             return
 

@@ -147,20 +147,15 @@ MOD_KEY_WEBVIEW_SHOW_INSPECTOR   = "WebView/ShowInspector" # bool
 # Settings defaults
 
 # Main
-MOD_DEFAULT_MAIN_REFRESH_INTERVAL   = 30
-MOD_DEFAULT_MAIN_PROJECT_FOLDER     = QDir.toNativeSeparators(QDir.homePath())
+MOD_DEFAULT_MAIN_REFRESH_INTERVAL = 30
+MOD_DEFAULT_MAIN_PROJECT_FOLDER   = QDir.toNativeSeparators(QDir.homePath())
 
 # Host
-MOD_DEFAULT_HOST_NUM_AUDIO_INS      = 2
-MOD_DEFAULT_HOST_NUM_AUDIO_OUTS     = 2
-MOD_DEFAULT_HOST_NUM_MIDI_INS       = 1
-MOD_DEFAULT_HOST_NUM_MIDI_OUTS      = 1
-MOD_DEFAULT_HOST_NUM_CV_INS         = 0
-MOD_DEFAULT_HOST_NUM_CV_OUTS        = 0
-MOD_DEFAULT_HOST_AUTO_CONNNECT_INS  = True
-MOD_DEFAULT_HOST_AUTO_CONNNECT_OUTS = True
-MOD_DEFAULT_HOST_VERBOSE            = False
-MOD_DEFAULT_HOST_PATH               = "/usr/bin/mod-host"
+MOD_DEFAULT_HOST_VERBOSE          = False
+MOD_DEFAULT_HOST_PATH             = os.path.join(os.path.dirname(__file__), "modules", "mod-host", "mod-host")
+
+if not os.path.exists(MOD_DEFAULT_HOST_PATH):
+    MOD_DEFAULT_HOST_PATH = "/usr/bin/mod-host"
 
 # WebView
 MOD_DEFAULT_WEBVIEW_INSPECTOR       = False

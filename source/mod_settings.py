@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # MOD-App
-# Copyright (C) 2014-2015 Filipe Coelho <falktx@falktx.com>
+# Copyright (C) 2014-2020 Filipe Coelho <falktx@falktx.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -153,12 +153,6 @@ class SettingsWindow(QDialog):
         # Host
 
         elif self.ui.lw_page.currentRow() == self.TAB_INDEX_HOST:
-            self.ui.sb_backend_audio_ins.setValue(MOD_DEFAULT_HOST_NUM_AUDIO_INS)
-            self.ui.sb_backend_audio_outs.setValue(MOD_DEFAULT_HOST_NUM_AUDIO_OUTS)
-            self.ui.sb_backend_midi_ins.setValue(MOD_DEFAULT_HOST_NUM_MIDI_INS)
-            self.ui.sb_backend_midi_outs.setValue(MOD_DEFAULT_HOST_NUM_MIDI_OUTS)
-            self.ui.sb_backend_cv_ins.setValue(MOD_DEFAULT_HOST_NUM_CV_INS)
-            self.ui.sb_backend_cv_outs.setValue(MOD_DEFAULT_HOST_NUM_CV_OUTS)
             self.ui.cb_host_verbose.setChecked(MOD_DEFAULT_HOST_VERBOSE)
             self.ui.le_host_path.setText(MOD_DEFAULT_HOST_PATH)
 

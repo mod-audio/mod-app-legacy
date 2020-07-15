@@ -43,7 +43,7 @@ endif
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
-all: RES UI utils
+all: RES UI host utils
 
 # ----------------------------------------------------------------------------------------------------------------------------
 # Resources
@@ -73,6 +73,18 @@ UI: $(UIs)
 
 source/ui_%.py: resources/ui/%.ui
 	$(PYUIC) $< -o $@
+
+# ----------------------------------------------------------------------------------------------------------------------------
+# host (mod-host submodule, if present)
+
+ifneq (,$(wildcard source/modules/mod-host/Makefile))
+host: source/modules/mod-host/mod-host
+else
+host:
+endif
+
+source/modules/mod-host/mod-host: source/modules/mod-host/src/*.c source/modules/mod-host/src/*.h
+	$(MAKE) -C source/modules/mod-host
 
 # ----------------------------------------------------------------------------------------------------------------------------
 # utils (from mod-ui, if present)

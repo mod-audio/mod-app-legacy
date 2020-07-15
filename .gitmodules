@@ -1,3 +1,6 @@
+[submodule "source/modules/mod-host"]
+        path = source/modules/mod-host
+        url = https://github.com/moddevices/mod-host.git
 [submodule "source/modules/mod-ui"]
 	path = source/modules/mod-ui
-	url = git://github.com/portalmod/mod-ui
+	url = https://github.com/portalmod/mod-ui.git

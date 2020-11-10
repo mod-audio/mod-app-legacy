@@ -103,6 +103,12 @@ source/modules/mod-ui/utils/libmod_utils.so: source/modules/mod-ui/utils/*.cpp s
 clean:
 	rm -f $(RES) $(UIs)
 	rm -f *~ source/*~ source/*.pyc source/*_rc.py source/ui_*.py
+ifneq (,$(wildcard source/modules/mod-host/Makefile))
+	$(MAKE) clean -C source/modules/mod-host
+endif
+ifneq (,$(wildcard source/modules/mod-ui/utils/Makefile))
+	$(MAKE) clean -C source/modules/mod-ui/utils
+endif
 
 # ----------------------------------------------------------------------------------------------------------------------------
 

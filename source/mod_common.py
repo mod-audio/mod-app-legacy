@@ -50,16 +50,6 @@ else:
     from PyQt5.QtCore import QDir, QSettings
 
 # ------------------------------------------------------------------------------------------------------------
-# Check if using live ISO
-
-USING_LIVE_ISO   = bool("--using-live-iso"   in sys.argv)
-SKIP_INTEGRATION = bool("--skip-integration" in sys.argv)
-
-if USING_LIVE_ISO:
-    config["addr"] = "http://127.0.0.1:17891"
-    config["port"] = "17891"
-
-# ------------------------------------------------------------------------------------------------------------
 # Set CWD
 
 CWD = sys.path[0]
@@ -124,9 +114,6 @@ os.environ['MOD_HTML_DIR']           = os.path.join(ROOT, "html")
 
 os.environ['MOD_DEVICE_WEBSERVER_PORT'] = config["port"]
 
-if not SKIP_INTEGRATION:
-    os.environ['MOD_APP'] = "1"
-
 # ------------------------------------------------------------------------------------------------------------
 # Settings keys
 
@@ -166,16 +153,11 @@ MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR  = False
 # Set initial settings
 
 def setInitialSettings():
-    if USING_LIVE_ISO:
-        webviewVerbose = False
+    qsettings = QSettings("MOD", "MOD-App")
+    webviewVerbose = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE, MOD_DEFAULT_WEBVIEW_VERBOSE, type=bool)
+    del qsettings
 
-    else:
-        qsettings = QSettings("MOD", "MOD-App")
-        webviewVerbose = qsettings.value(MOD_KEY_WEBVIEW_VERBOSE, MOD_DEFAULT_WEBVIEW_VERBOSE, type=bool)
-        del qsettings
-
-    os.environ['MOD_LIVE_ISO'] = "1" if USING_LIVE_ISO else "0"
-    os.environ['MOD_LOG']      = "1" if webviewVerbose else "0"
+    os.environ['MOD_LOG'] = "1" if webviewVerbose else "0"
 
     from mod import settings
     settings.LOG = webviewVerbose

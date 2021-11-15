@@ -115,21 +115,18 @@ class HostWebPage(QWebPage):
         QWebPage.__init__(self, parent)
 
     def javaScriptAlert(self, frame, msg):
-        if USING_LIVE_ISO: return
         QMessageBox.warning(self.parent(),
                             self.tr("MOD-App Alert"),
                             msg,
                             QMessageBox.Ok)
 
     def javaScriptConfirm(self, frame, msg):
-        if USING_LIVE_ISO: return True
         return (QMessageBox.question(self.parent(),
                                      self.tr("MOD-App Confirm"),
                                      msg,
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
 
     def javaScriptPrompt(self, frame, msg, default):
-        if USING_LIVE_ISO: return True, "live"
         res, ok = QInputDialog.getText(self.parent(),
                                        self.tr("MOD-App Prompt"),
                                        msg,
@@ -137,50 +134,10 @@ class HostWebPage(QWebPage):
         return ok, res
 
     def shouldInterruptJavaScript(self):
-        if USING_LIVE_ISO: return False
         return (QMessageBox.question(self.parent(),
                                      self.tr("MOD-App Problem"),
                                      self.tr("The script on this page appears to have a problem. Do you want to stop the script?"),
                                      QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes)
-
-# ------------------------------------------------------------------------------------------------------------
-# Open Pedalboard Window
-
-class OpenPedalboardWindow(QDialog):
-    def __init__(self, parent, pedalboards):
-        QDialog.__init__(self)
-        self.ui = Ui_PedalboardOpen()
-        self.ui.setupUi(self)
-
-        self.fSelectedURI = ""
-
-        for pedalboard in pedalboards:
-            item = QListWidgetItem(self.ui.listWidget)
-            item.setData(Qt.UserRole, pedalboard['uri'])
-            item.setIcon(QIcon(os.path.join(pedalboard['bundle'], "thumbnail.png")))
-            item.setText(pedalboard['title'])
-            self.ui.listWidget.addItem(item)
-
-        self.ui.listWidget.setCurrentRow(0)
-
-        self.accepted.connect(self.slot_setSelectedURI)
-        self.ui.listWidget.doubleClicked.connect(self.accept)
-
-    def getSelectedURI(self):
-        return self.fSelectedURI
-
-    @pyqtSlot()
-    def slot_setSelectedURI(self):
-        item = self.ui.listWidget.currentItem()
-
-        if item is None:
-            return
-
-        self.fSelectedURI = item.data(Qt.UserRole)
-
-    def done(self, r):
-        QDialog.done(self, r)
-        self.close()
 
 # ------------------------------------------------------------------------------------------------------------
 # Host Window
@@ -300,15 +257,6 @@ class HostWindow(QMainWindow):
             #self.ui.menu_Help.hide()
 
         # ----------------------------------------------------------------------------------------------------
-        # Set up GUI (special stuff for Live-MOD ISO)
-
-        if USING_LIVE_ISO:
-            self.ui.menubar.hide()
-            self.ui.b_start.hide()
-            self.ui.b_configure.hide()
-            self.ui.b_about.hide()
-
-        # ----------------------------------------------------------------------------------------------------
         # Load Settings
 
         self.loadSettings(True)
@@ -327,21 +275,8 @@ class HostWindow(QMainWindow):
         self.fWebServerThread.running.connect(self.slot_webServerRunning)
         self.fWebServerThread.finished.connect(self.slot_webServerFinished)
 
-        self.ui.menu_Pedalboard.aboutToShow.connect(self.slot_pedalboardCheckOnline)
-
         self.ui.act_file_refresh.triggered.connect(self.slot_fileRefresh)
         self.ui.act_file_inspect.triggered.connect(self.slot_fileInspect)
-
-        self.ui.act_backend_information.triggered.connect(self.slot_backendInformation)
-        self.ui.act_backend_start.triggered.connect(self.slot_backendStart)
-        self.ui.act_backend_stop.triggered.connect(self.slot_backendStop)
-        self.ui.act_backend_restart.triggered.connect(self.slot_backendRestart)
-
-        self.ui.act_pedalboard_new.triggered.connect(self.slot_pedalboardNew)
-        self.ui.act_pedalboard_open.triggered.connect(self.slot_pedalboardOpen)
-        self.ui.act_pedalboard_save.triggered.connect(self.slot_pedalboardSave)
-        self.ui.act_pedalboard_save_as.triggered.connect(self.slot_pedalboardSaveAs)
-        self.ui.act_pedalboard_share.triggered.connect(self.slot_pedalboardShare)
 
         self.ui.act_settings_configure.triggered.connect(self.slot_configure)
 
@@ -394,89 +329,6 @@ class HostWindow(QMainWindow):
     @pyqtSlot()
     def slot_fileInspect(self):
         self.ui.webinspector.show()
-
-    # --------------------------------------------------------------------------------------------------------
-    # Pedalboard (menu actions)
-
-    @pyqtSlot()
-    def slot_pedalboardCheckOnline(self):
-        if self.fWebFrame is None:
-            return
-        isOnline = self.fWebFrame.evaluateJavaScript("$('#mod-cloud').hasClass('logged')")
-        if isOnline is None:
-            return print("isOnline is None")
-        self.ui.act_pedalboard_share.setEnabled(isOnline)
-
-    @pyqtSlot()
-    def slot_pedalboardNew(self):
-        if self.fWebFrame is None:
-            return
-
-        self.fWebFrame.evaluateJavaScript("desktop.reset()")
-
-    # --------------------------------------------------------------------------------------------------------
-
-    @pyqtSlot()
-    def slot_pedalboardOpen(self):
-        if len(self.fPedalboards) == 0:
-            return QMessageBox.information(self, self.tr("information"), "No pedalboards found")
-
-        dialog = OpenPedalboardWindow(self, self.fPedalboards)
-
-        if not dialog.exec_():
-            return
-
-        pedalboard = dialog.getSelectedURI()
-
-        if not pedalboard:
-            return QMessageBox.information(self, self.tr("information"), "Invalid pedalboard selected")
-
-        try:
-            bundle = get_bundle_dirname(pedalboard)
-        except:
-            return
-
-        if self.fWebFrame is None:
-            return
-
-        self.fWebFrame.evaluateJavaScript("desktop.loadPedalboard(\"%s\")" % bundle)
-
-    def openPedalboardLater(self, filename):
-        try:
-            self.fNextBundle   = QFileInfo(filename).absoluteFilePath()
-            self.fCurrentTitle = get_pedalboard_info(self.fNextBundle)['name']
-        except:
-            self.fNextBundle   = ""
-            self.fCurrentTitle = ""
-
-    # --------------------------------------------------------------------------------------------------------
-
-    @pyqtSlot()
-    def slot_pedalboardSave(self, saveAs=False):
-        if self.fWebFrame is None:
-            return
-
-        self.fWebFrame.evaluateJavaScript("desktop.saveCurrentPedalboard(%s)" % ("true" if saveAs else "false"))
-
-    @pyqtSlot()
-    def slot_pedalboardSaveAs(self):
-        self.slot_pedalboardSave(True)
-
-    # --------------------------------------------------------------------------------------------------------
-
-    @pyqtSlot()
-    def slot_pedalboardShare(self):
-        if self.fWebFrame is None:
-            return
-
-        self.fWebFrame.evaluateJavaScript("desktop.shareCurrentPedalboard()")
-
-    # --------------------------------------------------------------------------------------------------------
-    # Presets (menu actions)
-
-    @pyqtSlot()
-    def slot_presetClicked(self):
-        print(self.sender().data())
 
     # --------------------------------------------------------------------------------------------------------
     # Settings (menu actions)
@@ -534,23 +386,15 @@ class HostWindow(QMainWindow):
 
         print("slot_backendStart in progress...")
 
-        if USING_LIVE_ISO:
-            os.system("jack_wait -w")
-            os.system("jack_load mod-monitor")
+        hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
+        if hostPath.endswith("ingen"):
+            hostPath = MOD_DEFAULT_HOST_PATH
 
-            hostPath = "jack_load"
-            hostArgs = ["-w", "-a", "mod-host"]
-
+        hostArgs = ["-p", "5555", "-f", "5556"]
+        if self.fSavedSettings[MOD_KEY_HOST_VERBOSE]:
+            hostArgs.append("-v")
         else:
-            hostPath = self.fSavedSettings[MOD_KEY_HOST_PATH]
-            if hostPath.endswith("ingen"):
-                hostPath = MOD_DEFAULT_HOST_PATH
-
-            hostArgs = ["-p", "5555", "-f", "5556"]
-            if self.fSavedSettings[MOD_KEY_HOST_VERBOSE]:
-                hostArgs.append("-v")
-            else:
-                hostArgs.append("-n")
+            hostArgs.append("-n")
 
         self.fProccessBackend.start(hostPath, hostArgs)
 
@@ -621,7 +465,7 @@ class HostWindow(QMainWindow):
         qWarning(errorStr)
 
         # don't show error if this is the first time starting the host or using live-iso
-        if firstBackendInit or USING_LIVE_ISO:
+        if firstBackendInit:
             return
 
         # show the error message
@@ -790,7 +634,7 @@ class HostWindow(QMainWindow):
             MOD_KEY_WEBVIEW_SHOW_INSPECTOR: qsettings.value(MOD_KEY_WEBVIEW_SHOW_INSPECTOR, MOD_DEFAULT_WEBVIEW_SHOW_INSPECTOR, type=bool)
         }
 
-        inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR] and not USING_LIVE_ISO
+        inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR]
 
         websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, inspectorEnabled)
 

@@ -24,11 +24,14 @@ from mod_settings import *
 # ------------------------------------------------------------------------------------------------------------
 # Imports (Global)
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
+from PyQt5.QtCore import  pyqtSignal, pyqtSlot, Qt, QSettings, QTimer, QUrl
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QAction, QApplication, QInputDialog, QLineEdit, QMainWindow, QMessageBox
 from PyQt5.QtWebKit import QWebSettings
-from PyQt5.QtWebKitWidgets import QWebInspector, QWebPage, QWebView
+from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView, QWebEngineSettings
+#from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView, QWebEngineSettings
+#from PyQt5 import QtWebEngineWidgets
+#from PySide2 import QtWebCore #import QWebEngineDownloadRequest, QWebEnginePage
 
 # ------------------------------------------------------------------------------------------------------------
 # Imports (UI)
@@ -39,9 +42,9 @@ from ui_mod_host import Ui_HostWindow
 # ------------------------------------------------------------------------------------------------------------
 # Remote WebPage
 
-class RemoteWebPage(QWebPage):
+class RemoteWebPage(QWebEnginePage):
     def __init__(self, parent):
-        QWebPage.__init__(self, parent)
+        QWebEnginePage.__init__(self, parent)
 
     def javaScriptAlert(self, frame, msg):
         QMessageBox.warning(self.parent(),
@@ -168,17 +171,17 @@ class RemoteWindow(QMainWindow):
         # ----------------------------------------------------------------------------------------------------
         # Set up GUI
 
-        self.ui.webview = QWebView(self.ui.swp_webview)
+        self.ui.webview = QWebEngineView(self.ui.swp_webview)
         self.ui.webview.setMinimumWidth(980)
         self.ui.swp_webview.layout().addWidget(self.ui.webview)
 
         self.ui.webpage = RemoteWebPage(self)
         self.ui.webview.setPage(self.ui.webpage)
 
-        self.ui.webinspector = QWebInspector(None)
-        self.ui.webinspector.resize(800, 600)
-        self.ui.webinspector.setPage(self.ui.webpage)
-        self.ui.webinspector.setVisible(False)
+        #self.ui.webinspector = QWebInspector(None)
+        #self.ui.webinspector.resize(800, 600)
+        #self.ui.webinspector.setPage(self.ui.webpage)
+        #self.ui.webinspector.setVisible(False)
 
         self.ui.act_backend_start.setEnabled(False)
         self.ui.act_backend_start.setVisible(False)
@@ -193,8 +196,8 @@ class RemoteWindow(QMainWindow):
         self.ui.menu_Backend.menuAction().setEnabled(False)
         self.ui.menu_Backend.menuAction().setVisible(False)
 
-        self.ui.act_pedalboard_new.setEnabled(False)
-        self.ui.act_pedalboard_new.setVisible(False)
+        #self.ui.act_pedalboard_new.setEnabled(False)
+        #self.ui.act_pedalboard_new.setVisible(False)
         self.ui.act_pedalboard_open.setEnabled(False)
         self.ui.act_pedalboard_open.setVisible(False)
         self.ui.act_pedalboard_save.setEnabled(False)
@@ -203,8 +206,8 @@ class RemoteWindow(QMainWindow):
         self.ui.act_pedalboard_save_as.setVisible(False)
         self.ui.act_pedalboard_share.setEnabled(False)
         self.ui.act_pedalboard_share.setVisible(False)
-        self.ui.menu_Pedalboard.menuAction().setEnabled(False)
-        self.ui.menu_Pedalboard.menuAction().setVisible(False)
+        #self.ui.menu_Pedalboard.menuAction().setEnabled(False)
+        #self.ui.menu_Pedalboard.menuAction().setVisible(False)
 
         self.ui.act_presets_new.setEnabled(False)
         self.ui.act_presets_new.setVisible(False)
@@ -212,8 +215,8 @@ class RemoteWindow(QMainWindow):
         self.ui.act_presets_save.setVisible(False)
         self.ui.act_presets_save_as.setEnabled(False)
         self.ui.act_presets_save_as.setVisible(False)
-        self.ui.menu_Presets.menuAction().setEnabled(False)
-        self.ui.menu_Presets.menuAction().setVisible(False)
+        #self.ui.menu_Presets.menuAction().setEnabled(False)
+        #self.ui.menu_Presets.menuAction().setVisible(False)
 
         self.ui.act_settings_configure.setText(self.tr("Configure MOD-Remote"))
         self.ui.b_start.setIcon(QIcon(":/48x48/network-connect.png"))
@@ -321,7 +324,8 @@ class RemoteWindow(QMainWindow):
 
     @pyqtSlot()
     def slot_fileInspect(self):
-        self.ui.webinspector.show()
+        #self.ui.webinspector.show()
+        pass
 
     # --------------------------------------------------------------------------------------------------------
     # Settings (menu actions)
@@ -422,10 +426,10 @@ class RemoteWindow(QMainWindow):
 
         inspectorEnabled = self.fSavedSettings[MOD_KEY_WEBVIEW_INSPECTOR]
 
-        websettings.setAttribute(QWebSettings.DeveloperExtrasEnabled, inspectorEnabled)
+        #websettings.setAttribute(QWebEngineSettings.DeveloperExtrasEnabled, inspectorEnabled)
 
         if firstTime:
-            self.restoreGeometry(qsettings.value("Geometry", ""))
+#            self.restoreGeometry(qsettings.value("Geometry", ""))
 
             if inspectorEnabled and self.fSavedSettings[MOD_KEY_WEBVIEW_SHOW_INSPECTOR]:
                 QTimer.singleShot(1000, self.ui.webinspector.show)
@@ -481,7 +485,7 @@ class RemoteWindow(QMainWindow):
         size = self.ui.swp_intro.size()
         self.ui.swp_webview.resize(size)
         self.ui.webview.resize(size)
-        self.ui.webpage.setViewportSize(size)
+#        self.ui.webpage.setViewportSize(size)
 
     def setProperWindowTitle(self):
         title = "MOD Remote"

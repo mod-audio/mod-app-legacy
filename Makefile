@@ -64,8 +64,8 @@ bin/resources/%.py: source/%.py
 
 UIs = \
 	source/ui_mod_connect.py \
-	source/ui_mod_pedalboard_open.py \
-	source/ui_mod_pedalboard_save.py \
+#	source/ui_mod_pedalboard_open.py \
+#	source/ui_mod_pedalboard_save.py \
 	source/ui_mod_host.py \
 	source/ui_mod_settings.py
 
